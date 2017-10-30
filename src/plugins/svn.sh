@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_BOOTSTRAP_SOURCE_PLUGIN_SVN_SH="included"
+MULLE_FETCH_PLUGIN_SVN_SH="included"
 
 
 ###
@@ -39,14 +39,14 @@ svn_clone_project()
 {
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local reposdir="$1" ; shift
+   local unused="$1" ; shift
    local name="$1"; shift
    local url="$1"; shift
    local branch="$1"; shift
    local tag="$1"; shift
-   local source="$1"; shift
+   local sourcetype="$1"; shift
    local sourceoptions="$1"; shift
-   local stashdir="$1"; shift
+   local dstdir="$1"; shift
 
    local options
 
@@ -66,9 +66,9 @@ svn_clone_project()
       fi
    fi
 
-   if ! exekutor svn ${SVNFLAGS} checkout ${options} "$@" ${SVNOPTIONS} "${url}" "${stashdir}"  >&2
+   if ! exekutor svn ${SVNFLAGS} checkout ${options} "$@" ${SVNOPTIONS} "${url}" "${dstdir}"  >&2
    then
-      log_error "svn clone of \"${url}\" into \"${stashdir}\" failed"
+      log_error "svn clone of \"${url}\" into \"${dstdir}\" failed"
       return 1
    fi
 }
@@ -77,22 +77,22 @@ svn_update_project()
 {
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local reposdir="$1" ; shift
+   local unused="$1" ; shift
    local name="$1"; shift
    local url="$1"; shift
    local branch="$1"; shift
    local tag="$1"; shift
-   local source="$1"; shift
+   local sourcetype="$1"; shift
    local sourceoptions="$1"; shift
-   local stashdir="$1"; shift
+   local dstdir="$1"; shift
 
    local options
 
    options="`get_sourceoption "${sourceoptions}" "update"`"
 
-   [ ! -z "${stashdir}" ] || internal_fail "stashdir is empty"
+   [ ! -z "${dstdir}" ] || internal_fail "dstdir is empty"
 
-   log_info "SVN updating ${C_MAGENTA}${C_BOLD}${stashdir}${C_INFO} ..."
+   log_info "SVN updating ${C_MAGENTA}${C_BOLD}${dstdir}${C_INFO} ..."
 
    if [ ! -z "$branch" ]
    then
@@ -105,9 +105,9 @@ svn_update_project()
    fi
 
    (
-      exekutor cd "${stashdir}" ;
+      exekutor cd "${dstdir}" ;
       exekutor svn ${SVNFLAGS} update ${options} ${SVNOPTIONS}  >&2
-   ) || fail "svn update of \"${stashdir}\" failed"
+   ) || fail "svn update of \"${dstdir}\" failed"
 }
 
 
@@ -115,25 +115,25 @@ svn_status_project()
 {
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local reposdir="$1" ; shift
+   local unused="$1" ; shift
    local name="$1"; shift
    local url="$1"; shift
    local branch="$1"; shift
    local tag="$1"; shift
-   local source="$1"; shift
+   local sourcetype="$1"; shift
    local sourceoptions="$1"; shift
-   local stashdir="$1"; shift
+   local dstdir="$1"; shift
 
    local options
 
    options="`get_sourceoption "${sourceoptions}" "status"`"
 
-   [ ! -z "${stashdir}" ] || internal_fail "stashdir is empty"
+   [ ! -z "${dstdir}" ] || internal_fail "dstdir is empty"
 
    (
-      exekutor cd "${stashdir}" ;
+      exekutor cd "${dstdir}" ;
       exekutor svn status ${options} ${sourceoptions} "$@" ${SVNOPTIONS}  >&2
-   ) || fail "svn update of \"${stashdir}\" failed"
+   ) || fail "svn update of \"${dstdir}\" failed"
 }
 
 

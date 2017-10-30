@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_BOOTSTRAP_SOURCE_PLUGIN_TAR_SH="included"
+MULLE_FETCH_PLUGIN_TAR_SH="included"
 
 _archive_test()
 {
@@ -133,7 +133,7 @@ archive_cache_grab()
    local url="$1"
    local download="$2"
 
-   if [ -z "${ARCHIVE_CACHE}" -o "${ARCHIVE_CACHE}" != "NO" ]
+   if [ -z "${OPTION_ARCHIVE_CACHE_DIR}" -o "${OPTION_ARCHIVE_CACHE_DIR}" != "NO" ]
    then
       return 2
    fi
@@ -157,7 +157,7 @@ archive_cache_grab()
       ;;
    esac
 
-   cachable_path="${ARCHIVE_CACHE}/${filename}"
+   cachable_path="${OPTION_ARCHIVE_CACHE_DIR}/${filename}"
 
    if [ -f "${cachable_path}" ]
    then
@@ -188,12 +188,6 @@ archive_cache_grab()
    return 1
 }
 
-
-archive_enable_caching()
-{
-   # abuse "global" variable for now
-   ARCHIVE_CACHE="`read_config_setting "archive_cache"`"
-}
 
 #
 # What we do is
@@ -261,14 +255,14 @@ tar_clone_project()
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local reposdir="$1"     # ususally .bootstrap.repos
-   local name="$2"         # name of the clone
-   local url="$3"          # URL of the clone
-   local branch="$4"       # branch of the clone
-   local tag="$5"          # tag to checkout of the clone
-   local source="$6"          # source to use for this clone
+   local unused="$1"
+   local name="$2"            # name of the clone
+   local url="$3"             # URL of the clone
+   local branch="$4"          # branch of the clone
+   local tag="$5"             # tag to checkout of the clone
+   local sourcetype="$6"          # source to use for this clone
    local sourceoptions="$7"   # options to use on source
-   local stashdir="$8"     # stashdir of this clone (absolute or relative to $PWD)
+   local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
    local tmpdir
    local archive
@@ -300,7 +294,7 @@ tar_clone_project()
       exekutor rm "${download}" || return 1
    ) || return 1
 
-   archive_move_stuff "${tmpdir}" "${stashdir}" "${archivename}" "${name}"
+   archive_move_stuff "${tmpdir}" "${dstdir}" "${archivename}" "${name}"
 }
 
 

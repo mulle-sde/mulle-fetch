@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_BOOTSTRAP_SOURCE_SH="included"
+MULLE_FETCH_SOURCE_SH="included"
 
 
 find_single_directory_in_directory()
@@ -53,7 +53,7 @@ archive_move_stuff()
    log_entry "archive_move_stuff" "$@"
 
    local tmpdir="$1"
-   local stashdir="$2"
+   local dstdir="$2"
    local archivename="$3"
    local name="$4"
 
@@ -77,7 +77,7 @@ archive_move_stuff()
       fi
    fi
 
-   exekutor mv "${src}" "${stashdir}"
+   exekutor mv "${src}" "${dstdir}"
 
    if [ ! -z "${toremove}" ]
    then
@@ -259,12 +259,12 @@ get_source_function()
 {
    log_entry "get_source_function" "$@"
 
-   local source="$1"
+   local sourcetype="$1"
    local opname="$2"
 
    local operation
 
-   operation="${source}_${opname}_project"
+   operation="${sourcetype}_${opname}_project"
    if [ "`type -t "${operation}"`" = "function" ]
    then
       echo "${operation}"
@@ -351,7 +351,7 @@ source_search_local_path()
 
    curdir="`pwd -P`"
    IFS=":"
-   for directory in ${LOCAL_PATH}
+   for directory in ${OPTION_LOCALS}
    do
       IFS="${DEFAULT_IFS}"
 
@@ -383,25 +383,24 @@ source_search_local_path()
 }
 
 
-
 source_operation()
 {
    log_entry "source_operation" "$@"
 
    local opname="$1" ; shift
 
-   local reposdir="$1"     # ususally .bootstrap.repos
-   local name="$2"         # name of the clone
-   local url="$3"          # URL of the clone
-   local branch="$4"       # branch of the clone
-   local tag="$5"          # tag to checkout of the clone
-   local source="$6"          # source to use for this clone
+   local unused="$1"
+   local name="$2"            # name of the clone
+   local url="$3"             # URL of the clone
+   local branch="$4"          # branch of the clone
+   local tag="$5"             # tag to checkout of the clone
+   local sourcetype="$6"          # source to use for this clone
    local sourceoptions="$7"   # options to use on source
-   local stashdir="$8"     # stashdir of this clone (absolute or relative to $PWD)
+   local dstdir="$8"        # dstdir of this clone (absolute or relative to $PWD)
 
    local operation
 
-   operation="`get_source_function "${source}" "${opname}"`"
+   operation="`get_source_function "${sourcetype}" "${opname}"`"
    if [ -z "${operation}" ]
    then
       return 111
@@ -411,14 +410,54 @@ source_operation()
 
    parsed_sourceoptions="`parse_sourceoptions "${sourceoptions}"`"
 
-   "${operation}" "${reposdir}" \
+   "${operation}" "${unused}" \
                   "${name}" \
                   "${url}" \
                   "${branch}" \
                   "${tag}" \
-                  "${source}" \
+                  "${sourcetype}" \
                   "${parsed_sourceoptions}" \
-                  "${stashdir}"
+                  "${dstdir}"
+}
+
+source_all_plugin_names()
+{
+   log_entry "source_all_plugin_names"
+
+   local upcase
+   local plugindefine
+   local pluginpath
+   local name
+
+   [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
+   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
+
+   IFS="
+"
+   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
+   do
+      IFS="${DEFAULT_IFS}"
+
+      name="`basename -- "${pluginpath}" .sh`"
+
+      # don't load xcodebuild on non macos platforms
+      case "${UNAME}" in
+         darwin)
+         ;;
+
+         *)
+            case "${name}" in
+               xcodebuild)
+                  continue
+               ;;
+            esac
+         ;;
+      esac
+
+      echo "${name}"
+   done
+
+   IFS="${DEFAULT_IFS}"
 }
 
 
@@ -431,11 +470,14 @@ load_source_plugins()
    local pluginpath
    local name
 
+   [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
+   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
+
    log_fluff "Loading source plugins..."
 
    IFS="
 "
-   for pluginpath in `ls -1 "${MULLE_BOOTSTRAP_LIBEXEC_PATH}/mulle-bootstrap-source-plugins/"*.sh`
+   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
    do
       IFS="${DEFAULT_IFS}"
 
@@ -456,7 +498,7 @@ load_source_plugins()
       esac
 
       upcase="`tr 'a-z' 'A-Z' <<< "${name}"`"
-      plugindefine="MULLE_BOOTSTRAP_SOURCE_PLUGIN_${upcase}_SH"
+      plugindefine="MULLE_FETCH_PLUGIN_${upcase}_SH"
 
       if [ -z "`eval echo \$\{${plugindefine}\}`" ]
       then
@@ -473,18 +515,5 @@ load_source_plugins()
 
    IFS="${DEFAULT_IFS}"
 }
-
-
-source_initialize()
-{
-   log_debug ":source_initialize:"
-
-   [ -z "${MULLE_BOOTSTRAP_FUNCTIONS_SH}" ]    && . mulle-bootstrap-functions.sh
-   [ -z "${MULLE_BOOTSTRAP_REPOSITORIES_SH}" ] && . mulle-bootstrap-repositories.sh
-
-   load_source_plugins
-}
-
-source_initialize
 
 :

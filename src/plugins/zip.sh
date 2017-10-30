@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 #
-#   Copyright (c) 2017 Nat! - Mulle kybernetiK
+#   Copyright (c) 2015 Nat! - Mulle kybernetiK
 #   All rights reserved.
 #
 #   Redistribution and use in source and binary forms, with or without
@@ -28,60 +28,54 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_BOOTSTRAP_SOURCE_PLUGIN_SYMLINK_SH="included"
+MULLE_FETCH_PLUGIN_ZIP_SH="included"
 
 
-###
-### PLUGIN API
-###
-
-symlink_clone_project()
+zip_clone_project()
 {
-#   local reposdir="$1"     # ususally .bootstrap.repos
-#   local name="$2"         # name of the clone
-   local url="$3"           # URL of the clone
-   local branch="$4"        # branch of the clone
-   local tag="$5"           # tag to checkout of the clone
-#   local source="$6"          # source to use for this clone
-#   local sourceoptions="$7"   # options to use on source
-   local stashdir="$8"      # stashdir of this clone (absolute or relative to $PWD)
+   log_entry "zip_clone_project" "$@"
 
-   assert_sane_parameters "empty reposdir is ok"
+   [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local absolute
+   local unused="$1"
+   local name="$2"            # name of the clone
+   local url="$3"             # URL of the clone
+   local branch="$4"          # branch of the clone
+   local tag="$5"             # tag to checkout of the clone
+   local sourcetype="$6"          # source to use for this clone
+   local sourceoptions="$7"   # options to use on source
+   local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
-   absolute="`read_config_setting "absolute_symlinks" "NO"`"
-   if ! exekutor create_symlink "${url}" "${stashdir}" "${absolute}"
-   then
-      return 1
-   fi
+   local tmpdir
+   local download
+   local archivename
 
-   local branchlabel
+   download="`basename --  "${url}"`"
+   archivename="`extension_less_basename "${download}"`"
 
-   branchlabel="branch"
-   if [ -z "${branch}" -a ! -z "${tag}" ]
-   then
-      branchlabel="tag"
-      branch="${tag}"
-   fi
+   rmdir_safer "${name}.tmp"
+   tmpdir="`exekutor mktemp -d "${name}.XXXXXXXX"`" || exit 1
+   (
+      exekutor cd "${tmpdir}" || return 1
 
-   if [ "${branch}" != "master" ]
-   then
-      log_warning "The intended ${branchlabel} ${C_RESET_BOLD}${branch}${C_WARNING} \
-will be ignored, because the repository is symlinked.
-If you want to checkout this ${branchlabel} do:
-   ${C_RESET_BOLD}(cd ${stashdir}; git checkout ${GITOPTIONS} \"${branch}\" )${C_WARNING}"
-   fi
+      log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+
+      exekutor curl -O -L ${CURLOPTIONS} "${url}" || return 1
+      validate_download "${download}" "${sourceoptions}" || return 1
+
+      log_verbose "Extracting ${C_MAGENTA}${C_BOLD}${download}${C_INFO} ..."
+
+      exekutor unzip "${download}" || return 1
+      exekutor rm "${download}"
+   ) || return 1
+
+   archive_move_stuff "${tmpdir}" "${dstdir}" "${archivename}" "${name}"
 }
 
 
-symlink_search_local_project()
+zip_search_local_project()
 {
-   log_entry "symlink_search_local_project [${LOCAL_PATH}]" "$@"
+   log_entry "zip_clone_project" "$@"
 
-   local url="$1"
-   local name="$2"
-   local branch="$3"
-
-   source_search_local_path "${name}" "${branch}" "" "YES"
+   archive_search_local "$@"
 }

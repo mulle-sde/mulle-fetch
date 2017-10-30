@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 
 # use C, because otherwise a CXX compiler is required
-project( mulle-bootstrap C)
+project( mulle-fetch C)
 
 #
 # Primarily used for packaging on Linux
@@ -16,96 +16,45 @@ project( mulle-bootstrap C)
 # ```
 #
 
-execute_process( COMMAND ./mulle-bootstrap version
+execute_process( COMMAND ./mulle-fetch version
                  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-                 OUTPUT_VARIABLE MULLE_BOOTSTRAP_VERSION
+                 OUTPUT_VARIABLE MULLE_FETCH_VERSION
                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-message( STATUS "MULLE_BOOTSTRAP_VERSION is ${MULLE_BOOTSTRAP_VERSION} according to mulle-bootstrap")
+message( STATUS "MULLE_FETCH_VERSION is ${MULLE_FETCH_VERSION} according to mulle-fetch")
 
 
-set( PROJECT_VERSION "${MULLE_BOOTSTRAP_VERSION}")
+set( PROJECT_VERSION "${MULLE_FETCH_VERSION}")
 
 
 set( SCRIPTS
-mulle-bootstrap
-mulle-bootstrap-dotdump
+mulle-fetch
 )
-
-
-if(MINGW)
-   set( SCRIPTS
-${SCRIPTS}
-mulle-mingw-cmake.sh
-mulle-mingw-make.sh
-mulle-mingw-cpp.sh
-mulle-mingw-dumpdef.sh*
-)
-
-#
-# Todo need to preprocess this to replace paths
-#
-   set( BATS
-mulle-mingw-dumpdef.bat
-)
-
-endif()
 
 
 
 set( LIBRARY_SCRIPTS
-src/mulle-bootstrap-array.sh
-src/mulle-bootstrap-auto-update.sh
-src/mulle-bootstrap-brew.sh
-src/mulle-bootstrap-build.sh
-src/mulle-bootstrap-clean.sh
-src/mulle-bootstrap-command.sh
-src/mulle-bootstrap-common-settings.sh
-src/mulle-bootstrap-core-options.sh
-src/mulle-bootstrap-copy.sh
-src/mulle-bootstrap-defer.sh
-src/mulle-bootstrap-dispense.sh
-src/mulle-bootstrap-dependency-resolve.sh
-src/mulle-bootstrap-fetch.sh
-src/mulle-bootstrap-functions.sh
-src/mulle-bootstrap-gcc.sh
-src/mulle-bootstrap-git.sh
-src/mulle-bootstrap-init.sh
-src/mulle-bootstrap-local-environment.sh
-src/mulle-bootstrap-logging.sh
-src/mulle-bootstrap-mingw.sh
-src/mulle-bootstrap-mv-force.sh
-src/mulle-bootstrap-paths.sh
-src/mulle-bootstrap-project.sh
-src/mulle-bootstrap-repositories.sh
-src/mulle-bootstrap-source.sh
-src/mulle-bootstrap-scripts.sh
-src/mulle-bootstrap-settings.sh
-src/mulle-bootstrap-shared.sh
-src/mulle-bootstrap-show.sh
-src/mulle-bootstrap-snip.sh
-src/mulle-bootstrap-status.sh
-src/mulle-bootstrap-systeminstall.sh
-src/mulle-bootstrap-tag.sh
-src/mulle-bootstrap-warn-scripts.sh
-src/mulle-bootstrap-xcode.sh
-src/mulle-bootstrap-zombify.sh
+src/mulle-fetch-common-settings.sh
+src/mulle-fetch-copy.sh
+src/mulle-fetch-fetch.sh
+src/mulle-fetch-functions.sh
+src/mulle-fetch-git.sh
+src/mulle-fetch-local-environment.sh
+src/mulle-fetch-mv-force.sh
+src/mulle-fetch-paths.sh
+src/mulle-fetch-source.sh
+src/mulle-fetch-scripts.sh
+src/mulle-fetch-shared.sh
+src/mulle-fetch-tag.sh
+src/mulle-fetch-warn-scripts.sh
 )
 
 
-set( BUILD_PLUGIN_SCRIPTS
-src/mulle-bootstrap-build-plugins/cmake.sh
-src/mulle-bootstrap-build-plugins/configure.sh
-src/mulle-bootstrap-build-plugins/script.sh
-src/mulle-bootstrap-build-plugins/xcodebuild.sh
-)
-
-
-set( SOURCE_PLUGIN_SCRIPTS
-src/mulle-bootstrap-source-plugins/git.sh
-src/mulle-bootstrap-source-plugins/svn.sh
-src/mulle-bootstrap-source-plugins/symlink.sh
-src/mulle-bootstrap-source-plugins/tar.sh
-src/mulle-bootstrap-source-plugins/zip.sh
+set( PLUGIN_SCRIPTS
+src/plugins/git.sh
+src/plugins/svn.sh
+src/plugins/symlink.sh
+src/plugins/tar.sh
+src/plugins/zip.sh
 )
 
 
@@ -116,33 +65,21 @@ PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
 DESTINATION "bin")
 
 
-INSTALL( FILES ${BATS}
-PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-            GROUP_EXECUTE GROUP_READ
-            WORLD_EXECUTE WORLD_READ
-DESTINATION "bin")
-
 #
-# future: install into libexec/mulle-bootstrap/${MULLE_BOOTSTRAP_VERSION}
+# future: install into libexec/mulle-fetch/${MULLE_FETCH_VERSION}
 #         allows multiple versions to co-exist (does it really ?)
 #
 INSTALL( FILES ${LIBRARY_SCRIPTS}
 PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
             GROUP_EXECUTE GROUP_READ
             WORLD_EXECUTE WORLD_READ
-DESTINATION "libexec/mulle-bootstrap")
+DESTINATION "libexec/mulle-fetch")
 
-INSTALL( FILES ${BUILD_PLUGIN_SCRIPTS}
+INSTALL( FILES ${PLUGIN_SCRIPTS}
 PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
             GROUP_EXECUTE GROUP_READ
             WORLD_EXECUTE WORLD_READ
-DESTINATION "libexec/mulle-bootstrap/mulle-bootstrap-build-plugins")
-
-INSTALL( FILES ${SOURCE_PLUGIN_SCRIPTS}
-PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-            GROUP_EXECUTE GROUP_READ
-            WORLD_EXECUTE WORLD_READ
-DESTINATION "libexec/mulle-bootstrap/mulle-bootstrap-source-plugins")
+DESTINATION "libexec/mulle-fetch/plugins")
 
 
 ######

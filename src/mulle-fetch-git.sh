@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_BOOTSTRAP_GIT_SH="included"
+MULLE_FETCH_GIT_SH="included"
 
 #
 # prefer origin over others, probably could be smarter
@@ -132,7 +132,33 @@ git_has_branch()
    (
       cd "$1" &&
       git branch | cut -c3- | fgrep -q -s -x "$2" > /dev/null
-   ) || exit 1
+   )
+}
+
+
+git_has_fetched_tags()
+{
+   [ -z "$1" ] && internal_fail "empty parameter"
+
+   (
+      local tags
+
+      cd "$1" &&
+      tags="`git show-ref --tags | head -1`" &&
+      [ ! -z "${tags}" ]
+   )
+}
+
+
+git_branch_contains_tag()
+{
+   [ -z "$1" -o -z "$2" -o -z "$3" ] && internal_fail "empty parameter"
+
+   (
+      cd "$1" &&
+      git branch --contains "$3"| cut -c3- | fgrep -s -x "$2" > /dev/null
+   )
+
 }
 
 
@@ -143,7 +169,7 @@ git_get_branch()
    (
       cd "$1" &&
       git rev-parse --abbrev-ref HEAD 2> /dev/null
-   ) || exit 1
+   )
 }
 
 
@@ -282,7 +308,7 @@ _run_git_on_stash()
       log_info "### $i:"
       (
          cd "$i" ;
-         exekutor git ${GITFLAGS} "$@" ${GITOPTIONS}  >&2
+         exekutor git ${OPTION_GITFLAGS} "$@" ${OPTION_GITOPTIONS}  >&2
       ) || fail "git failed"
       log_info
    fi
@@ -327,65 +353,20 @@ run_git()
 }
 
 
-git_enable_mirroring()
-{
-   local allow_refresh="${1:-YES}"
-
-   #
-   # stuff clones get intermediate saved too, default is on
-   # this is only called in main if the option is yes
-   #
-   GIT_MIRROR="`read_config_setting "git_mirror"`"
-   if [ "${GIT_MIRROR}" = "NO" ]
-   then
-      GIT_MIRROR=""
-      return 1
-   fi
-
-   if [ "${allow_refresh}" = "YES" ]
-   then
-      REFRESH_GIT_MIRROR="`read_config_setting "refresh_git_mirror" "YES"`"
-   fi
-}
-
-
-git_main()
-{
-   log_debug "::: git :::"
-
-   [ -z "${MULLE_BOOTSTRAP_LOCAL_ENVIRONMENT_SH}" ] && . mulle-bootstrap-local-environment.sh
-   [ -z "${MULLE_BOOTSTRAP_SCRIPTS_SH}" ]           && . mulle-bootstrap-scripts.sh
-
-   while :
-   do
-      if [ "$1" = "-h" -o "$1" = "--help" ]
-      then
-         git_usage
-      fi
-
-      break
-   done
-
-   if dir_has_files "${REPOS_DIR}"
-   then
-      log_fluff "Will run \"git $*\" over clones" >&2
-   else
-      log_verbose "There is nothing to run git over."
-      return 0
-   fi
-
-   run_git "$@"
-}
-
-
 git_initialize()
 {
-   log_debug ":git_initialize:"
+   log_entry "git_initialize"
 
-   [ -z "${MULLE_BOOTSTRAP_SOURCE_SH}" ] && . mulle-bootstrap-source.sh
+   if [ -z "${MULLE_FETCH_SOURCE_SH}" ]
+   then
+      . mulle-fetch-source.sh || exit 1
+   fi
 
    # this is an actual GIT variable
-   GIT_TERMINAL_PROMPT="`read_config_setting "git_terminal_prompt" "0"`"
+   if [ -z "${GIT_TERMINAL_PROMPT}" ]
+   then
+      GIT_TERMINAL_PROMPT="0"
+   fi
    export GIT_TERMINAL_PROMPT
 }
 
