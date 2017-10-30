@@ -66,6 +66,8 @@ svn_clone_project()
       fi
    fi
 
+   options="`concat "-q" "${options}"`"
+
    if ! exekutor svn ${SVNFLAGS} checkout ${options} "$@" ${SVNOPTIONS} "${url}" "${dstdir}"  >&2
    then
       log_error "svn clone of \"${url}\" into \"${dstdir}\" failed"

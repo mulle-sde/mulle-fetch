@@ -53,19 +53,57 @@ zip_clone_project()
    download="`basename --  "${url}"`"
    archivename="`extension_less_basename "${download}"`"
 
+
+   #
+   # local urls don't need to be curled
+   #
+   local curlit
+
+   curlit="NO"
+   case "${url}" in
+      file:*)
+         ! source_check_file_url "${url}" && return $?
+      ;;
+
+      *:*)
+         curlit="YES"
+      ;;
+
+      *)
+         ! source_check_file_url "${url}" && return $?
+      ;;
+   esac
+
    rmdir_safer "${name}.tmp"
    tmpdir="`exekutor mktemp -d "${name}.XXXXXXXX"`" || exit 1
    (
       exekutor cd "${tmpdir}" || return 1
 
-      log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+      if [ "${curlit}" = "YES" ]
+      then
+         log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
 
-      exekutor curl -O -L ${CURLOPTIONS} "${url}" || return 1
+         exekutor curl -O -L ${options} ${CURLOPTIONS} "${url}" || fail "failed to download \"${url}\""
+      else
+         if [ "${url}" != "${download}" ]
+         then
+            case "${UNAME}" in
+               mingw)
+                  exekutor cp "${url}" "${download}"
+               ;;
+
+               *)
+                  exekutor ln -s "${url}" "${download}"
+               ;;
+            esac
+         fi
+      fi
+
       validate_download "${download}" "${sourceoptions}" || return 1
 
       log_verbose "Extracting ${C_MAGENTA}${C_BOLD}${download}${C_INFO} ..."
 
-      exekutor unzip "${download}" || return 1
+      exekutor unzip -q "${download}" >&2 || return 1
       exekutor rm "${download}"
    ) || return 1
 

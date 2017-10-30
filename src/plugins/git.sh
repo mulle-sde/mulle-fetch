@@ -112,10 +112,13 @@ __git_check_file_url()
 
    if ! git_is_repository "${url}"
    then
-      if [ -d "${url}" ]
+      if [ -e "${url}" ]
       then
-         log_error "\"${url}\" is not a git repository ($PWD).
-Use option --symlinks to symlink it."
+         log_error "\"${url}\" is not a git repository ($PWD)."
+         if [ -d "${url}" ]
+         then
+            log_warning "Hint: You may want to symlink it."
+         fi
       else
          log_error "\"${url}\" does not exist ($PWD)"
       fi
@@ -164,6 +167,7 @@ __git_clone()
    options="`concat "${options}" "--single-branch"`"
 
    local originalurl
+
    #
    # "remote urls" go through mirror
    # local urls get checked ahead for better error messages

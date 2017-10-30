@@ -126,6 +126,7 @@ main()
    log_info "----- ALL PASSED -----"
 
    rmdir_safer "${dstdir}"
+   rmdir_safer "${repo}"
 }
 
 

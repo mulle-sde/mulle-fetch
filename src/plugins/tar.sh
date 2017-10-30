@@ -210,16 +210,36 @@ _tar_download()
    local filename
    local directory
    local results
+   local curlit
 
    results="`archive_cache_grab "${url}" "${download}"`"
    if [ $? -eq 0 ]
    then
-      return
+      return 0
    fi
 
    cached_archive="`echo "${results}" | sed -n '1p'`"
    cachable_path="`echo "${results}"  | sed -n '2p'`"
    archive_cache="`echo "${results}"  | sed -n '3p'`"
+
+   #
+   # local urls don't need to be curled
+   #
+   curlit="NO"
+   case "${url}" in
+      file:*)
+         ! source_check_file_url "${url}" && return $?
+      ;;
+
+      *:*)
+         curlit="YES"
+      ;;
+
+      *)
+         ! source_check_file_url "${url}" && return $?
+      ;;
+   esac
+
 
    local options
 
@@ -227,7 +247,26 @@ _tar_download()
 
    if [ -z "${cached_archive}" ]
    then
-      exekutor curl -O -L ${options} ${CURLOPTIONS} "${url}" || fail "failed to download \"${url}\""
+      if [ "${curlit}" = "YES" ]
+      then
+         log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+
+         exekutor curl -O -L ${options} ${CURLOPTIONS} "${url}" || fail "failed to download \"${url}\""
+      else
+         if [ "${url}" != "${download}" ]
+         then
+            case "${UNAME}" in
+               mingw)
+                  exekutor cp "${url}" "${download}"
+               ;;
+
+               *)
+                  exekutor ln -s "${url}" "${download}"
+               ;;
+            esac
+         fi
+      fi
+
       if ! validate_download "${download}" "${sourceoptions}"
       then
          remove_file_if_present "${download}"

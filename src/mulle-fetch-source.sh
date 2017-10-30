@@ -274,6 +274,17 @@ get_source_function()
 }
 
 
+source_check_file_url()
+{
+   local url="$1"
+
+   if [ ! -e "${url}" ]
+   then
+      log_error "\"${url}\" does not exist ($PWD)"
+      return 1
+   fi
+}
+
 source_search_local()
 {
    log_entry "source_search_local" "$@"
