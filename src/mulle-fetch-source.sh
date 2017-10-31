@@ -31,176 +31,6 @@
 MULLE_FETCH_SOURCE_SH="included"
 
 
-find_single_directory_in_directory()
-{
-   local count
-   local filename
-
-   filename="`ls -1 "${tmpdir}"`"
-
-   count="`echo "$filename}" | wc -l`"
-   if [ $count -ne 1 ]
-   then
-      return
-   fi
-
-   echo "${tmpdir}/${filename}"
-}
-
-
-archive_move_stuff()
-{
-   log_entry "archive_move_stuff" "$@"
-
-   local tmpdir="$1"
-   local dstdir="$2"
-   local archivename="$3"
-   local name="$4"
-
-   local src
-   local toremove
-
-   toremove="${tmpdir}"
-
-   src="${tmpdir}/${archivename}"
-   if [ ! -d "${src}" ]
-   then
-      src="${tmpdir}/${name}"
-      if [ ! -d "${src}" ]
-      then
-         src="`find_single_directory_in_directory "${tmpdir}"`"
-         if [ -z "${src}" ]
-         then
-            src="${tmpdir}"
-            toremove=""
-         fi
-      fi
-   fi
-
-   exekutor mv "${src}" "${dstdir}"
-
-   if [ ! -z "${toremove}" ]
-   then
-      rmdir_safer "${toremove}"
-   fi
-}
-
-
-_archive_search_local()
-{
-   log_entry "_archive_search_local" "$@"
-
-   local directory="$1"
-   local name="$2"
-   local filename="$3"
-
-   [ $# -ne 3 ] && internal_fail "fail"
-
-   local found
-
-   found="${directory}/${name}-${filename}"
-   log_fluff "Looking for \"${found}\""
-   if [ -f "${found}" ]
-   then
-      log_fluff "Found \"${name}\" in \"${directory}\" as \"${found}\""
-
-      echo "${found}"
-      return
-   fi
-
-   found="${directory}/${filename}"
-   log_fluff "Looking for \"${found}\""
-   if [ -f "${found}" ]
-   then
-      log_fluff "Found \"${name}\" in \"${directory}\" as \"${found}\""
-
-      echo "${found}"
-      return
-   fi
-}
-
-
-archive_search_local()
-{
-   log_entry "archive_search_local" "$@"
-
-   local url="$1"
-   local name="$2"
-#   local branch="$3"
-
-   local filename
-
-   filename="`basename -- "${url}"`"
-
-   local found
-   local directory
-
-   IFS=":"
-   for directory in ${LOCAL_PATH}
-   do
-      IFS="${DEFAULT_IFS}"
-
-      found="`_archive_search_local "${directory}" "${name}" "${filename}"`" || exit 1
-      if [ ! -z "${found}" ]
-      then
-         found="`absolutepath "${found}"`"
-         echo "file:///${found}"
-         return 0
-      fi
-   done
-
-   IFS="${DEFAULT_IFS}"
-   return 1
-}
-
-
-validate_shasum256()
-{
-   log_entry "validate_shasum256" "$@"
-
-   local filename="$1"
-   local expected="$2"
-
-   case "${UNAME}" in
-      mingw)
-         log_fluff "mingw does not support shasum" # or does it ?
-         return
-      ;;
-   esac
-
-
-   local checksum
-
-   checksum="`shasum -a 256 -p "${filename}" | awk '{ print $1 }'`"
-   if [ "${expected}" != "${checksum}" ]
-   then
-      log_error "${filename} sha256 is ${checksum}, not ${expected} as expected"
-      return 1
-   fi
-   log_fluff "shasum256 did validate \"${filename}\""
-}
-
-
-validate_download()
-{
-   log_entry "validate_download" "$@"
-
-   local filename="$1"
-   local sourceoptions="$2"
-
-   local checksum
-   local expected
-
-   expected="`get_sourceoption "$sourceoptions" "shasum256"`"
-   if [ -z "${expected}" ]
-   then
-      return
-   fi
-
-   validate_shasum256 "${filename}" "${expected}"
-}
-
-
 #
 # prints each key=value on a line so that its greppable
 # TODO: Doesn't do escaping yet
@@ -262,14 +92,18 @@ get_source_function()
    local sourcetype="$1"
    local opname="$2"
 
-   local operation
+   [ -z "$1" -o -z "$2" ] && internal_fail "parameter is empty"
 
-   operation="${sourcetype}_${opname}_project"
+   local operation
+   local funcname="$2"
+
+   funcname="$(tr '-' '_' <<< "${opname}")"
+   operation="${sourcetype}_${funcname}_project"
    if [ "`type -t "${operation}"`" = "function" ]
    then
       echo "${operation}"
    else
-      log_fluff "Plugin function \"${operation}\" is not available"
+      log_fluff "Function \"${opname}\" is not provided by \"${sourcetype}\" (function \"$operation\" is missing)"
    fi
 }
 
@@ -343,7 +177,7 @@ source_search_local()
 
 source_search_local_path()
 {
-   log_entry "source_search_local_path [${LOCAL_PATH}]" "$@"
+   log_entry "source_search_local_path [${OPTION_SEARCH_PATH}]" "$@"
 
    local name="$1"
    local branch="$2"
@@ -355,14 +189,16 @@ source_search_local_path()
    local realdir
    local curdir
 
-   if [ "${MULLE_FLAG_LOG_LOCAL}" = "YES" -a -z "${LOCAL_PATH}" ]
+   [ -z "${name}" ] && internal_fail "empty name"
+
+   if [ "${MULLE_FLAG_LOG_LOCAL}" = "YES" -a -z "${OPTION_SEARCH_PATH}" ]
    then
-      log_trace "LOCAL_PATH is empty"
+      log_trace "OPTION_SEARCH_PATH is empty"
    fi
 
    curdir="`pwd -P`"
    IFS=":"
-   for directory in ${OPTION_LOCALS}
+   for directory in ${OPTION_SEARCH_PATH}
    do
       IFS="${DEFAULT_IFS}"
 
@@ -378,7 +214,7 @@ source_search_local_path()
       realdir="`realpath "${directory}"`"
       if [ "${realdir}" = "${curdir}" ]
       then
-         fail "Config setting \"search_path\" mistakenly contains \"${directory}\", which is the current directory"
+         fail "Search path mistakenly contains \"${directory}\", which is the current directory"
       fi
 
       found="`source_search_local "$@" "${realdir}"`"
@@ -419,7 +255,7 @@ source_operation()
 
    local parsed_sourceoptions
 
-   parsed_sourceoptions="`parse_sourceoptions "${sourceoptions}"`"
+   parsed_sourceoptions="`parse_sourceoptions "${sourceoptions}"`" || exit 1
 
    "${operation}" "${unused}" \
                   "${name}" \
@@ -472,6 +308,45 @@ source_all_plugin_names()
 }
 
 
+_source_list_supported_operations()
+{
+   local sourcetype="$1"
+   local operations="$2"
+
+   local opname
+   local operation
+
+   for opname in ${operations}
+   do
+      funcname="$(tr '-' '_' <<< "${opname}")"
+      operation="${sourcetype}_${funcname}_project"
+      if [ "`type -t "${operation}"`" = "function" ]
+      then
+         echo "${opname}"
+      fi
+   done
+}
+
+
+source_known_operations()
+{
+   echo "\
+checkout
+clone
+search-local
+set-url
+status
+update
+upgrade"
+}
+
+
+source_list_supported_operations()
+{
+   _source_list_supported_operations "$1" "`source_known_operations`"
+}
+
+
 load_source_plugins()
 {
    log_entry "load_source_plugins"
@@ -513,6 +388,7 @@ load_source_plugins()
 
       if [ -z "`eval echo \$\{${plugindefine}\}`" ]
       then
+         # shellcheck source=plugins/symlink.sh
          . "${pluginpath}"
 
          if [ "`type -t "${name}_clone_project"`" != "function" ]

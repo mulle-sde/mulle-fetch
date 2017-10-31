@@ -65,6 +65,7 @@ SHOWN_COMMANDS="\
 HIDDEN_COMMANDS="\
    git           : run git command on repository
    library-path  : print path to mulle-fetch libexec
+   operations    : list operations available
    tag           : tag repository
    uname         : mulle-fetchs simplified uname(1)"
 
@@ -84,20 +85,13 @@ print_commands()
 
 usage()
 {
-   local  verbose="${1:-NO}"
+   local verbose="${1:-NO}"
 
    cat <<EOF
 Usage:
    ${MULLE_EXECUTABLE_NAME} [flags] [command] [options]
 
-   Fetches tar archive, git repositories, svn repositories and more.
-   Fetch a tar archive like this:
-
-      mulle-fetch fetch --scm tar --directory <dir> <url>
-
-   Fetch a git archive like this:
-
-      mulle-fetch fetch --branch release <url>
+   Retrieve and unpack tar archive, git repositories, svn repositories.
 
 Flags:
    -f        : force operation
@@ -111,7 +105,6 @@ Commands:
 EOF
 
    print_commands "${verbose}" | sort
-
 
    if [ "${verbose}" = "NO" ]
    then
@@ -184,7 +177,7 @@ fetch_libexec_path()
    prefix="`dirname "${exedirpath}"`"
    libexecpath="${prefix}/libexec/mulle-fetch"
 
-   if [ ! -x "${libexecpath}/mulle-fetch-fetch.sh" ]
+   if [ ! -x "${libexecpath}/mulle-fetch-commands.sh" ]
    then
       libexecpath="${exedirpath}/src"
    fi
@@ -198,7 +191,7 @@ fetch_libexec_path()
       ;;
    esac
 
-   if [ -x "${libexecpath}/mulle-fetch-fetch.sh" ]
+   if [ -x "${libexecpath}/mulle-fetch-commands.sh" ]
    then
       echo "${libexecpath}"
    fi
@@ -257,15 +250,19 @@ init()
    # to make these includes faster don't search via PATH
    # but have PATH as fallback
    #
-   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-string.sh"   &&
-   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-logging.sh"  &&
-   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-exekutor.sh" &&
-   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-options.sh"
+   local failmsg
 
-   if [ $? -ne 0 ]
-   then
-      fail "failed to load bashfunctions from ${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}"
-   fi
+   failmsg="failed to load bashfunctions from ${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}"
+
+      # shellcheck source=../mulle-bashfunctions/src/mulle-string.sh
+   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-string.sh"   || fail "${failmsg}"
+      # shellcheck source=../mulle-bashfunctions/src/mulle-logging.sh
+   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-logging.sh"  || fail "${failmsg}"
+      # shellcheck source=../mulle-bashfunctions/src/mulle-exekutor.sh
+   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-exekutor.sh" || fail "${failmsg}"
+      # shellcheck source=../mulle-bashfunctions/src/mulle-options.sh
+   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-options.sh"  || fail "${failmsg}"
+
 
    #  set -e # more pain then gain in the end
    #  set -u # doesn't work with my style
@@ -280,14 +277,9 @@ main()
    local MULLE_FLAG_ANSWER="ASK"
    local MULLE_FLAG_MAGNUM_FORCE="NONE"
    local MULLE_FLAG_IGNORE_GRAVEYARD="NO"
-   local MULLE_FLAG_VERBOSE_BUILD="NO"
-   local MULLE_FLAG_LENIENT="NO"
 
    # technical flags
-   local MULLE_FLAG_DONT_DEFER="NO"
    local MULLE_FLAG_EXEKUTOR_DRY_RUN="NO"
-   local MULLE_FLAG_CREATE_SYMLINKS  # default empty
-   local MULLE_FLAG_FOLLOW_SYMLINKS="YES"
    local MULLE_FLAG_LOG_LOCAL="NO"
    local MULLE_FLAG_LOG_DEBUG="NO"
    local MULLE_FLAG_LOG_EXEKUTOR="NO"
@@ -296,10 +288,7 @@ main()
    local MULLE_FLAG_LOG_SETTINGS="NO"
    local MULLE_FLAG_LOG_VERBOSE="NO"
    local MULLE_FLAG_LOG_MERGE="NO"
-   local MULLE_TRACE_PATHS_FLIP_X="NO"
    local MULLE_TRACE_POSTPONE="NO"
-   local MULLE_TRACE_RESOLVER_FLIP_X="NO"
-   local MULLE_TRACE_SETTINGS_FLIP_X="NO"
 
    #
    # simple option handling
@@ -319,16 +308,6 @@ main()
 
          -y|--prefer-local)
             MULLE_FLAG_ANSWER="YES"
-         ;;
-
-         # short cut for fetch
-         --symlinks)
-            MULLE_FLAG_CREATE_SYMLINKS="YES"
-         ;;
-
-         # used persistently throughout so it's global
-         --follow-symlinks)
-            MULLE_FLAG_FOLLOW_SYMLINKS="YES"
          ;;
 
          -f|--force)
@@ -354,7 +333,7 @@ main()
 
          -*)
             log_error "${MULLE_EXECUTABLE_FAIL_PREFIX}: Unknown option \"$1\""
-            usage
+            usage "${MULLE_TRACE}"
          ;;
 
          *)
@@ -367,13 +346,6 @@ main()
 
    options_setup_trace "${MULLE_TRACE}"
 
-
-   #
-   # some commands only run when we have a .bootstrap folder
-   # we do it somewhat like git, and progress up the directory
-   # hierarchy until we find a .bootstrap or .bootstrap.local folder
-   # this is useful for `mulle-fetch paths` (with absolute paths)
-   #
    local cmd
 
    cmd="${1:-fetch}"
@@ -384,48 +356,86 @@ main()
    MULLE_EXECUTABLE_OPTIONS="$@"
 
    case "${cmd}" in
-      fetch)
-         . mulle-fetch-fetch.sh
+      checkout)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
-         DONT_ASK_AFTER_WARNING=YES fetch_main "$@" || exit 1
+         fetch_checkout_main "$@"
+      ;;
+
+      fetch|clone)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+
+         fetch_clone_main "$@"
       ;;
 
       git)
-         . mulle-fetch-git.sh
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
-         git_main "$@" || exit 1
+         fetch_git_main "$@"
       ;;
 
       help)
-         usage "${MULLE_TRACE}" || exit 1
+         usage "${MULLE_TRACE}"
       ;;
 
       library-path)
          echo "${MULLE_FETCH_LIBEXEC_DIR}"
-         exit 0
       ;;
+
+      operations)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+
+         fetch_operations_main "$@"
+      ;;
+
+      search-local)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+
+         fetch_search_local_main "$@"
+      ;;
+
+      set-url)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+
+         fetch_set_url_main "$@"
+      ;;
+
+      status)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+
+         fetch_status_main "$@"
+      ;;
+
 
       tag)
          . mulle-fetch-tag.sh
 
-         tag_main "$@" || exit 1
+         fetch_tag_main "$@"
       ;;
 
       uname)
          echo "${UNAME}"
-         exit 0
       ;;
 
       update)
-         . mulle-fetch-fetch.sh
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
-         update_main "$@" || exit 1
+         fetch_update_main "$@"
       ;;
 
       upgrade)
-         . mulle-fetch-fetch.sh
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
-         upgrade_main "$@" || exit 1
+         fetch_upgrade_main "$@"
       ;;
 
       version)
@@ -435,7 +445,7 @@ main()
 
       *)
          log_error "${MULLE_EXECUTABLE_FAIL_PREFIX}: Unknown command \"${cmd}\""
-         usage
+         usage "${MULLE_TRACE}"
       ;;
    esac
 }
@@ -476,5 +486,3 @@ MULLE_ARGUMENTS="$*"
 
 init "$@" # needs params
 main "$@"
-
-trap - TERM EXIT

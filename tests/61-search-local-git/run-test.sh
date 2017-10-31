@@ -13,24 +13,46 @@ run_mulle_fetch()
 }
 
 
+_setup_demo_repo()
+{
+   git init
+
+   redirect_exekutor version echo "1.0.0"
+   exekutor git add version
+   exekutor git commit -m "inital version 1.0.0 (tagged)"
+   exekutor git tag "1.0.0"
+}
+
+
+setup_demo_repo()
+{
+   (
+      set -e
+      mkdir_if_missing "$1" &&
+      exekutor cd "$1" && _setup_demo_repo
+      set +e
+   )
+}
+
+
+expect_directory()
+{
+   local result="$1"
+   local expected="$2"
+
+   if ! exekutor [ "${result}" -ef "${expected}" ]
+   then
+      exekutor fail "Expected \"${expected}\" but got \"${result}\""
+   fi
+}
+
+
 expect_version()
 {
    local dstdir="$1"
-   local branch="$2"
-   local expected="$3"
+   local expected="$2"
 
    local version
-   local version
-
-   case "${branch}" in
-      trunk|"")
-         dstdir="${dstdir}/trunk"
-      ;;
-
-      *)
-         dstdir="${dstdir}/branches/${branch}"
-      ;;
-   esac
 
    version="`exekutor cat "${dstdir}/version"`"
    if exekutor [ "${version}" != "${expected}" ]
@@ -47,34 +69,39 @@ main()
    _options_mini_main "$@"
 
    local directory
-   local dstdir
    local repo
+   local dstdir
 
    directory="`make_tmp_directory`" || exit 1
    directory="${directory:-/tmp/exekutor}"
 
+   repo="${directory}/repo"
    dstdir="${directory}/dstdir"
 
-   repo="https://github.com/mulle-nat/mulle-fetch-svn-test.git"
+   setup_demo_repo "${repo}"
 
-   #
-   # svn in mulle-fetch is fairly powerless
-   #
-   run_mulle_fetch ${MULLE_FETCH_FLAGS} fetch -s svn "${repo}" "${dstdir}" || exit 1
-   # i goofed up the git import somehow, 2.0.0 is correct
-   expect_version "${dstdir}" "trunk" "2.0.0"
-   rmdir_safer "${dstdir}"
+   local  name
+
+   if run_mulle_fetch search-local -l ":" "https://fake.url/repo.git"
+   then
+      fail "search-local unexpectedly succeded"
+   fi
    log_verbose "----- #1 PASSED -----"
 
-   run_mulle_fetch ${MULLE_FETCH_FLAGS} fetch -t r1 -s svn "${repo}" "${dstdir}" || exit 1
-   expect_version "${dstdir}" "trunk" "1.0.0"
-   rmdir_safer "${dstdir}"
+   result="`run_mulle_fetch search-local -l "${directory}" "https://fake.url/repo.git"`" || exit 1
+   expect_directory "${result}" "${repo}"
    log_verbose "----- #2 PASSED -----"
+
+   run_mulle_fetch fetch -l "${directory}" "https://fake.url/repo.git" "${dstdir}" || exit 1
+
+   expect_version "${dstdir}" "1.0.0"
+   log_verbose "----- #3 PASSED -----"
 
    log_info "----- ALL PASSED -----"
 
    rmdir_safer "${directory}"
 }
+
 
 
 init()
@@ -89,4 +116,3 @@ init()
 
 init "$@"
 main "$@"
-

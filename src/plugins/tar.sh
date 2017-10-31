@@ -72,25 +72,18 @@ _archive_test()
    esac
 
 
-   redirect_exekutor /dev/null tar ${tarcommand} ${TAROPTIONS} ${options} "${archive}" || return 1
+   redirect_exekutor /dev/null tar ${OPTION_TOOL_FLAGS} ${tarcommand} ${OPTION_TOOL_OPTIONS} ${options} "${archive}" || return 1
 }
 
 
-_archive_unpack()
+_tar_unpack()
 {
-   log_entry "_archive_unpack" "$@"
+   log_entry "_tar_unpack" "$@"
 
    local archive="$1"
    local sourceoptions="$2"
 
    log_verbose "Extracting ${C_MAGENTA}${C_BOLD}${archive}${C_INFO} ..."
-
-   case "${archive}" in
-      *.zip)
-         exekutor unzip "${archive}" || return 1
-         archive="${archive%.*}"
-      ;;
-   esac
 
    local tarcommand
 
@@ -122,7 +115,7 @@ _archive_unpack()
 
    options="`get_sourceoption "${sourceoptions}" "tar"`"
 
-   exekutor tar ${tarcommand} ${TAROPTIONS} ${options} "${archive}" || return 1
+   exekutor tar ${OPTION_TOOL_FLAGS} ${tarcommand} ${OPTION_TOOL_OPTIONS} ${options} "${archive}" || return 1
 }
 
 
@@ -133,8 +126,12 @@ archive_cache_grab()
    local url="$1"
    local download="$2"
 
-   if [ -z "${OPTION_ARCHIVE_CACHE_DIR}" -o "${OPTION_ARCHIVE_CACHE_DIR}" != "NO" ]
+   [ -z "${url}" ]      && internal_fail "url is empty"
+   [ -z "${download}" ] && internal_fail "download is empty"
+
+   if [ -z "${OPTION_CACHE_DIR}" ]
    then
+      log_fluff "Caching not active"
       return 2
    fi
 
@@ -157,33 +154,36 @@ archive_cache_grab()
       ;;
    esac
 
-   cachable_path="${OPTION_ARCHIVE_CACHE_DIR}/${filename}"
+   cachable_path="${OPTION_CACHE_DIR}/${filename}"
 
-   if [ -f "${cachable_path}" ]
+   if [ "${OPTION_REFRESH}" != "YES" ]
    then
-      cached_archive="${cachable_path}"
-   fi
-
-   if [ ! -z "${cached_archive}" ]
-   then
-      log_info "Using cached \"${cached_archive}\" for ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
-      # we are in a tmp dir
-      cachable_path=""
-
-      if ! _archive_test "${cached_archive}" || \
-         ! validate_download "${cached_archive}" "${sourceoptions}"
+      if [ -f "${cachable_path}" ]
       then
-         remove_file_if_present "${cached_archive}"
-         cached_archive=""
-      else
-         exekutor ln -s "${cached_archive}" "${download}" || fail "failed to symlink \"${cached_archive}\""
-         return 0
+         cached_archive="${cachable_path}"
+      fi
+
+      if [ ! -z "${cached_archive}" ]
+      then
+         log_info "Using cached \"${cached_archive}\" for ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+         # we are in a tmp dir
+         cachable_path=""
+
+         if ! _archive_test "${cached_archive}" || \
+            ! validate_download "${cached_archive}" "${sourceoptions}"
+         then
+            remove_file_if_present "${cached_archive}"
+            cached_archive=""
+         else
+            exekutor ln -s "${cached_archive}" "${download}" || fail "failed to symlink \"${cached_archive}\""
+            return 0
+         fi
       fi
    fi
 
    echo "${cached_archive}"
    echo "${cachable_path}"
-   echo "${archive_cache}"
+   echo "${OPTION_CACHE_DIR}"
 
    return 1
 }
@@ -204,19 +204,17 @@ _tar_download()
    local url="$2"
    local sourceoptions="$3"
 
-   local archive_cache
-   local cachable_path
-   local cached_archive
-   local filename
-   local directory
    local results
-   local curlit
 
    results="`archive_cache_grab "${url}" "${download}"`"
    if [ $? -eq 0 ]
    then
       return 0
    fi
+
+   local archive_cache
+   local cachable_path
+   local cached_archive
 
    cached_archive="`echo "${results}" | sed -n '1p'`"
    cachable_path="`echo "${results}"  | sed -n '2p'`"
@@ -225,6 +223,8 @@ _tar_download()
    #
    # local urls don't need to be curled
    #
+   local curlit
+
    curlit="NO"
    case "${url}" in
       file:*)
@@ -244,14 +244,13 @@ _tar_download()
    local options
 
    options="`get_sourceoption "${sourceoptions}" "curl"`"
-
    if [ -z "${cached_archive}" ]
    then
       if [ "${curlit}" = "YES" ]
       then
          log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
 
-         exekutor curl -O -L ${options} ${CURLOPTIONS} "${url}" || fail "failed to download \"${url}\""
+         exekutor curl ${OPTION_CURL_FLAGS} -O -L ${options} "${url}" || fail "failed to download \"${url}\""
       else
          if [ "${url}" != "${download}" ]
          then
@@ -329,7 +328,7 @@ tar_clone_project()
 
       _tar_download "${download}" "${url}" "${sourceoptions}" || return 1
 
-      _archive_unpack "${download}" "${sourceoptions}" || return 1
+      _tar_unpack "${download}" "${sourceoptions}" || return 1
       exekutor rm "${download}" || return 1
    ) || return 1
 
@@ -343,3 +342,20 @@ tar_search_local_project()
 
    archive_search_local "$@"
 }
+
+
+tar_plugin_initialize()
+{
+   log_entry "tar_plugin_initialize"
+
+   if [ -z "${MULLE_FETCH_ARCHIVE_SH}" ]
+   then
+      # shellcheck source=src/mulle-fetch-archive.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-archive.sh" || exit 1
+   fi
+}
+
+
+tar_plugin_initialize
+
+:

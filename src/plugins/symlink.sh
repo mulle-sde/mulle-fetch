@@ -46,8 +46,6 @@ symlink_clone_project()
 #   local sourceoptions="$7"   # options to use on source
    local dstdir="$8"      # dstdir of this clone (absolute or relative to $PWD)
 
-   assert_sane_parameters "empty unused is ok"
-
    if ! exekutor create_symlink "${url}" "${dstdir}" "${OPTION_ABSOLUTE_SYMLINKS:-NO}"
    then
       return 1
@@ -62,19 +60,19 @@ symlink_clone_project()
       branch="${tag}"
    fi
 
-   if [ "${branch}" != "master" ]
+   if [ "${branch}" != "master" -a ! -z "${branch}" ]
    then
-      log_warning "The intended ${branchlabel} ${C_RESET_BOLD}${branch}${C_WARNING} \
+      log_warning "The intended ${branchlabel} ${C_RESET_BOLD}${branch}${C_WARNING_TEXT} \
 will be ignored, because the repository is symlinked.
 If you want to checkout this ${branchlabel} do:
-   ${C_RESET_BOLD}(cd ${dstdir}; git checkout ${OPTION_GITOPTIONS} \"${branch}\" )${C_WARNING}"
+   ${C_RESET}(cd ${dstdir}; git checkout ${OPTION_TOOL_OPTIONS} \"${branch}\" )${C_WARNING}"
    fi
 }
 
 
 symlink_search_local_project()
 {
-   log_entry "symlink_search_local_project [${LOCAL_PATH}]" "$@"
+   log_entry "symlink_search_local_project [${OPTION_SEARCH_PATH}]" "$@"
 
    local url="$1"
    local name="$2"

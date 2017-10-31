@@ -31,21 +31,12 @@ mulle-fetch
 )
 
 
-
 set( LIBRARY_SCRIPTS
-src/mulle-fetch-common-settings.sh
-src/mulle-fetch-copy.sh
-src/mulle-fetch-fetch.sh
-src/mulle-fetch-functions.sh
+src/mulle-fetch-archive.sh
+src/mulle-fetch-commands.sh
 src/mulle-fetch-git.sh
-src/mulle-fetch-local-environment.sh
-src/mulle-fetch-mv-force.sh
-src/mulle-fetch-paths.sh
+src/mulle-fetch-operation.sh
 src/mulle-fetch-source.sh
-src/mulle-fetch-scripts.sh
-src/mulle-fetch-shared.sh
-src/mulle-fetch-tag.sh
-src/mulle-fetch-warn-scripts.sh
 )
 
 

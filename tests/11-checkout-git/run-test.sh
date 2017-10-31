@@ -89,45 +89,35 @@ main()
    setup_demo_repo "${repo}" || exit 1
 
    run_mulle_fetch fetch "${repo}" "${dstdir}" || exit 1
+
+   run_mulle_fetch checkout -b master "${dstdir}" || exit 1
+
+   run_mulle_fetch checkout -b master "${dstdir}" || exit 1
    expect_version "${dstdir}" "3.1.0"
-   rmdir_safer "${dstdir}"
    log_verbose "----- #1 PASSED -----"
 
-   run_mulle_fetch fetch -b master "${repo}" "${dstdir}" || exit 1
-   expect_version "${dstdir}" "3.1.0"
-   rmdir_safer "${dstdir}"
+   run_mulle_fetch checkout -t 3.0.0 -b master "${dstdir}" || exit 1
+   expect_version "${dstdir}" "3.0.0"
    log_verbose "----- #2 PASSED -----"
 
-   run_mulle_fetch fetch -t 3.0.0 -b master "${repo}" "${dstdir}" || exit 1
-   expect_version "${dstdir}" "3.0.0"
-   rmdir_safer "${dstdir}"
+   run_mulle_fetch checkout -b patch "${dstdir}" || exit 1
+   expect_version "${dstdir}" "2.0.1"
    log_verbose "----- #3 PASSED -----"
 
-   run_mulle_fetch fetch -b patch "${repo}" "${dstdir}" || exit 1
-   expect_version "${dstdir}" "2.0.1"
-   rmdir_safer "${dstdir}"
+   run_mulle_fetch checkout -t 2.0.0 -b patch "${dstdir}" || exit 1
+   expect_version "${dstdir}" "2.0.0"
    log_verbose "----- #4 PASSED -----"
 
-   run_mulle_fetch fetch -t 2.0.0 -b patch "${repo}" "${dstdir}" || exit 1
-   expect_version "${dstdir}" "2.0.0"
-   rmdir_safer "${dstdir}"
+   if run_mulle_fetch checkout -t 2.0.2 -b patch "${dstdir}"
+   then
+      exekutor fail "unexpected success checking out unknown tag 2.0.2"
+   fi
    log_verbose "----- #5 PASSED -----"
 
-   if run_mulle_fetch fetch -b release "${repo}" "${directory}"
+   rmdir_safer "${dstdir}"
+   if run_mulle_fetch checkout -b release "${dstdir}"
    then
-      exekutor fail "unexpected success fetching into an existing directory"
-   fi
-   log_verbose "----- #6 PASSED -----"
-
-   if run_mulle_fetch fetch -b release "${repo}" "${dstdir}"
-   then
-      exekutor fail "unexpected success fetching unknown branch release"
-   fi
-   log_verbose "----- #7 PASSED -----"
-
-   if run_mulle_fetch fetch -t 2.0.2 -b patch "${repo}" "${dstdir}"
-   then
-      exekutor fail "unexpected success fetching unknown tag 2.0.2"
+      exekutor fail "unexpected checking out in empty dstdir"
    fi
    log_verbose "----- #8 PASSED -----"
 

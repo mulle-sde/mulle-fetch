@@ -4,7 +4,7 @@
 
 
 TEST_DIR="`dirname "$0"`"
-PROJECT_DIR="`( cd "${TEST_DIR}/.." ; pwd -P)`"
+PROJECT_DIR="$( cd "${TEST_DIR}/.." ; pwd -P)"
 
 PATH="${PROJECT_DIR}:$PATH"
 export PATH
@@ -20,6 +20,7 @@ main()
 
    log_verbose "mulle-fetch: `mulle-fetch version` (`mulle-fetch library-path`)"
 
+   OUTPUT_DEVICE=
    for i in "${TEST_DIR}"/*
    do
       if [ -x "$i/run-test.sh" ]
@@ -27,11 +28,15 @@ main()
          log_verbose "------------------------------------------"
          log_info    "$i:"
          log_verbose "------------------------------------------"
-         ( cd "$i" && ./run-test.sh "$@" ) || exit 1
+         if [ "${MULLE_FLAG_LOG_TERSE}" = "YES" ]
+         then
+            ( cd "$i" && ./run-test.sh "$@" > /dev/null 2>&1 ) || fail "Test \"$i\" failed"
+         else
+            ( cd "$i" && ./run-test.sh "$@" ) || fail "Test \"$i\" failed"
+         fi
       fi
    done
 }
-
 
 
 init()

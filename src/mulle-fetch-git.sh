@@ -69,6 +69,7 @@ git_get_default_remote()
 git_add_remote()
 {
    [ -z "$1" -o -z "$2" -o -z "$3" ] && internal_fail "empty parameter"
+   [ ! -d "$1" ] && internal_fail "directory does not exist"
 
    local repository="$1"
    local remote="$2"
@@ -84,6 +85,7 @@ git_add_remote()
 git_set_url()
 {
    [ -z "$1" -o -z "$2" -o -z "$3" ] && internal_fail "empty parameter"
+   [ ! -d "$1" ] && internal_fail "directory does not exist"
 
    local repository="$1"
    local remote="$2"
@@ -99,6 +101,7 @@ git_set_url()
 git_unset_default_remote()
 {
    [ -z "$1" ] && internal_fail "empty parameter"
+   [ ! -d "$1" ] && internal_fail "directory does not exist"
 
    local repository="$1"
 
@@ -112,6 +115,7 @@ git_unset_default_remote()
 git_set_default_remote()
 {
    [ -z "$1" -o -z "$2" -o -z "$3" ] && internal_fail "empty parameter"
+   [ ! -d "$1" ] && internal_fail "directory does not exist"
 
    local repository="$1"
    local remote="$2"
@@ -128,6 +132,7 @@ git_set_default_remote()
 git_has_branch()
 {
    [ -z "$1" -o -z "$2" ] && internal_fail "empty parameter"
+   [ ! -d "$1" ] && internal_fail "directory does not exist"
 
    (
       cd "$1" &&
@@ -139,6 +144,7 @@ git_has_branch()
 git_has_fetched_tags()
 {
    [ -z "$1" ] && internal_fail "empty parameter"
+   [ ! -d "$1" ] && internal_fail "directory does not exist"
 
    (
       local tags
@@ -150,9 +156,22 @@ git_has_fetched_tags()
 }
 
 
+git_has_tag()
+{
+   [ -z "$1" -o -z "$2" ] && internal_fail "empty parameter"
+   [ ! -d "$1" ] && internal_fail "directory does not exist"
+
+   (
+      cd "$1" &&
+      git tag -l | fgrep -s -x "$2" > /dev/null
+   )
+}
+
+
 git_branch_contains_tag()
 {
    [ -z "$1" -o -z "$2" -o -z "$3" ] && internal_fail "empty parameter"
+   [ ! -d "$1" ] && internal_fail "directory does not exist"
 
    (
       cd "$1" &&
@@ -165,6 +184,7 @@ git_branch_contains_tag()
 git_get_branch()
 {
    [ -z "$1" ] && internal_fail "empty parameter"
+   [ ! -d "$1" ] && internal_fail "directory does not exist"
 
    (
       cd "$1" &&
@@ -288,10 +308,10 @@ git_is_bare_repository()
    local is_bare
 
    # if bare repo, we can only clone anyway
-   is_bare=`(
+   is_bare="$(
                cd "$1" &&
                git rev-parse --is-bare-repository 2> /dev/null
-            )` || internal_fail "wrong \"$1\" for \"`pwd`\""
+             )" || internal_fail "wrong \"$1\" for \"`pwd`\""
    [ "${is_bare}" = "true" ]
 }
 
@@ -308,7 +328,7 @@ _run_git_on_stash()
       log_info "### $i:"
       (
          cd "$i" ;
-         exekutor git ${OPTION_GITFLAGS} "$@" ${OPTION_GITOPTIONS}  >&2
+         exekutor git ${OPTION_TOOL_FLAGS} "$@" ${OPTION_TOOL_OPTIONS}  >&2
       ) || fail "git failed"
       log_info
    fi
@@ -359,7 +379,8 @@ git_initialize()
 
    if [ -z "${MULLE_FETCH_SOURCE_SH}" ]
    then
-      . mulle-fetch-source.sh || exit 1
+      # shellcheck source=mulle-fetch-source.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh" || exit 1
    fi
 
    # this is an actual GIT variable

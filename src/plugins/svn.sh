@@ -52,28 +52,23 @@ svn_clone_project()
 
    options="`get_sourceoption "${sourceoptions}" "clone"`"
 
-   if [ ! -z "${branch}" ]
+   if [ ! -z "${tag}" ]
    then
-      log_info "SVN checkout ${C_RESET_BOLD}${branch}${C_INFO} of ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
-      options="`concat "${options}" "-r ${branch}"`"
+      log_info "SVN checkout revision ${C_RESET_BOLD}${tag}${C_INFO} of ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+      options="`concat "${options}" "-r ${tag}"`"
    else
-      if [ ! -z "${tag}" ]
-      then
-         log_info "SVN checkout ${C_RESET_BOLD}${tag}${C_INFO} of ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
-         options="`concat "${options}" "-r ${tag}"`"
-      else
-         log_info "SVN checkout ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
-      fi
+      log_info "SVN checkout ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
    fi
 
    options="`concat "-q" "${options}"`"
 
-   if ! exekutor svn ${SVNFLAGS} checkout ${options} "$@" ${SVNOPTIONS} "${url}" "${dstdir}"  >&2
+   if ! exekutor svn ${OPTION_TOOL_FLAGS} checkout ${options} "$@" ${OPTION_TOOL_OPTIONS} "${url}" "${dstdir}"  >&2
    then
       log_error "svn clone of \"${url}\" into \"${dstdir}\" failed"
       return 1
    fi
 }
+
 
 svn_update_project()
 {
@@ -108,7 +103,7 @@ svn_update_project()
 
    (
       exekutor cd "${dstdir}" ;
-      exekutor svn ${SVNFLAGS} update ${options} ${SVNOPTIONS}  >&2
+      exekutor svn ${OPTION_TOOL_FLAGS} update ${options} ${OPTION_TOOL_OPTIONS}  >&2
    ) || fail "svn update of \"${dstdir}\" failed"
 }
 
@@ -134,14 +129,14 @@ svn_status_project()
 
    (
       exekutor cd "${dstdir}" ;
-      exekutor svn status ${options} ${sourceoptions} "$@" ${SVNOPTIONS}  >&2
+      exekutor svn status ${options} ${sourceoptions} "$@" ${OPTION_TOOL_OPTIONS}  >&2
    ) || fail "svn update of \"${dstdir}\" failed"
 }
 
 
 svn_search_local_project()
 {
-   log_entry "git_search_local_project [${LOCAL_PATH}]" "$@"
+   log_entry "git_search_local_project [${OPTION_SEARCH_PATH}]" "$@"
 
    local url="$1"
    local name="$2"

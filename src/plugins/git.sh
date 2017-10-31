@@ -31,6 +31,31 @@
 MULLE_FETCH_PLUGIN_GIT_SH="included"
 
 
+_removed_mirrors_functionality()
+{
+
+   # use global unused
+
+   if [ ! -z "${OPTION_UPTODATE_MIRRORS_FILE}" ]
+   then
+      log_debug "Mirror URLS: `cat "${OPTION_UPTODATE_MIRRORS_FILE}" 2>/dev/null`"
+
+      match="`fgrep -s -x "${mirrordir}" "${OPTION_UPTODATE_MIRRORS_FILE}" 2>/dev/null`"
+      if [ ! -z "${match}" ]
+      then
+         log_fluff "Repository \"${mirrordir}\" already up-to-date"
+         echo "${mirrordir}"
+         return 0
+      fi
+   fi
+
+
+   # for embedded we are otherwise too early
+   if [ ! -z "${OPTION_UPTODATE_MIRRORS_FILE}" ]
+   then
+      redirect_append_exekutor "${OPTION_UPTODATE_MIRRORS_FILE}" echo "${mirrordir}"
+   fi
+}
 
 #
 # global variable __GIT_MIRROR_URLS__ used to avoid refetching
@@ -53,30 +78,15 @@ _git_get_mirror_url()
 
    local mirrordir
 
-   mkdir_if_missing "${OPTION_GIT_MIRROR_DIR}/${fork}"
-   mirrordir="${OPTION_GIT_MIRROR_DIR}/${fork}/${name}" # try to keep it global
+   mkdir_if_missing "${OPTION_MIRROR_DIR}/${fork}"
+   mirrordir="${OPTION_MIRROR_DIR}/${fork}/${name}" # try to keep it global
 
    local match
-
-   # use global unused
-
-   if [ ! -z "${OPTION_UPTODATE_MIRRORS_FILE}" ]
-   then
-      log_debug "Mirror URLS: `cat "${OPTION_UPTODATE_MIRRORS_FILE}" 2>/dev/null`"
-
-      match="`fgrep -s -x "${mirrordir}" "${OPTION_UPTODATE_MIRRORS_FILE}" 2>/dev/null`"
-      if [ ! -z "${match}" ]
-      then
-         log_fluff "Repository \"${mirrordir}\" already up-to-date"
-         echo "${mirrordir}"
-         return 0
-      fi
-   fi
 
    if [ ! -d "${mirrordir}" ]
    then
       log_verbose "Set up git-mirror \"${mirrordir}\""
-      if ! exekutor git ${OPTION_GITFLAGS} clone --mirror ${options} ${OPTION_GITOPTIONS} -- "${url}" "${mirrordir}" >&2
+      if ! exekutor git ${OPTION_TOOL_FLAGS} clone --mirror ${options} ${OPTION_TOOL_OPTIONS} -- "${url}" "${mirrordir}" >&2
       then
          log_error "git clone of \"${url}\" into \"${mirrordir}\" failed"
          return 1
@@ -84,12 +94,12 @@ _git_get_mirror_url()
    else
       # refetch
 
-      if [ "${OPTION_ALLOW_REFRESH_GIT_MIRROR}" = "YES" ]
+      if [ "${OPTION_REFRESH}" != "NO" ]
       then
       (
          log_verbose "Refreshing git-mirror \"${mirrordir}\""
          cd "${mirrordir}";
-         if ! exekutor git ${OPTION_GITFLAGS} fetch >&2
+         if ! exekutor git ${OPTION_TOOL_FLAGS} fetch >&2
          then
             log_warning "git fetch from \"${url}\" failed, using old state"
          fi
@@ -97,11 +107,6 @@ _git_get_mirror_url()
       fi
    fi
 
-   # for embedded we are otherwise too early
-   if [ ! -z "${OPTION_UPTODATE_MIRRORS_FILE}" ]
-   then
-      redirect_append_exekutor "${OPTION_UPTODATE_MIRRORS_FILE}" echo "${mirrordir}"
-   fi
    echo "${mirrordir}"
 }
 
@@ -158,7 +163,8 @@ __git_clone()
 
    if [ ! -z "${branch}" ]
    then
-      log_info "Cloning branch ${C_RESET_BOLD}$branch${C_INFO} of ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
+      log_info "Cloning branch ${C_RESET_BOLD}$branch${C_INFO} of \
+${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       options="`concat "${options}" "-b ${branch}"`"
    else
       log_info "Cloning ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
@@ -181,7 +187,7 @@ __git_clone()
       ;;
 
       *:*)
-         if [ ! -z "${OPTION_GIT_MIRROR_DIR}" ]
+         if [ ! -z "${OPTION_MIRROR_DIR}" ]
          then
             originalurl="${url}"
             url="`_git_get_mirror_url "${url}" "${mirroroptions}"`" || return 1
@@ -197,13 +203,13 @@ __git_clone()
       ;;
    esac
 
-#
-# callers responsibility
-#
-#   local parent
-#
-#    parent="`dirname -- "${dstdir}"`"
-#   mkdir_if_missing "${parent}"
+   #
+   # callers responsibility
+   #
+   #   local parent
+   #
+   #   parent="`dirname -- "${dstdir}"`"
+   #   mkdir_if_missing "${parent}"
 
    if [ "${dstdir}" = "${url}" ]
    then
@@ -224,17 +230,20 @@ __git_clone()
    then
       mkdir_if_missing "${dstdir}" &&
       (
-         branch="${branch:-master}" # local to shell
+         local  actualbranch
+
+         actualbranch="${branch:-master}" # local to shell
 
          exekutor cd "${dstdir}"
          exekutor git init &&
          exekutor git remote add origin "${url}" &&
-         exekutor git fetch --no-tags "origin" "${branch}" &&
-         exekutor git checkout -b "${branch}" "origin/${branch}"
+         exekutor git fetch --no-tags "origin" "${actualbranch}" &&
+         exekutor git checkout -b "${actualbranch}" "origin/${actualbranch}"
       )
       rval="$?"
    else
-      exekutor git ${OPTION_GITFLAGS} "clone" ${options} ${OPTION_GITOPTIONS} -- "${url}" "${dstdir}"  >&2
+      exekutor git ${OPTION_TOOL_FLAGS} "clone" ${options} ${OPTION_TOOL_OPTIONS} \
+                                       -- "${url}" "${dstdir}"  >&2
       rval="$?"
    fi
 
@@ -288,6 +297,7 @@ _git_clone()
                "${dstdir}"
 }
 
+
 _get_fetch_remote()
 {
    local url="$1"
@@ -301,9 +311,8 @@ _get_fetch_remote()
       ;;
 
       *:*)
-         if [ ! -z "${OPTION_GIT_MIRROR_DIR}" ]
+         if [ ! -z "${OPTION_MIRROR_DIR}" ]
          then
-
             _git_get_mirror_url "${url}" > /dev/null || return 1
             remote="mirror"
          fi
@@ -349,53 +358,69 @@ git_checkout_project()
    local sourceoptions="$1"; shift
    local dstdir="$1"; shift
 
-   [ -z "${dstdir}" ] && internal_fail "dstdir is empty"
-   [ -z "${tag}" ]    && internal_fail "tag is empty"
+   [ -z "${dstdir}" ]                    && internal_fail "dstdir is empty"
+   [ -z "${tag}" -a -z "${branch}" ]     && internal_fail "tag and branch are empty"
 
    local options
 
    options="`get_sourceoption "${sourceoptions}" "checkout"`"
 
 #   local branch
+   local curr_branch
+   local need_fetch
 
-   branch="`git_get_branch "${dstdir}"`"
+   need_fetch="NO"
+   curr_branch="`git_get_branch "${dstdir}"`"
 
-   if [ "${branch}" != "${tag}" ]
+   if [ -z "${tag}" ]
    then
-      log_info "Checking out version ${C_RESET_BOLD}${tag}${C_INFO} of ${C_MAGENTA}${C_BOLD}${dstdir}${C_INFO} ..."
-
-      if ! git_has_fetched_tags "${dstdir}"
+      if [ "${curr_branch}" != "${branch}" ]
       then
-         (
-            exekutor cd "${dstdir}" &&
-            exekutor git ${OPTION_GITFLAGS} fetch --tags
-         ) || return 1
+         need_fetch="YES"
+      fi
+      log_info "Checking out branch ${C_RESET_BOLD}${branch}${C_INFO} of \
+${C_MAGENTA}${C_BOLD}${name}${C_INFO} ..."
+   else
+      if [ ! -z "${branch}" ]
+      then
+         log_warning "Branch ${C_RESET_BOLD}${branch}${C_WARNING_TEXT} of \
+${C_MAGENTA}${C_BOLD}${name}${C_WARNING_TEXT} ignored as tag \
+${C_RESET_BOLD}${tag}${C_WARNING_TEXT} is set"
       fi
 
-      if ! git_branch_contains_tag "${dstdir}" "${branch}" "${tag}"
+      if ! git_has_tag "${dstdir}" "${tag}"
       then
-         log_error "tag ${tag} is not on branch ${branch}"
-         return 1
+         need_fetch="YES"
       fi
+      log_info "Checking out tag ${C_RESET_BOLD}${tag}${C_INFO} of \
+${C_MAGENTA}${C_BOLD}${name}${C_INFO} ..."
+   fi
 
+   if [ "${need_fetch}" = "YES" ]
+   then
       (
          exekutor cd "${dstdir}" &&
-         exekutor git ${OPTION_GITFLAGS} checkout ${options} "${tag}"  >&2
+         exekutor git ${OPTION_TOOL_FLAGS} fetch --all --tags
       ) || return 1
+   fi
 
-      if [ $? -ne 0 ]
-      then
-         log_error "Checkout failed, moving ${C_CYAN}${C_BOLD}${dstdir}${C_ERROR} to ${C_CYAN}${C_BOLD}${dstdir}.failed${C_ERROR}"
-         log_error "You need to fix this manually and then move it back."
+   (
+      exekutor cd "${dstdir}" &&
+      exekutor git ${OPTION_TOOL_FLAGS} checkout ${options} "${tag:-${branch}}" >&2
+   ) || return 1
 
-         rmdir_safer "${dstdir}.failed"
-         exekutor mv "${dstdir}" "${dstdir}.failed"  >&2
-         return 1
-      fi
-   else
-      log_fluff "Already on proper branch \"${branch}\""
+   if [ $? -ne 0 ]
+   then
+      log_error "Checkout failed, moving ${C_CYAN}${C_BOLD}${dstdir}${C_ERROR} \
+to ${C_CYAN}${C_BOLD}${dstdir}.failed${C_ERROR}"
+      log_error "You need to fix this manually and then move it back."
+
+      rmdir_safer "${dstdir}.failed"
+      exekutor mv "${dstdir}" "${dstdir}.failed"  >&2
+      return 1
    fi
 }
+
 
 #  aka fetch
 git_update_project()
@@ -423,7 +448,7 @@ git_update_project()
 
    (
       exekutor cd "${dstdir}" &&
-      exekutor git ${OPTION_GITFLAGS} fetch "$@" ${options} ${OPTION_GITOPTIONS} "${remote}" >&2
+      exekutor git ${OPTION_TOOL_FLAGS} fetch "$@" ${options} ${OPTION_TOOL_OPTIONS} "${remote}" >&2
    ) || fail "git fetch of \"${dstdir}\" failed"
 }
 
@@ -454,12 +479,13 @@ git_upgrade_project()
 
    (
       exekutor cd "${dstdir}" &&
-      exekutor git ${OPTION_GITFLAGS} pull "$@" ${sourceoptions} ${OPTION_GITOPTIONS} "${remote}" >&2
+      exekutor git ${OPTION_TOOL_FLAGS} pull "$@" ${sourceoptions} ${OPTION_TOOL_OPTIONS} \
+                                           "${remote}" >&2
    ) || fail "git pull of \"${dstdir}\" failed"
 
    if [ ! -z "${tag}" ]
    then
-      git_checkout "$@"  >&2
+      git_checkout "$@" >&2
    fi
 }
 
@@ -487,7 +513,7 @@ git_status_project()
 
    (
       exekutor cd "${dstdir}" &&
-      exekutor git ${OPTION_GITFLAGS} status "$@" ${options} ${OPTION_GITOPTIONS} >&2
+      exekutor git ${OPTION_TOOL_FLAGS} status "$@" ${options} ${OPTION_TOOL_OPTIONS} >&2
    ) || fail "git status of \"${dstdir}\" failed"
 }
 
@@ -496,27 +522,49 @@ git_set_url_project()
 {
    log_entry "git_set_url_project" "$@"
 
-   local dstdir="$1"
-   local remote="$2"
+#   local unused="$1"
+   local name="$2"
    local url="$3"
+#   local branch="$4"
+#   local tag="$5"
+#   local sourcetype="$6"
+#   local sourceoptions="$7"
+   local dstdir="$8"
+
+   local remote
+
+   remote="`git_get_default_remote "${dstdir}"`" || exit 1
 
    (
       cd "${dstdir}" &&
-      git remote set-url "${remote}" "${url}"  >&2 &&
-      git fetch "${remote}"  >&2  # prefetch to get new branches
+      git remote set-url "${remote}" "${url}" >&2 &&
+      git fetch "${remote}" >&2  # prefetch to get new branches
    ) || exit 1
 }
 
 
 git_search_local_project()
 {
-   log_entry "git_search_local_project [${LOCAL_PATH}]" "$@"
+   log_entry "git_search_local_project [${OPTION_SEARCH_PATH}]" "$@"
 
-   local url="$1"
-   local name="$2"
-   local branch="$3"
+#   local unused="$1"
+#   local name="$2"
+   local url="$3"
+   local branch="$4"
+#   local tag="$5"
+#   local sourcetype="$6"
+#   local sourceoptions="$7"
+#   local dstdir="$8"
 
-   source_search_local_path "${name}" "${branch}" ".git" "NO"
+   local reponame
+
+   # there should be a generic method for this though
+   [ -z "${url}" ] && internal_fail "empty url"
+
+   reponame="`basename -- "${url}"`"
+   reponame="`basename -- "${reponame}" .git`"
+
+   source_search_local_path "${reponame}" "${branch}" ".git" "NO"
 }
 
 
@@ -526,7 +574,14 @@ git_plugin_initialize()
 
    if [ -z "${MULLE_FETCH_GIT_SH}" ]
    then
-      . mulle-fetch-git.sh || exit 1
+      # shellcheck source=src/mulle-fetch-git.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-git.sh" || exit 1
+   fi
+
+   if [ -z "${MULLE_FETCH_PLUGIN_SYMLINK_SH}" ]
+   then
+      # shellcheck source=src/plugins/symlink.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/plugins/symlink.sh" || exit 1
    fi
 }
 

@@ -42,7 +42,7 @@ zip_clone_project()
    local url="$3"             # URL of the clone
    local branch="$4"          # branch of the clone
    local tag="$5"             # tag to checkout of the clone
-   local sourcetype="$6"          # source to use for this clone
+   local sourcetype="$6"      # source to use for this clone
    local sourceoptions="$7"   # options to use on source
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
@@ -52,7 +52,6 @@ zip_clone_project()
 
    download="`basename --  "${url}"`"
    archivename="`extension_less_basename "${download}"`"
-
 
    #
    # local urls don't need to be curled
@@ -83,7 +82,11 @@ zip_clone_project()
       then
          log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
 
-         exekutor curl -O -L ${options} ${CURLOPTIONS} "${url}" || fail "failed to download \"${url}\""
+         local options
+
+         options="`get_sourceoption "${sourceoptions}" "curl"`"
+
+         exekutor curl -O -L ${options} ${OPTION_CURL_OPTIONS} "${url}" || fail "failed to download \"${url}\""
       else
          if [ "${url}" != "${download}" ]
          then
@@ -103,7 +106,7 @@ zip_clone_project()
 
       log_verbose "Extracting ${C_MAGENTA}${C_BOLD}${download}${C_INFO} ..."
 
-      exekutor unzip -q "${download}" >&2 || return 1
+      exekutor unzip -q ${OPTION_TOOL_FLAGS} "${download}" || return 1
       exekutor rm "${download}"
    ) || return 1
 
@@ -113,7 +116,24 @@ zip_clone_project()
 
 zip_search_local_project()
 {
-   log_entry "zip_clone_project" "$@"
+   log_entry "zip_search_local_project" "$@"
 
    archive_search_local "$@"
 }
+
+
+zip_plugin_initialize()
+{
+   log_entry "zip_plugin_initialize"
+
+   if [ -z "${MULLE_FETCH_ARCHIVE_SH}" ]
+   then
+      # shellcheck source=src/mulle-fetch-archive.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-archive.sh" || exit 1
+   fi
+}
+
+
+zip_plugin_initialize
+
+:
