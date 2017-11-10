@@ -31,10 +31,6 @@
 MULLE_FETCH_PLUGIN_GIT_SH="included"
 
 
-#
-# global variable __GIT_MIRROR_URLS__ used to avoid refetching
-# repos in one setting
-#
 _git_get_mirror_url()
 {
    log_entry "_git_get_mirror_url" "$@"
@@ -66,19 +62,18 @@ _git_get_mirror_url()
          return 1
       fi
    else
-      # refetch
-
-      if [ "${OPTION_REFRESH}" != "NO" ]
-      then
-      (
-         log_verbose "Refreshing git-mirror \"${mirrordir}\""
-         cd "${mirrordir}";
-         if ! exekutor git ${OPTION_TOOL_FLAGS} fetch >&2
-         then
-            log_warning "git fetch from \"${url}\" failed, using old state"
-         fi
-      )
-      fi
+      case "${OPTION_REFRESH}" in
+         YES|DEFAULT)
+         (
+            log_verbose "Refreshing git-mirror \"${mirrordir}\""
+            cd "${mirrordir}";
+            if ! exekutor git ${OPTION_TOOL_FLAGS} fetch >&2
+            then
+               log_warning "git fetch from \"${url}\" failed, using old state"
+            fi
+         )
+         ;;
+      esac
    fi
 
    echo "${mirrordir}"

@@ -156,30 +156,35 @@ archive_cache_grab()
 
    cachable_path="${OPTION_CACHE_DIR}/${filename}"
 
-   if [ "${OPTION_REFRESH}" != "YES" ]
-   then
-      if [ -f "${cachable_path}" ]
-      then
-         cached_archive="${cachable_path}"
-      fi
-
-      if [ ! -z "${cached_archive}" ]
-      then
-         log_info "Using cached \"${cached_archive}\" for ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
-         # we are in a tmp dir
-         cachable_path=""
-
-         if ! _archive_test "${cached_archive}" || \
-            ! validate_download "${cached_archive}" "${sourceoptions}"
+   #
+   # if refresh is yes, ignore cache
+   # default and no use it
+   #
+   case "${OPTION_REFRESH}" in
+     DEFAULT|NO)
+         if [ -f "${cachable_path}" ]
          then
-            remove_file_if_present "${cached_archive}"
-            cached_archive=""
-         else
-            exekutor ln -s "${cached_archive}" "${download}" || fail "failed to symlink \"${cached_archive}\""
-            return 0
+            cached_archive="${cachable_path}"
          fi
-      fi
-   fi
+
+         if [ ! -z "${cached_archive}" ]
+         then
+            log_info "Using cached \"${cached_archive}\" for ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+            # we are in a tmp dir
+            cachable_path=""
+
+            if ! _archive_test "${cached_archive}" || \
+               ! validate_download "${cached_archive}" "${sourceoptions}"
+            then
+               remove_file_if_present "${cached_archive}"
+               cached_archive=""
+            else
+               exekutor ln -s "${cached_archive}" "${download}" || fail "failed to symlink \"${cached_archive}\""
+               return 0
+            fi
+         fi
+      ;;
+   esac
 
    echo "${cached_archive}"
    echo "${cachable_path}"
