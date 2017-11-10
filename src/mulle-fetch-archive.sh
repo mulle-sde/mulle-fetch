@@ -222,6 +222,58 @@ archive_search_local()
 }
 
 
+archive_guess_name_from_url()
+{
+   local url="$1"             # URL of the clone
+   local ext="$2"
+
+   if [ -z "${MULLE_FETCH_URL_SH}" ]
+   then
+      # shellcheck source=src/mulle-fetch-archive.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
+   fi
+
+   local urlpath
+   local archivename
+   local name
+
+   urlpath="`url_get_path "${url}"`"
+
+   # remove .tar (or .zip et friends)
+   archivename="`extensionless_basename "${urlpath}"`"
+   case "${archivename}" in
+      *${ext})
+         archivename="`extensionless_basename "${archivename}"`"
+      ;;
+   esac
+
+   # remove version info or such
+
+   name="`sed 's/[-]*[0-9]*\.[0-9]*\.[0-9]*[-]*//' <<< "${archivename}"`"
+   if [ ! -z "${name}" ]
+   then
+      echo "${name}"
+      return
+   fi
+
+   local tmp
+
+   #
+   # assume github archive  <name>/<branch>/<version>.tgz
+   #
+   tmp="`dirname -- "${urlpath}"`"
+   tmp="`dirname -- "${tmp}"`"
+   name="`basename -- "${tmp}"`"
+
+   if [ -z "${name}" ]
+   then
+      fail "Could not figure out name from path \"$urlpath\" of url \"$url\""
+   fi
+
+   echo "${name}"
+}
+
+
 validate_shasum256()
 {
    log_entry "validate_shasum256" "$@"
@@ -266,6 +318,50 @@ validate_download()
    fi
 
    validate_shasum256 "${filename}" "${expected}"
+}
+
+
+archive_download()
+{
+   log_entry "archive_download" "$@"
+
+   local url="$1"
+   local download="$2"
+   local curlit="$3"
+   local sourceoptions="$4"
+
+   local options
+
+   if [ "${curlit}" = "YES" ]
+   then
+      log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+
+      options="`get_sourceoption "${sourceoptions}" "curl"`"
+      exekutor curl ${OPTION_CURL_FLAGS} \
+                  -o "${download}" \
+                  -O -L \
+                  ${options} \
+                  "${url}" || fail "failed to download \"${url}\""
+   else
+      if [ "${url}" != "${download}" ]
+      then
+         case "${UNAME}" in
+            mingw)
+               exekutor cp "${url}" "${download}"
+            ;;
+
+            *)
+               exekutor ln -s "${url}" "${download}"
+            ;;
+         esac
+      fi
+   fi
+
+   if ! validate_download "${download}" "${sourceoptions}"
+   then
+      remove_file_if_present "${download}"
+      fail "Can't download archive from \"${url}\""
+   fi
 }
 
 :

@@ -93,7 +93,8 @@ main()
    rmdir_safer "${dstdir}"
    log_verbose "----- #1 PASSED -----"
 
-   run_mulle_fetch fetch -b master "${repo}" "${dstdir}" || exit 1
+   # also try file:/// once which should be the same
+   run_mulle_fetch fetch -b master "file:///${repo}" "${dstdir}" || exit 1
    expect_version "${dstdir}" "3.1.0"
    rmdir_safer "${dstdir}"
    log_verbose "----- #2 PASSED -----"

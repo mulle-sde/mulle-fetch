@@ -200,7 +200,7 @@ _tar_download()
 {
    log_entry "_tar_download" "$@"
 
-   local download="$1"
+   local download="$1"  # where we expect the file to be
    local url="$2"
    local sourceoptions="$3"
 
@@ -228,7 +228,8 @@ _tar_download()
    curlit="NO"
    case "${url}" in
       file:*)
-         ! source_check_file_url "${url}" && return $?
+         url="`source_check_file_url "${url}"`"
+         [ $? -eq 0 ] || return 1
       ;;
 
       *:*)
@@ -236,41 +237,14 @@ _tar_download()
       ;;
 
       *)
-         ! source_check_file_url "${url}" && return $?
+         url="`source_check_file_url "${url}"`"
+         [ $? -eq 0 ] || return 1
       ;;
    esac
 
-
-   local options
-
-   options="`get_sourceoption "${sourceoptions}" "curl"`"
    if [ -z "${cached_archive}" ]
    then
-      if [ "${curlit}" = "YES" ]
-      then
-         log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
-
-         exekutor curl ${OPTION_CURL_FLAGS} -O -L ${options} "${url}" || fail "failed to download \"${url}\""
-      else
-         if [ "${url}" != "${download}" ]
-         then
-            case "${UNAME}" in
-               mingw)
-                  exekutor cp "${url}" "${download}"
-               ;;
-
-               *)
-                  exekutor ln -s "${url}" "${download}"
-               ;;
-            esac
-         fi
-      fi
-
-      if ! validate_download "${download}" "${sourceoptions}"
-      then
-         remove_file_if_present "${download}"
-         fail "Can't download archive from \"${url}\""
-      fi
+      archive_download "${url}" "${download}" "${curlit}" "${sourceoptions}"
    fi
 
    [ -f "${download}" ] || internal_fail "expected file \"${download}\" is mising"
@@ -314,10 +288,10 @@ tar_clone_project()
    archive="${download}"
 
    # remove .tar (or .zip et friends)
-   archivename="`extension_less_basename "${download}"`"
+   archivename="`extensionless_basename "${download}"`"
    case "${archivename}" in
       *.tar)
-         archivename="`extension_less_basename "${archivename}"`"
+         archivename="`extensionless_basename "${archivename}"`"
       ;;
    esac
 
@@ -344,6 +318,16 @@ tar_search_local_project()
 }
 
 
+tar_guess_project()
+{
+   log_entry "tar_guess_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   archive_guess_name_from_url "${url}" ".tar"
+}
+
+
 tar_plugin_initialize()
 {
    log_entry "tar_plugin_initialize"
@@ -354,7 +338,6 @@ tar_plugin_initialize()
       . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-archive.sh" || exit 1
    fi
 }
-
 
 tar_plugin_initialize
 

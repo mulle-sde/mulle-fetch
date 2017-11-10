@@ -80,3 +80,24 @@ symlink_search_local_project()
 
    source_search_local_path "${name}" "${branch}" "" "YES"
 }
+
+
+
+symlink_guess_project()
+{
+   log_entry "symlink_guess_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   if [ -z "${MULLE_FETCH_URL_SH}" ]
+   then
+      # shellcheck source=src/mulle-fetch-archive.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
+   fi
+
+   local urlpath
+
+   urlpath="`url_get_path "${url}"`"
+   basename -- "${urlpath}"
+}
+

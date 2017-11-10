@@ -35,7 +35,7 @@ then
 fi
 
 MULLE_EXECUTABLE_VERSION_MAJOR=1
-MULLE_EXECUTABLE_VERSION_MINOR=0
+MULLE_EXECUTABLE_VERSION_MINOR=1
 MULLE_EXECUTABLE_VERSION_PATCH=0
 
 MULLE_EXECUTABLE_VERSION="${MULLE_EXECUTABLE_VERSION_MAJOR}.${MULLE_EXECUTABLE_VERSION_MINOR}.${MULLE_EXECUTABLE_VERSION_PATCH}"
@@ -63,10 +63,11 @@ SHOWN_COMMANDS="\
 
 
 HIDDEN_COMMANDS="\
-   git           : run git command on repository
+   guess         : guess final filename from url
    library-path  : print path to mulle-fetch libexec
    operations    : list operations available
    tag           : tag repository
+   typeguess     : guess plugin name suitable for url
    uname         : mulle-fetchs simplified uname(1)"
 
 
@@ -82,8 +83,14 @@ print_commands()
    fi
 }
 
+print_flags()
+{
+   echo "   -f    : force operation"
 
-usage()
+   options_technical_flags_usage
+}
+
+_usage()
 {
    local verbose="${1:-NO}"
 
@@ -94,10 +101,9 @@ Usage:
    Retrieve and unpack tar archive, git repositories, svn repositories.
 
 Flags:
-   -f        : force operation
 EOF
+   print_flags  | sort
 
-   options_technical_flags_usage
 
    cat <<EOF
 
@@ -114,12 +120,19 @@ EOF
    fi
 
    cat <<EOF
-Options are command specific. Use mulle-fetch <command> -h for help.
+
+   Options are command specific. Use mulle-fetch <command> -h for help.
 EOF
 
    exit 1
 }
 
+
+usage()
+{
+   _usage >&2
+   exit1
+}
 
 #
 # stolen from:
@@ -198,7 +211,7 @@ fetch_libexec_path()
 }
 
 
-init()
+_init()
 {
    #
    # minimal setup exit
@@ -370,11 +383,11 @@ main()
          fetch_clone_main "$@"
       ;;
 
-      git)
+      guess)
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
-         fetch_git_main "$@"
+         fetch_guess_main "$@"
       ;;
 
       help)
@@ -390,6 +403,13 @@ main()
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
          fetch_operations_main "$@"
+      ;;
+
+      plugins)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+
+         fetch_plugins_main "$@"
       ;;
 
       search-local)
@@ -413,11 +433,11 @@ main()
          fetch_status_main "$@"
       ;;
 
+      typeguess)
+         # shellcheck source=src/mulle-fetch-url.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh"
 
-      tag)
-         . mulle-fetch-tag.sh
-
-         fetch_tag_main "$@"
+         fetch_typeguess_main "$@"
       ;;
 
       uname)
@@ -451,38 +471,5 @@ main()
 }
 
 
-#
-# leading backslash ? looks like we're getting called from
-# mingw via a .BAT or so
-#
-case "$PATH" in
-   '\\'*)
-      PATH="`tr '\\' '/' <<< "${PATH}"`"
-   ;;
-esac
-
-#
-# service both names (mulle-fetch and mulle-brew)
-#
-MULLE_EXECUTABLE="$0"
-MULLE_EXECUTABLE_NAME="`basename -- "$0"`"
-
-MULLE_EXECUTABLE_PATH="$0"
-case "$MULLE_EXECUTABLE" in
-   /*|~*)
-      MULLE_EXECUTABLE_PATH="$MULLE_EXECUTABLE"
-   ;;
-
-   *)
-      MULLE_EXECUTABLE_PATH="$PWD/$MULLE_EXECUTABLE"
-   ;;
-esac
-MULLE_EXECUTABLE_FAIL_PREFIX="${MULLE_EXECUTABLE_NAME}"
-MULLE_EXECUTABLE_PID="$$"
-MULLE_EXECUTABLE_ENV_PATH="$PATH"
-export MULLE_EXECUTABLE_PID
-
-MULLE_ARGUMENTS="$*"
-
-init "$@" # needs params
+_init "$@" # needs params
 main "$@"

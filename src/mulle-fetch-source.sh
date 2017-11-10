@@ -97,7 +97,7 @@ get_source_function()
    local operation
    local funcname="$2"
 
-   funcname="$(tr '-' '_' <<< "${opname}")"
+   funcname="${opname//-/_}"
    operation="${sourcetype}_${funcname}_project"
    if [ "`type -t "${operation}"`" = "function" ]
    then
@@ -112,12 +112,20 @@ source_check_file_url()
 {
    local url="$1"
 
+   case "${url}" in
+      file://*)
+         url="${url:7}"
+      ;;
+   esac
+
    if [ ! -e "${url}" ]
    then
       log_error "\"${url}\" does not exist ($PWD)"
       return 1
    fi
+   echo "${url}"
 }
+
 
 source_search_local()
 {
@@ -318,7 +326,7 @@ _source_list_supported_operations()
 
    for opname in ${operations}
    do
-      funcname="$(tr '-' '_' <<< "${opname}")"
+      funcname="${opname//-/_}"
       operation="${sourcetype}_${funcname}_project"
       if [ "`type -t "${operation}"`" = "function" ]
       then
@@ -347,9 +355,34 @@ source_list_supported_operations()
 }
 
 
-load_source_plugins()
+source_list_plugins()
 {
-   log_entry "load_source_plugins"
+   log_entry "source_list_plugins"
+
+   local upcase
+   local plugindefine
+   local pluginpath
+   local name
+
+   [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
+   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
+
+   log_fluff "List source plugins..."
+
+   IFS="
+"
+   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
+   do
+      basename -- "${pluginpath}" .sh
+   done
+
+   IFS="${DEFAULT_IFS}"
+}
+
+
+source_load_plugins()
+{
+   log_entry "source_load_plugins"
 
    local upcase
    local plugindefine
@@ -368,21 +401,6 @@ load_source_plugins()
       IFS="${DEFAULT_IFS}"
 
       name="`basename -- "${pluginpath}" .sh`"
-
-      # don't load xcodebuild on non macos platforms
-      case "${UNAME}" in
-         darwin)
-         ;;
-
-         *)
-            case "${name}" in
-               xcodebuild)
-                  continue
-               ;;
-            esac
-         ;;
-      esac
-
       upcase="`tr 'a-z' 'A-Z' <<< "${name}"`"
       plugindefine="MULLE_FETCH_PLUGIN_${upcase}_SH"
 

@@ -144,3 +144,29 @@ svn_search_local_project()
 
    source_search_local_path "${name}" "${branch}" ".svn" "YES"
 }
+
+
+svn_guess_project()
+{
+   log_entry "svn_guess_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   if [ -z "${MULLE_FETCH_URL_SH}" ]
+   then
+      # shellcheck source=src/mulle-fetch-archive.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
+   fi
+
+   local urlpath
+   local archivename
+   local name
+
+   urlpath="`url_get_path "${url}"`"
+
+   name="`basename -- "${urlpath}"`"
+   name="`extensionless_basename "${name}"`"
+
+   echo "${name}"
+}
+

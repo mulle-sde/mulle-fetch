@@ -31,32 +31,6 @@
 MULLE_FETCH_PLUGIN_GIT_SH="included"
 
 
-_removed_mirrors_functionality()
-{
-
-   # use global unused
-
-   if [ ! -z "${OPTION_UPTODATE_MIRRORS_FILE}" ]
-   then
-      log_debug "Mirror URLS: `cat "${OPTION_UPTODATE_MIRRORS_FILE}" 2>/dev/null`"
-
-      match="`fgrep -s -x "${mirrordir}" "${OPTION_UPTODATE_MIRRORS_FILE}" 2>/dev/null`"
-      if [ ! -z "${match}" ]
-      then
-         log_fluff "Repository \"${mirrordir}\" already up-to-date"
-         echo "${mirrordir}"
-         return 0
-      fi
-   fi
-
-
-   # for embedded we are otherwise too early
-   if [ ! -z "${OPTION_UPTODATE_MIRRORS_FILE}" ]
-   then
-      redirect_append_exekutor "${OPTION_UPTODATE_MIRRORS_FILE}" echo "${mirrordir}"
-   fi
-}
-
 #
 # global variable __GIT_MIRROR_URLS__ used to avoid refetching
 # repos in one setting
@@ -115,6 +89,12 @@ __git_check_file_url()
 {
    local url="$1"
 
+   case "${url}" in
+      "file://"*)
+         url="${url:7}"
+      ;;
+   esac
+
    if ! git_is_repository "${url}"
    then
       if [ -e "${url}" ]
@@ -129,6 +109,8 @@ __git_check_file_url()
       fi
       return 1
    fi
+
+   echo "${url}"
 }
 
 
@@ -180,10 +162,8 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    #
    case "${url}" in
       file:*)
-         if ! __git_check_file_url "${url}"
-         then
-            return 1
-         fi
+         url="`__git_check_file_url "${url}"`"
+         [ $? -eq 0 ] || return 1
       ;;
 
       *:*)
@@ -196,26 +176,14 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       ;;
 
       *)
-         if ! __git_check_file_url "${url}"
-         then
-            return 1
-         fi
+         url="`__git_check_file_url "${url}"`"
+         [ $? -eq 0 ] || return 1
       ;;
    esac
 
-   #
-   # callers responsibility
-   #
-   #   local parent
-   #
-   #   parent="`dirname -- "${dstdir}"`"
-   #   mkdir_if_missing "${parent}"
-
    if [ "${dstdir}" = "${url}" ]
    then
-      # since we know that stash dir does not exist, this
-      # message is a bit less confusing
-      log_error "Clone source \"${url}\" does not exist."
+      log_error "Clone source \"${url}\" is same as destination."
       return 1
    fi
 
@@ -239,7 +207,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
          exekutor git remote add origin "${url}" &&
          exekutor git fetch --no-tags "origin" "${actualbranch}" &&
          exekutor git checkout -b "${actualbranch}" "origin/${actualbranch}"
-      )
+      ) >&2
       rval="$?"
    else
       exekutor git ${OPTION_TOOL_FLAGS} "clone" ${options} ${OPTION_TOOL_OPTIONS} \
@@ -565,6 +533,31 @@ git_search_local_project()
    reponame="`basename -- "${reponame}" .git`"
 
    source_search_local_path "${reponame}" "${branch}" ".git" "NO"
+}
+
+
+git_guess_project()
+{
+   log_entry "git_guess_project" "$@"
+
+   local url="$3"      # URL of the clone
+
+   if [ -z "${MULLE_FETCH_URL_SH}" ]
+   then
+      # shellcheck source=src/mulle-fetch-archive.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
+   fi
+
+   local urlpath
+   local archivename
+   local name
+
+   urlpath="`url_get_path "${url}"`"
+
+   name="`basename -- "${urlpath}"`"
+   name="`extensionless_basename "${name}"`"
+
+   echo "${name}"
 }
 
 

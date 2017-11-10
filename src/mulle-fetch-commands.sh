@@ -31,6 +31,7 @@
 #
 
 MULLE_FETCH_FETCH_SH="included"
+
 #
 # ## NOTE ##
 #
@@ -68,7 +69,6 @@ Options:
 
    --absolute-symlinks    : create absolute symlinks instead of relative ones
    --cache-dir <dir>      : directory to cache archives
-   --check-system-include : heuristic: skip fetch if project is supported by OS
    --mirror-dir <dir>     : directory to mirror repositories (git)
    --refresh              : refresh mirrored repositories and cached archives
    --symlink-returns-2    : if a repository was symlinked return with code 2
@@ -81,9 +81,42 @@ EOF
    plugins="`source_all_plugin_names`"
    if [ ! -z "${plugins}" ]
    then
-      echo
-      echo "Available source types are:"
-      echo "${plugins}" | sed 's/^/   /'
+      (
+         echo
+         echo "Available source types are:"
+         echo "${plugins}" | sed 's/^/   /'
+      ) >&2
+   fi
+   exit 1
+}
+
+
+fetch_guess_usage()
+{
+   cat <<EOF >&2
+Usage:
+   ${MULLE_EXECUTABLE_NAME} guess [options] <url>
+
+   Guess the resulting name of the project specified by the URL.
+
+      ${MULLE_EXECUTABLE_NAME} guess https://foo.com/bla.git?version=last
+
+   returns "bla"
+
+Options:
+   -s <scm>         : source type, either a repository or archive format (git)
+EOF
+
+   local  plugins
+
+   plugins="`source_all_plugin_names`"
+   if [ ! -z "${plugins}" ]
+   then
+      (
+         echo
+         echo "Available source types are:"
+         echo "${plugins}" | sed 's/^/   /'
+      ) >&2
    fi
    exit 1
 }
@@ -109,9 +142,11 @@ EOF
    plugins="`source_all_plugin_names`"
    if [ ! -z "${plugins}" ]
    then
-      echo
-      echo "Available source types are:"
-      echo "${plugins}" | sed 's/^/   /'
+      (
+         echo
+         echo "Available source types are:"
+         echo "${plugins}" | sed 's/^/   /'
+      ) >&2
    fi
    exit 1
 }
@@ -138,9 +173,11 @@ EOF
    plugins="`source_all_plugin_names`"
    if [ ! -z "${plugins}" ]
    then
-      echo
-      echo "Available source types are:"
-      echo "${plugins}" | sed 's/^/   /'
+      (
+         echo
+         echo "Available source types are:"
+         echo "${plugins}" | sed 's/^/   /'
+      ) >&2
    fi
    exit 1
 }
@@ -164,9 +201,11 @@ EOF
    plugins="`source_all_plugin_names`"
    if [ ! -z "${plugins}" ]
    then
-      echo
-      echo "Available source types are:"
-      echo "${plugins}" | sed 's/^/   /'
+      (
+         echo
+         echo "Available source types are:"
+         echo "${plugins}" | sed 's/^/   /'
+      ) >&2
    fi
    exit 1
 }
@@ -214,7 +253,7 @@ fetch_common_main()
    local OPTION_BRANCH
    local OPTION_TAG
    local OPTION_SCM="git"
-   local OPTION_CHECK_SYSTEM_INCLUDE="NO"
+   local OPTION_URL
    local OPTION_REFRESH="DEFAULT"
    local OPTION_ABSOLUTE_SYMLINKS="NO"
    local OPTION_SYMLINK_RETURNS_2="NO"
@@ -237,14 +276,6 @@ fetch_common_main()
       case "$1" in
          -h|-help|--help)
             ${USAGE}
-         ;;
-
-         --check-system-include)
-            OPTION_CHECK_SYSTEM_INCLUDE="YES"
-         ;;
-
-         --no-check-system-include)
-            OPTION_CHECK_SYSTEM_INCLUDE="NO"
          ;;
 
          --refresh)
@@ -329,6 +360,13 @@ fetch_common_main()
             OPTION_TAG="$1"
          ;;
 
+         -u|--url)
+            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            shift
+
+            OPTION_URL="$1"
+         ;;
+
          #
          # ugly hackish options
          #
@@ -354,7 +392,6 @@ fetch_common_main()
             OPTION_TOOL_OPTIONS="$1"
          ;;
 
-
          -*)
             log_error "${MULLE_EXECUTABLE_FAIL_PREFIX}: Unknown fetch option $1"
             ${USAGE}
@@ -371,7 +408,7 @@ fetch_common_main()
 
    if [ ! -f "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${OPTION_SCM}.sh" ]
    then
-      fail "${OPTION_SCM} is not supported (no plugin found)"
+      fail "SCM \"${OPTION_SCM}\" is not supported (no plugin found)"
    fi
 
    # shellcheck source=plugins/symlink.sh
@@ -385,32 +422,52 @@ fetch_common_main()
    local cmd
 
    case "${COMMAND}" in
-      clone|fetch|set-url)
-         [ $# -lt 2 ] && log_error "missing argument to \"${COMMAND}\"" && ${USAGE}
-         [ $# -gt 2 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
-
-         url="$1"
-         directory="$2"
-      ;;
-
       operations)
          [ $# -ne 0 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
          source_list_supported_operations "${OPTION_SCM}"
          return
       ;;
 
-      search-local)
-         [ $# -eq 0 ] && log_error "missing argument to \"${COMMAND}\"" && ${USAGE}
-         [ $# -ne 1 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
-         url="$1"
-      ;;
-
-      *)
-         [ $# -eq 0 ] && log_error "missing argument to \"${COMMAND}\"" && ${USAGE}
-         [ $# -ne 1 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
-         directory="$1"
+      plugins)
+         [ $# -ne 0 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
+         source_list_plugins
+         return
       ;;
    esac
+
+   #
+   # ugliness ensues, but having a uniform way of
+   #
+   if [ -z "${OPTION_URL}" ]
+   then
+      case "${COMMAND}" in
+         clone|fetch|set-url)
+            [ $# -lt 2 ] && log_error "missing argument to \"${COMMAND}\"" && ${USAGE}
+            [ $# -gt 2 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
+
+            url="$1"
+            directory="$2"
+         ;;
+
+         search-local|guess)
+            [ $# -eq 0 ] && log_error "missing argument to \"${COMMAND}\"" && ${USAGE}
+            [ $# -ne 1 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
+            url="$1"
+         ;;
+
+         *)
+            [ $# -eq 0 ] && log_error "missing argument to \"${COMMAND}\"" && ${USAGE}
+            [ $# -ne 1 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
+            directory="$1"
+         ;;
+      esac
+   else
+      # uniform scheme, when URL is passed
+      # doen't check superflous  or absent arguments
+
+      url="${OPTION_URL}"
+      directory="$1"
+   fi
 
    name="$(basename -- "${directory}")"
 
@@ -451,6 +508,26 @@ fetch_operations_main()
 
    USAGE="fetch_operations_usage"
    COMMAND="operations"
+   fetch_common_main "$@"
+}
+
+
+fetch_plugins_main()
+{
+   log_entry "fetch_operations_main" "$@"
+
+   USAGE="fetch_plugins_usage"
+   COMMAND="plugins"
+   fetch_common_main "$@"
+}
+
+
+fetch_guess_main()
+{
+   log_entry "fetch_guess_main" "$@"
+
+   USAGE="fetch_guess_usage"
+   COMMAND="guess"
    fetch_common_main "$@"
 }
 
@@ -515,12 +592,12 @@ fetch_commands_initialize()
       . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-operation.sh" || exit 1
    fi
 
-   if [ -z "${MULLE_FUNCTIONS_SH}" ]
+   if [ -z "${MULLE_BASHFUNCTIONS_SH}" ]
    then
       [ -z "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}" ] && internal_fail "MULLE_BASHFUNCTIONS_LIBEXEC_DIR is empty"
 
-      # shellcheck source=../../mulle-bashfunctions/src/mulle-functions.sh
-      . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-functions.sh" || exit 1
+      # shellcheck source=../../mulle-bashfunctions/src/mulle-bashfunctions.sh
+      . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-bashfunctions.sh" || exit 1
    fi
 }
 

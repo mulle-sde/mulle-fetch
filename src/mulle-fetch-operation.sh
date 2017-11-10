@@ -44,7 +44,6 @@ fetch_log_action()
    local sourceoptions="$7"   # options to use on source
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
-
    local proposition
 
    case "${action}" in
@@ -62,7 +61,7 @@ fetch_log_action()
          fi
       ;;
 
-      search-local)
+      search-local|guess)
          [ -z "${url}" ]      && internal_fail "parameter: url is empty"
          proposition=" "
       ;;
@@ -154,66 +153,6 @@ fetch_get_local_item()
 }
 
 
-fetch_has_system_include()
-{
-   local name="$1"
-
-   local include_search_path="${HEADER_SEARCH_PATH}"
-
-   if [ -z "${include_search_path}" ]
-   then
-      case "${UNAME}" in
-         mingw)
-            include_search_path="~/include"
-         ;;
-
-         "")
-            fail "UNAME not set yet"
-         ;;
-
-         darwin)
-            # should check xcode paths too
-            include_search_path="/usr/local/include:/usr/include"
-         ;;
-
-         *)
-            include_search_path="/usr/local/include:/usr/include"
-         ;;
-      esac
-   fi
-
-   local includedir
-   local includefile
-
-   includedir="`echo "${name}" | tr '-' '_'`"
-   includefile="${includedir}.h"
-
-   if [ "${includedir}" = "${name}" ]
-   then
-      includedir=""
-   fi
-
-   IFS=":"
-   for i in ${include_search_path}
-   do
-      IFS="${DEFAULT_IFS}"
-
-      if [ -d "${i}/${name}" -o -f "${i}/${includefile}" ]
-      then
-         return 0
-      fi
-
-      if [ ! -z "${includedir}" ] && [ -d "${i}/${includedir}" ]
-      then
-         return 0
-      fi
-   done
-
-   IFS="${DEFAULT_IFS}"
-   return 1
-}
-
-
 _fetch_operation()
 {
    log_entry "_fetch_operation" "$@"
@@ -228,12 +167,6 @@ _fetch_operation()
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
    [ $# -eq 8 ] || internal_fail "parameters imcomplete"
-
-   if [ "${OPTION_CHECK_SYSTEM_INCLUDE}" = "YES" ] && fetch_has_system_include "${name}"
-   then
-      log_info "${C_MAGENTA}${C_BOLD}${name}${C_INFO} is a system library, so not fetching it"
-      return 1
-   fi
 
    if [ -e "${dstdir}" ]
    then
@@ -371,29 +304,6 @@ fetch_do_operation()
 
    log_debug "fetch_do_operation \"${opname}\": \"${sourcetype}\" returns with ${rval}"
    return "${rval}"
-}
-
-
-removed_clone_functionality()
-{
-   if [ -e "${dstdir}" ]
-   then
-      if [ "${url}" = "${dstdir}" ]
-      then
-         if is_master_bootstrap_project
-         then
-            is_minion_bootstrap_project "${dstdir}" || fail "\"${dstdir}\" \
-should be a minion but it isn't.
-Suggested fix:
-   ${C_RESET}${C_BOLD}cd \"${dstdir}\" ; ${MULLE_EXECUTABLE_NAME} defer \"\
-`symlink_relpath "${PWD}" "${dstdir}"`\
-\""
-            log_info "${C_MAGENTA}${C_BOLD}${name}${C_INFO} is a minion, so cloning is skipped"
-            return 1
-         fi
-      fi
-      bury_stash "${unused}" "${name}" "${dstdir}"
-   fi
 }
 
 :

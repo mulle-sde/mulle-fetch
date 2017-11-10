@@ -51,7 +51,7 @@ zip_clone_project()
    local archivename
 
    download="`basename --  "${url}"`"
-   archivename="`extension_less_basename "${download}"`"
+   archivename="`extensionless_basename "${download}"`"
 
    #
    # local urls don't need to be curled
@@ -61,7 +61,8 @@ zip_clone_project()
    curlit="NO"
    case "${url}" in
       file:*)
-         ! source_check_file_url "${url}" && return $?
+         url="`source_check_file_url "${url}"`"
+         [ $? -eq 0 ] || return 1
       ;;
 
       *:*)
@@ -69,7 +70,8 @@ zip_clone_project()
       ;;
 
       *)
-         ! source_check_file_url "${url}" && return $?
+         url="`source_check_file_url "${url}"`"
+         [ $? -eq 0 ] || return 1
       ;;
    esac
 
@@ -78,32 +80,7 @@ zip_clone_project()
    (
       exekutor cd "${tmpdir}" || return 1
 
-      if [ "${curlit}" = "YES" ]
-      then
-         log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
-
-         local options
-
-         options="`get_sourceoption "${sourceoptions}" "curl"`"
-
-         exekutor curl -O -L ${options} ${OPTION_CURL_OPTIONS} "${url}" || fail "failed to download \"${url}\""
-      else
-         if [ "${url}" != "${download}" ]
-         then
-            case "${UNAME}" in
-               mingw)
-                  exekutor cp "${url}" "${download}"
-               ;;
-
-               *)
-                  exekutor ln -s "${url}" "${download}"
-               ;;
-            esac
-         fi
-      fi
-
-      validate_download "${download}" "${sourceoptions}" || return 1
-
+      archive_download "${url}" "${download}" "${curlit}" "${sourceoptions}"
       log_verbose "Extracting ${C_MAGENTA}${C_BOLD}${download}${C_INFO} ..."
 
       exekutor unzip -q ${OPTION_TOOL_FLAGS} "${download}" || return 1
@@ -119,6 +96,16 @@ zip_search_local_project()
    log_entry "zip_search_local_project" "$@"
 
    archive_search_local "$@"
+}
+
+
+zip_guess_project()
+{
+   log_entry "zip_guess_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   archive_guess_name_from_url "${url}" ".zip"
 }
 
 

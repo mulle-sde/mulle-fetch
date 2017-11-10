@@ -68,12 +68,13 @@ git_get_default_remote()
 
 git_add_remote()
 {
-   [ -z "$1" -o -z "$2" -o -z "$3" ] && internal_fail "empty parameter"
-   [ ! -d "$1" ] && internal_fail "directory does not exist"
-
    local repository="$1"
    local remote="$2"
    local url="$3"
+
+   [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+
 
    (
       cd "${repository}" &&
@@ -84,12 +85,12 @@ git_add_remote()
 
 git_set_url()
 {
-   [ -z "$1" -o -z "$2" -o -z "$3" ] && internal_fail "empty parameter"
-   [ ! -d "$1" ] && internal_fail "directory does not exist"
-
    local repository="$1"
    local remote="$2"
    local url="$3"
+
+   [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
 
    (
       cd "${repository}" &&
@@ -100,10 +101,10 @@ git_set_url()
 
 git_unset_default_remote()
 {
-   [ -z "$1" ] && internal_fail "empty parameter"
-   [ ! -d "$1" ] && internal_fail "directory does not exist"
-
    local repository="$1"
+
+   [ -z "${repository}" ] && internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
 
    (
       cd "${repository}" &&
@@ -114,8 +115,12 @@ git_unset_default_remote()
 
 git_set_default_remote()
 {
-   [ -z "$1" -o -z "$2" -o -z "$3" ] && internal_fail "empty parameter"
-   [ ! -d "$1" ] && internal_fail "directory does not exist"
+   local repository="$1"
+   local remote="$2"
+   local url="$3"
+
+   [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
 
    local repository="$1"
    local remote="$2"
@@ -131,11 +136,14 @@ git_set_default_remote()
 
 git_has_branch()
 {
-   [ -z "$1" -o -z "$2" ] && internal_fail "empty parameter"
-   [ ! -d "$1" ] && internal_fail "directory does not exist"
+   local repository="$1"
+   local branch="$2"
+
+   [ -z "${repository}" -o -z "${branch}" ] && internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
 
    (
-      cd "$1" &&
+      cd "${repository}" &&
       git branch | cut -c3- | fgrep -q -s -x "$2" > /dev/null
    )
 }
@@ -313,63 +321,6 @@ git_is_bare_repository()
                git rev-parse --is-bare-repository 2> /dev/null
              )" || internal_fail "wrong \"$1\" for \"`pwd`\""
    [ "${is_bare}" = "true" ]
-}
-
-
-#
-# will this run over embedded too ?
-#
-_run_git_on_stash()
-{
-   local i="$1" ; shift
-
-   if [ -d "${i}/.git" -o -d "${i}/refs" ]
-   then
-      log_info "### $i:"
-      (
-         cd "$i" ;
-         exekutor git ${OPTION_TOOL_FLAGS} "$@" ${OPTION_TOOL_OPTIONS}  >&2
-      ) || fail "git failed"
-      log_info
-   fi
-}
-
-
-#
-# todo: let user select what repositories are affected
-#
-run_git()
-{
-   local i
-
-   IFS="
-"
-   for i in `all_repository_stashes`
-   do
-      IFS="${DEFAULT_IFS}"
-
-      _run_git_on_stash "$i" "$@"
-   done
-
-   IFS="
-"
-   for i in `all_embedded_repository_stashes`
-   do
-      IFS="${DEFAULT_IFS}"
-
-      _run_git_on_stash "$i" "$@"
-   done
-
-   IFS="
-"
-   for i in `all_deep_embedded_repository_stashes`
-   do
-      IFS="${DEFAULT_IFS}"
-
-      _run_git_on_stash "$i" "$@"
-   done
-
-   IFS="${DEFAULT_IFS}"
 }
 
 
