@@ -48,8 +48,8 @@ _git_get_mirror_url()
 
    local mirrordir
 
-   mkdir_if_missing "${OPTION_MIRROR_DIR}/${fork}"
-   mirrordir="${OPTION_MIRROR_DIR}/${fork}/${name}" # try to keep it global
+   mkdir_if_missing "${MULLE_FETCH_MIRROR_DIR}/${fork}"
+   mirrordir="${MULLE_FETCH_MIRROR_DIR}/${fork}/${name}" # try to keep it global
 
    local match
 
@@ -162,7 +162,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       ;;
 
       *:*)
-         if [ ! -z "${OPTION_MIRROR_DIR}" ]
+         if [ ! -z "${MULLE_FETCH_MIRROR_DIR}" ]
          then
             originalurl="${url}"
             url="`_git_get_mirror_url "${url}" "${mirroroptions}"`" || return 1
@@ -224,10 +224,10 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
 
       #
       # too expensive for me, because it must fetch now to
-      # get the origin branch. Funnily enough it works fine
+      # get the origin branch. Funnily enough git works fine
       # even without it..
       #
-      if read_yes_no_config_setting "git_set_default_remote"
+      if [ "${MULLE_FETCH_SET_GIT_DEFAULT_REMOTE}" = "YES" ]
       then
          git_set_default_remote "${dstdir}" "origin" "${branch}"
       fi
@@ -274,7 +274,7 @@ _get_fetch_remote()
       ;;
 
       *:*)
-         if [ ! -z "${OPTION_MIRROR_DIR}" ]
+         if [ ! -z "${MULLE_FETCH_MIRROR_DIR}" ]
          then
             _git_get_mirror_url "${url}" > /dev/null || return 1
             remote="mirror"
@@ -293,6 +293,8 @@ _get_fetch_remote()
 git_clone_project()
 {
    log_entry "git_clone_project" "$@"
+
+   source_prepare_filesystem_for_fetch "${dstdir}"
 
    if ! __git_clone "$@"
    then
@@ -508,7 +510,7 @@ git_set_url_project()
 
 git_search_local_project()
 {
-   log_entry "git_search_local_project [${OPTION_SEARCH_PATH}]" "$@"
+   log_entry "git_search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
 #   local unused="$1"
 #   local name="$2"

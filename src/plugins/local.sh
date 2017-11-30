@@ -28,66 +28,39 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SYMLINK_SH="included"
+MULLE_FETCH_PLUGIN_LOCAL_SH="included"
 
 
 ###
 ### PLUGIN API
 ###
 
-symlink_clone_project()
+#
+# this is useful in mulle-sourcetree to add existing subprojects that
+# need to be compiled separately
+#
+local_clone_project()
 {
-#   local unused="$1"
-#   local name="$2"         # name of the clone
-   local url="$3"           # URL of the clone
-   local branch="$4"        # branch of the clone
-   local tag="$5"           # tag to checkout of the clone
-#   local sourcetype="$6"          # source to use for this clone
-#   local sourceoptions="$7"   # options to use on source
-   local dstdir="$8"      # dstdir of this clone (absolute or relative to $PWD)
+   [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   source_prepare_filesystem_for_fetch "${dstdir}"
+   local unused="$1" ; shift
+   local name="$1"; shift
+   local url="$1"; shift
+   local branch="$1"; shift
+   local tag="$1"; shift
+   local sourcetype="$1"; shift
+   local sourceoptions="$1"; shift
+   local dstdir="$1"; shift
 
-   if ! exekutor create_symlink "${url}" "${dstdir}" "${OPTION_ABSOLUTE_SYMLINK:-NO}"
-   then
-      return 1
-   fi
+   [ ! -e "${dstdir}" ] && fail "${dstdir} not present"
 
-   local branchlabel
-
-   branchlabel="branch"
-   if [ -z "${branch}" -a ! -z "${tag}" ]
-   then
-      branchlabel="tag"
-      branch="${tag}"
-   fi
-
-   if [ "${branch}" != "master" -a ! -z "${branch}" ]
-   then
-      log_warning "The intended ${branchlabel} ${C_RESET_BOLD}${branch}${C_WARNING_TEXT} \
-will be ignored, because the repository is symlinked.
-If you want to checkout this ${branchlabel} do:
-   ${C_RESET}(cd ${dstdir}; git checkout ${OPTION_TOOL_OPTIONS} \"${branch}\" )${C_WARNING}"
-   fi
+   :
 }
 
 
-symlink_search_local_project()
+local_guess_project()
 {
-   log_entry "symlink_search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
-
-   local url="$1"
-   local name="$2"
-   local branch="$3"
-
-   source_search_local_path "${name}" "${branch}" "" "YES"
-}
-
-
-
-symlink_guess_project()
-{
-   log_entry "symlink_guess_project" "$@"
+   log_entry "local_guess_project" "$@"
 
    source_guess_project "$@"
 }

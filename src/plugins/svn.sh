@@ -35,6 +35,10 @@ MULLE_FETCH_PLUGIN_SVN_SH="included"
 ### PLUGIN API
 ###
 
+#
+# if svn wants to use MULLE_FETCH_MIRROR_DIR, it should
+# make a svn subdirectory
+#
 svn_clone_project()
 {
    [ $# -lt 8 ] && internal_fail "parameters missing"
@@ -47,6 +51,8 @@ svn_clone_project()
    local sourcetype="$1"; shift
    local sourceoptions="$1"; shift
    local dstdir="$1"; shift
+
+   source_prepare_filesystem_for_fetch "${dstdir}"
 
    local options
 
@@ -136,7 +142,7 @@ svn_status_project()
 
 svn_search_local_project()
 {
-   log_entry "git_search_local_project [${OPTION_SEARCH_PATH}]" "$@"
+   log_entry "git_search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
    local url="$1"
    local name="$2"

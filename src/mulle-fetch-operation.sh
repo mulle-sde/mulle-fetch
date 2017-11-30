@@ -50,7 +50,6 @@ fetch_log_action()
       fetch|clone)
          [ -z "${url}" ]    && internal_fail "parameter: url is empty"
          [ -z "${dstdir}" ] && internal_fail "parameter: dstdir is empty"
-         [ -d "${dstdir}" ] && fail "Directory ${C_RESET_BOLD}${dstdir}${C_ERROR_TEXT} already exists"
 
          proposition=" into "
          if [ -L "${url}" ]
@@ -91,9 +90,9 @@ can_symlink_it()
       return 1
    fi
 
-   if [ "${OPTION_SYMLINKS}" != "YES" ]
+   if [ "${OPTION_SYMLINK}" != "YES" ]
    then
-      log_fluff "Not allowed to symlink it. (Use --symlinks to allow)"
+      log_fluff "Not allowed to symlink it. (Use --symlink to allow)"
       return 1
    fi
 
@@ -134,7 +133,7 @@ fetch_get_local_item()
    local sourceoptions="$7"   # options to use on source
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
-   if [ -z "${OPTION_SEARCH_PATH}" ]
+   if [ -z "${MULLE_FETCH_SEARCH_PATH}" ]
    then
       log_fluff "Not searching local filesystem because --local-search-path not specified"
       return
@@ -167,16 +166,6 @@ _fetch_operation()
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
    [ $# -eq 8 ] || internal_fail "parameters imcomplete"
-
-   if [ -e "${dstdir}" ]
-   then
-      if [ "${MULLE_FLAG_MAGNUM_FORCE}" = "NO" ]
-      then
-         fail "\"${dstdir}\" already exists"
-      fi
-      rmdir_safer "${dstdir}" || exit 1
-   fi
-   mkdir_parent_if_missing "${dstdir}" > /dev/null
 
    local found
    local rval

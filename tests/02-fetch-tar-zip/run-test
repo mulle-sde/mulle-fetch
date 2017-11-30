@@ -29,9 +29,21 @@ setup_demo_repo()
    (
       set -e
       mkdir_if_missing "$1" &&
-      exekutor cd "$1" && _setup_demo_repo
+      ( exekutor cd "$1" && _setup_demo_repo ) &&
       set +e
-   )
+   ) || internal_fail "fail"
+}
+
+
+setup_demo_tar()
+{
+   tar cfz "$1" "$2" || internal_fail "fail"
+}
+
+
+setup_demo_zip()
+{
+   zip -u -q -r "$1" "$2" || internal_fail "fail"
 }
 
 
@@ -56,64 +68,33 @@ main()
 
    _options_mini_main "$@"
 
-   case "${UNAME}" in
-      mingw)
-         log_warning "Symlinks don't work on mingw. Test skipped"
-         exit 0
-      ;;
-   esac
-
    local directory
    local dstdir
    local repo
-   local rval
+   local archive
 
    directory="`make_tmp_directory`" || exit 1
    directory="${directory:-/tmp/exekutor}"
 
    repo="${directory}/repo"
-   dstdir="${directory}/dstdir"
+   dstdir="${directory}/here"
 
    setup_demo_repo "${repo}" || exit 1
 
-   run_mulle_fetch fetch -2 -l "${directory}" "${repo}" "${dstdir}"
-   rval=$?
-   case "${rval}" in
-      0)
-         [ ! -e "${dstdir}" ] && fail "Failed to create dstdir"
-         [ ! -L "${dstdir}" ] && fail "Failed to create a symlink"
-         fail "wrong return code (0 instead of 2)"
-      ;;
+   archive="${directory}/repo-x.y.z.tgz"
+   setup_demo_tar "${archive}" "${repo}"  || exit 1
 
-      2)
-         [ ! -L "${dstdir}" ] && fail "failed to create the proper symlink"
-      ;;
-
-      *)
-         fail "Failed with return code $rval"
-         exit 1
-      ;;
-   esac
-
+   run_mulle_fetch fetch -s tar "${archive}" "${dstdir}" || exit 1
    expect_version "${dstdir}" "1.0.0"
-   remove_file_if_present "${dstdir}"
-
+   rmdir_safer "${dstdir}"
    log_verbose "----- #1 PASSED -----"
 
-   run_mulle_fetch fetch --symlink "${repo}" "${dstdir}"
-   case $? in
-      0)
-         [ ! -L "${dstdir}" ] && fail "failed to create the proper symlink"
-      ;;
+   archive="${directory}/repo-x.y.z.zip"
+   setup_demo_zip "${archive}" "${repo}"  || exit 1
 
-      2)
-         fail "returned a 2 where it should not have"
-      ;;
-
-      *)
-         exit 1
-      ;;
-   esac
+   run_mulle_fetch fetch -s tar "${archive}" "${dstdir}" || exit 1
+   expect_version "${dstdir}" "1.0.0"
+   rmdir_safer "${dstdir}"
    log_verbose "----- #2 PASSED -----"
 
    log_info "----- ALL PASSED -----"

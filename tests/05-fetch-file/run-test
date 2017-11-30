@@ -1,0 +1,97 @@
+#! /usr/bin/env bash
+
+[ "${TRACE}" = "YES" ] && set -x
+
+
+run_mulle_fetch()
+{
+   log_fluff "####################################"
+   log_fluff ${MULLE_FETCH} ${MULLE_FETCH_FLAGS} "$@"
+   log_fluff "####################################"
+
+   exekutor ${MULLE_FETCH} ${MULLE_FETCH_FLAGS} "$@"
+}
+
+
+setup_demo_file()
+{
+   local parentdir
+
+   parentdir="`dirname -- "$1" `"
+   (
+      set -e
+      mkdir_if_missing "${parentdir}" &&
+      exekutor cd "${parentdir}" &&
+         redirect_exekutor "`basename -- "$1" `" echo "1.0.0"
+      set +e
+   )
+}
+
+
+expect_version()
+{
+   local dstdir="$1"
+   local expected="$2"
+
+   local version
+
+   version="`exekutor cat "${dstdir}/version"`"
+   if exekutor [ "${version}" != "${expected}" ]
+   then
+      exekutor fail "Expected to find version \"${expected}\" but got \"${version}\""
+   fi
+}
+
+
+main()
+{
+   MULLE_FETCH_FLAGS="$@"
+
+   _options_mini_main "$@"
+
+   local directory
+   local dstdir
+   local dstfile
+   local repo
+
+   directory="`make_tmp_directory`" || exit 1
+   directory="${directory:-/tmp/exekutor}"
+
+   filename="${directory}/storage/version"
+   dstdir="${directory}/dstdir"
+   dstfile="${dstdir}/version"
+
+   setup_demo_file "${filename}" || exit 1
+
+   run_mulle_fetch fetch -s file "${filename}" "${dstfile}" || exit 1
+   expect_version "${dstdir}" "1.0.0"
+   rmdir_safer "${dstdir}"
+   log_verbose "----- #1 PASSED -----"
+
+   # also try file:/// once which should be the same
+   run_mulle_fetch fetch -s file "file:///${filename}" "${dstfile}" || exit 1
+   expect_version "${dstdir}" "1.0.0"
+   rmdir_safer "${dstdir}"
+   log_verbose "----- #2 PASSED -----"
+
+   log_info "----- ALL PASSED -----"
+
+   rmdir_safer "${directory}"
+}
+
+
+
+init()
+{
+   MULLE_BASHFUNCTIONS_LIBEXEC_DIR="`mulle-bashfunctions-env library-path`" || exit 1
+
+   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-bashfunctions.sh" || exit 1
+
+   MULLE_FETCH="${MULLE_FETCH:-${PWD}/../../mulle-fetch}"
+}
+
+
+
+init "$@"
+main "$@"
+

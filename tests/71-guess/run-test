@@ -100,7 +100,7 @@ run_test2()
    expect_output "${result}" "tar"
    log_verbose "----- #15 PASSED -----"
 
-   result="`run_mulle_fetch typeguess https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.g?whatever`"
+   result="`run_mulle_fetch typeguess https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz?whatever`"
    expect_output "${result}" "tar"
    log_verbose "----- #17 PASSED -----"
 

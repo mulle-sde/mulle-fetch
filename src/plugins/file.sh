@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 #
-#   Copyright (c) 2015 Nat! - Mulle kybernetiK
+#   Copyright (c) 2017 Nat! - Mulle kybernetiK
 #   All rights reserved.
 #
 #   Redistribution and use in source and binary forms, with or without
@@ -28,12 +28,35 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_ZIP_SH="included"
+MULLE_FETCH_PLUGIN_FILE_SH="included"
 
 
-zip_clone_project()
+#
+# What we do is
+# a) download the file using curl
+# b) move it into place
+#
+_file_download()
 {
-   log_entry "zip_clone_project" "$@"
+   log_entry "_file_download" "$@"
+
+   local download="$1"  # where we expect the file to be
+   local url="$2"
+   local sourceoptions="$3"
+
+   source_download "${url}" "${download}" "${sourceoptions}"
+
+   [ -f "${download}" ] || internal_fail "expected file \"${download}\" is mising"
+}
+
+
+###
+### PLUGIN API
+###
+
+file_clone_project()
+{
+   log_entry "file_clone_project" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
@@ -44,62 +67,35 @@ zip_clone_project()
    local tag="$5"             # tag to checkout of the clone
    local sourcetype="$6"      # source to use for this clone
    local sourceoptions="$7"   # options to use on source
-   local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
+   local destination="$8"     # destination of file (absolute or relative to $PWD)
 
-   source_prepare_filesystem_for_fetch "${dstdir}"
+   local dstdir
 
-   local tmpdir
+   dstdir="`dirname -- "${destination}"`"
+   mkdir_if_missing "${dstdir}" || return 1
+
    local download
-   local archivename
 
-   download="`basename --  "${url}"`"
-   archivename="`extensionless_basename "${download}"`"
-
-   tmpdir="`make_tmp_directory`" || exit 1
+   download="`basename -- "${destination}"`"
    (
-      exekutor cd "${tmpdir}" || return 1
-
+      exekutor cd "${dstdir}" &&
       source_download "${url}" "${download}" "${sourceoptions}" "${curlit}"
-      log_verbose "Extracting ${C_MAGENTA}${C_BOLD}${download}${C_INFO} ..."
-
-      exekutor unzip -q ${OPTION_TOOL_FLAGS} "${download}" || return 1
-      exekutor rm "${download}"
    ) || return 1
-
-   archive_move_stuff "${tmpdir}" "${dstdir}" "${archivename}" "${name}"
 }
 
 
-zip_search_local_project()
+
+file_guess_project()
 {
-   log_entry "zip_search_local_project" "$@"
-
-   archive_search_local "$@"
-}
-
-
-zip_guess_project()
-{
-   log_entry "zip_guess_project" "$@"
+   log_entry "file_guess_project" "$@"
 
    local url="$3"             # URL of the clone
 
-   archive_guess_name_from_url "${url}" ".zip"
+   local urlpath
+
+   urlpath="`url_get_path "${url}"`"
+
+   basename -- "${urlpath}"
 }
-
-
-zip_plugin_initialize()
-{
-   log_entry "zip_plugin_initialize"
-
-   if [ -z "${MULLE_FETCH_ARCHIVE_SH}" ]
-   then
-      # shellcheck source=src/mulle-fetch-archive.sh
-      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-archive.sh" || exit 1
-   fi
-}
-
-
-zip_plugin_initialize
 
 :

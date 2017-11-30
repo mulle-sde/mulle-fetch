@@ -185,7 +185,7 @@ source_search_local()
 
 source_search_local_path()
 {
-   log_entry "source_search_local_path [${OPTION_SEARCH_PATH}]" "$@"
+   log_entry "source_search_local_path [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
    local name="$1"
    local branch="$2"
@@ -199,14 +199,14 @@ source_search_local_path()
 
    [ -z "${name}" ] && internal_fail "empty name"
 
-   if [ "${MULLE_FLAG_LOG_LOCAL}" = "YES" -a -z "${OPTION_SEARCH_PATH}" ]
+   if [ "${MULLE_FLAG_LOG_LOCAL}" = "YES" -a -z "${MULLE_FETCH_SEARCH_PATH}" ]
    then
-      log_trace "OPTION_SEARCH_PATH is empty"
+      log_trace "MULLE_FETCH_SEARCH_PATH is empty"
    fi
 
    curdir="`pwd -P`"
    IFS=":"
-   for directory in ${OPTION_SEARCH_PATH}
+   for directory in ${MULLE_FETCH_SEARCH_PATH}
    do
       IFS="${DEFAULT_IFS}"
 
@@ -222,7 +222,8 @@ source_search_local_path()
       realdir="`realpath "${directory}"`"
       if [ "${realdir}" = "${curdir}" ]
       then
-         fail "Search path mistakenly contains \"${directory}\", which is the current directory"
+         fail "Search path mistakenly contains \"${directory}\", which is \
+the current directory"
       fi
 
       found="`source_search_local "$@" "${realdir}"`"
@@ -249,13 +250,13 @@ source_operation()
    local url="$3"             # URL of the clone
    local branch="$4"          # branch of the clone
    local tag="$5"             # tag to checkout of the clone
-   local sourcetype="$6"          # source to use for this clone
+   local sourcetype="$6"      # source to use for this clone
    local sourceoptions="$7"   # options to use on source
-   local dstdir="$8"        # dstdir of this clone (absolute or relative to $PWD)
+   local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
    local operation
 
-   operation="`get_source_function "${sourcetype}" "${opname}"`"
+   operation="`get_source_function "${sourcetype}" "${opname}" `"
    if [ -z "${operation}" ]
    then
       return 111
@@ -263,7 +264,7 @@ source_operation()
 
    local parsed_sourceoptions
 
-   parsed_sourceoptions="`parse_sourceoptions "${sourceoptions}"`" || exit 1
+   parsed_sourceoptions="`parse_sourceoptions "${sourceoptions}" `" || exit 1
 
    "${operation}" "${unused}" \
                   "${name}" \
@@ -274,6 +275,42 @@ source_operation()
                   "${parsed_sourceoptions}" \
                   "${dstdir}"
 }
+
+
+source_prepare_filesystem_for_fetch()
+{
+   log_entry "source_prepare_for_fetch" "$@"
+
+   if [ -e "${dstdir}" ]
+   then
+      if [ "${MULLE_FLAG_MAGNUM_FORCE}" = "NO" ]
+      then
+         fail "\"${dstdir}\" already exists"
+      fi
+      rmdir_safer "${dstdir}" || exit 1
+   fi
+   mkdir_parent_if_missing "${dstdir}" > /dev/null
+}
+
+
+source_guess_project()
+{
+   log_entry "source_guess_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   if [ -z "${MULLE_FETCH_URL_SH}" ]
+   then
+      # shellcheck source=src/mulle-fetch-archive.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
+   fi
+
+   local urlpath
+
+   urlpath="`url_get_path "${url}"`"
+   basename -- "${urlpath}"
+}
+
 
 source_all_plugin_names()
 {
@@ -334,6 +371,70 @@ _source_list_supported_operations()
       fi
    done
 }
+
+
+source_download()
+{
+   log_entry "source_download" "$@"
+
+   local url="$1"
+   local download="$2"
+   local sourceoptions="$3"
+
+   local options
+
+   [ -z "${MULLE_FETCH_CURL_SH}" ] && \
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-curl.sh"
+
+   #
+   # local urls don't need to be curled
+   #
+   local curlit
+
+   curlit="NO"
+   case "${url}" in
+      file:*)
+         url="`source_check_file_url "${url}"`"
+         [ $? -eq 0 ] || return 1
+      ;;
+
+      *:*)
+         curlit="YES"
+      ;;
+
+      *)
+         url="`source_check_file_url "${url}"`"
+         [ $? -eq 0 ] || return 1
+      ;;
+   esac
+
+   if [ "${curlit}" = "YES" ]
+   then
+      curl_download "${url}" "${download}" "${sourceoptions}" \
+         || fail "failed to download \"${url}\""
+   else
+      if [ "${url}" != "${download}" ]
+      then
+         case "${UNAME}" in
+            mingw)
+               exekutor cp "${url}" "${download}"
+            ;;
+
+            *)
+               exekutor ln -s "${url}" "${download}"
+            ;;
+         esac
+      fi
+   fi
+
+   if ! curl_validate_download "${download}" "${sourceoptions}"
+   then
+      remove_file_if_present "${download}"
+      fail "Can't download archive from \"${url}\""
+   fi
+}
+
+
 
 
 source_known_operations()

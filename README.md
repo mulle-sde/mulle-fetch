@@ -68,16 +68,16 @@ then in `/usr/local/src`. If nothing is found the repository is cloned from
 mulle-fetch fetch --search-path ${HOME}/src:/usr/local/src https://github.com/mulle-nat/mulle-c11.git mulle-c11
 ```
 
-## Creating symbolic links to local projects 
+## Creating symbolic links to local projects
 
 > Symbolic links are not available on mingw.
 
 It may be inconvenient to clone a local project repository, when its
 development is still ongoing. You'd have to sync the clone to often.
-You can allow **mulle-fetch** with `--symlinks` to install a symlink instead with:
+You can allow **mulle-fetch** with `--symlink` to install a symlink instead with:
 
 ```
-mulle-fetch fetch --symlinks --search-path ${HOME}/src:/usr/local/src https://github.com/mulle-nat/mulle-c11.git mulle-c11
+mulle-fetch fetch --symlink --search-path ${HOME}/src:/usr/local/src https://github.com/mulle-nat/mulle-c11.git mulle-c11
 ```
 
 Since one is not actually cloning anything the found project directory, does

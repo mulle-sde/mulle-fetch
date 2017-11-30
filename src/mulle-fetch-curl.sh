@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 #
-#   Copyright (c) 2017 Nat! - Mulle kybernetiK
+#   Copyright (c) 2015 Nat! - Mulle kybernetiK
 #   All rights reserved.
 #
 #   Redistribution and use in source and binary forms, with or without
@@ -28,67 +28,85 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SYMLINK_SH="included"
+MULLE_FETCH_CURL_SH="included"
 
 
-###
-### PLUGIN API
-###
-
-symlink_clone_project()
+curl_validate_shasum256()
 {
-#   local unused="$1"
-#   local name="$2"         # name of the clone
-   local url="$3"           # URL of the clone
-   local branch="$4"        # branch of the clone
-   local tag="$5"           # tag to checkout of the clone
-#   local sourcetype="$6"          # source to use for this clone
-#   local sourceoptions="$7"   # options to use on source
-   local dstdir="$8"      # dstdir of this clone (absolute or relative to $PWD)
+   log_entry "curl_validate_shasum256" "$@"
 
-   source_prepare_filesystem_for_fetch "${dstdir}"
+   local filename="$1"
+   local expected="$2"
 
-   if ! exekutor create_symlink "${url}" "${dstdir}" "${OPTION_ABSOLUTE_SYMLINK:-NO}"
+   case "${UNAME}" in
+      mingw)
+         log_fluff "mingw does not support shasum" # or does it ?
+         return
+      ;;
+   esac
+
+   local shasum
+
+   shasum="${SHASUM}"
+   if [ -z "${shasum}" ]
    then
+      shasum="`command -v shasum`"
+   fi
+
+   [ -z "${shasum}" ] && fail "shasum is not in PATH"
+
+   local checksum
+
+   checksum="`${shasum} -a 256 -p "${filename}" | awk '{ print $1 }'`"
+   if [ "${expected}" != "${checksum}" ]
+   then
+      log_error "${filename} sha256 is ${checksum}, not ${expected} as expected"
       return 1
    fi
-
-   local branchlabel
-
-   branchlabel="branch"
-   if [ -z "${branch}" -a ! -z "${tag}" ]
-   then
-      branchlabel="tag"
-      branch="${tag}"
-   fi
-
-   if [ "${branch}" != "master" -a ! -z "${branch}" ]
-   then
-      log_warning "The intended ${branchlabel} ${C_RESET_BOLD}${branch}${C_WARNING_TEXT} \
-will be ignored, because the repository is symlinked.
-If you want to checkout this ${branchlabel} do:
-   ${C_RESET}(cd ${dstdir}; git checkout ${OPTION_TOOL_OPTIONS} \"${branch}\" )${C_WARNING}"
-   fi
+   log_fluff "shasum did validate \"${filename}\""
 }
 
 
-symlink_search_local_project()
+curl_validate_download()
 {
-   log_entry "symlink_search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
+   log_entry "curl_validate_download" "$@"
+
+   local filename="$1"
+   local sourceoptions="$2"
+
+   local checksum
+   local expected
+
+   expected="`get_sourceoption "$sourceoptions" "shasum256"`"
+   if [ -z "${expected}" ]
+   then
+      return
+   fi
+
+   curl_validate_shasum256 "${filename}" "${expected}"
+}
+
+
+curl_download()
+{
+   log_entry "curl_download" "$@"
 
    local url="$1"
-   local name="$2"
-   local branch="$3"
+   local download="$2"
+   local sourceoptions="$3"
 
-   source_search_local_path "${name}" "${branch}" "" "YES"
+   local options
+
+   log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+
+   options="`get_sourceoption "${sourceoptions}" "curl"`"
+   exekutor curl ${OPTION_CURL_FLAGS} \
+               -o "${download}" \
+               -O -L \
+               ${options} \
+               "${url}" || fail "failed to download \"${url}\""
 }
 
 
 
-symlink_guess_project()
-{
-   log_entry "symlink_guess_project" "$@"
-
-   source_guess_project "$@"
-}
-
+:

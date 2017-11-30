@@ -72,7 +72,7 @@ Options:
    --mirror-dir <dir>     : directory to mirror repositories (git)
    --refresh              : refresh mirrored repositories and cached archives
    --symlink-returns-2    : if a repository was symlinked return with code 2
-   --symlinks             : allow symlinks to be create
+   --symlink             : allow symlinks to be create
 EOF
 
 
@@ -254,17 +254,21 @@ fetch_common_main()
    local OPTION_TAG
    local OPTION_SCM="git"
    local OPTION_URL
+   local OPTION_SYMLINK="DEFAULT"
    local OPTION_REFRESH="DEFAULT"
-   local OPTION_ABSOLUTE_SYMLINKS="NO"
+   local OPTION_ABSOLUTE_SYMLINK="NO"
    local OPTION_SYMLINK_RETURNS_2="NO"
 
    local OPTION_OPTIONS
    local OPTION_TOOL_FLAGS
    local OPTION_TOOL_OPTIONS
 
-   local OPTION_SEARCH_PATH
-   local OPTION_CACHE_DIR
-   local OPTION_MIRROR_DIR
+#
+# there are not local but can be set by the environment
+#
+#   local MULLE_FETCH_SEARCH_PATH
+#   local MULLE_FETCH_CACHE_DIR
+#   local MULLE_FETCH_MIRROR_DIR
 
    # need this for usage now
 
@@ -286,25 +290,25 @@ fetch_common_main()
             OPTION_REFRESH="NO"
          ;;
 
-         --symlinks)
-            OPTION_SYMLINKS="YES"
+         --symlink)
+            OPTION_SYMLINK="YES"
          ;;
 
          --no-symlinks)
-            OPTION_ABSOLUTE_SYMLINKS="NO"
+            OPTION_ABSOLUTE_SYMLINK="NO"
          ;;
 
          --absolute-symlinks)
-            OPTION_SYMLINKS="YES"
-            OPTION_ABSOLUTE_SYMLINKS="YES"
+            OPTION_SYMLINK="YES"
+            OPTION_ABSOLUTE_SYMLINK="YES"
          ;;
 
          --no-absolute-symlinks)
-            OPTION_ABSOLUTE_SYMLINKS="NO"
+            OPTION_ABSOLUTE_SYMLINK="NO"
          ;;
 
          -2|--symlink-returns-2)
-            OPTION_SYMLINKS="YES"
+            OPTION_SYMLINK="YES"
             OPTION_SYMLINK_RETURNS_2="YES"
          ;;
 
@@ -312,14 +316,14 @@ fetch_common_main()
             [ $# -eq 1 ] && fail "missing argument to \"$1\""
             shift
 
-            OPTION_CACHE_DIR="$1"
+            MULLE_FETCH_CACHE_DIR="$1"
          ;;
 
          --mirror-dir)
             [ $# -eq 1 ] && fail "missing argument to \"$1\""
             shift
 
-            OPTION_MIRROR_DIR="$1"
+            MULLE_FETCH_MIRROR_DIR="$1"
          ;;
 
          #
@@ -336,7 +340,7 @@ fetch_common_main()
             [ $# -eq 1 ] && fail "missing argument to \"$1\""
             shift
 
-            OPTION_SEARCH_PATH="$1"
+            MULLE_FETCH_SEARCH_PATH="$1"
          ;;
 
          -o|--options)

@@ -30,20 +30,40 @@
 #
 MULLE_FETCH_ARCHIVE_SH="included"
 
-find_single_directory_in_directory()
+_find_best_directory()
 {
+   local directory="$1"
+
    local count
-   local filename
+   local filenames
 
-   filename="`ls -1 "${tmpdir}"`"
-
-   count="`echo "$filename}" | wc -l`"
-   if [ $count -ne 1 ]
+   filenames="`ls -1A "${directory}" 2> /dev/null`"
+   if [ -z "${filenames}" ]
    then
+      echo "${directory}"
       return
    fi
 
-   echo "${tmpdir}/${filename}"
+   count="`echo "${filenames}" | wc -l`"
+   if [ $count -ne 1 ]
+   then
+      echo "${directory}"
+      return
+   fi
+
+   #
+   # Only one file here. Is it another directory ?
+   # If yes enter the rabbit hole
+   #
+   local next
+
+   next="${directory}/${filenames}"
+   if [ -d "${next}" ]
+   then
+      next="`_find_best_directory "${next}" `"
+   fi
+
+   echo "${next}"
 }
 
 
@@ -128,6 +148,8 @@ archive_move_stuff()
    local src
    local toremove
 
+   [ ! -e "${dstdir}" ] || internal_fail "destination must not exist"
+
    toremove="${tmpdir}"
 
    src="${tmpdir}/${archivename}"
@@ -136,14 +158,16 @@ archive_move_stuff()
       src="${tmpdir}/${name}"
       if [ ! -d "${src}" ]
       then
-         src="`find_single_directory_in_directory "${tmpdir}"`"
-         if [ -z "${src}" ]
+         src="`_find_best_directory "${tmpdir}"`"
+         if [ "${src}" = "${tmpdir}" ]
          then
-            src="${tmpdir}"
             toremove=""
          fi
       fi
    fi
+
+   log_debug "Moving \"${src}\" to \"${dstdir}\""
+   log_trace "src: `ls -lR "${src}" `"
 
    exekutor mv "${src}" "${dstdir}"
 
@@ -204,7 +228,7 @@ archive_search_local()
    local directory
 
    IFS=":"
-   for directory in ${OPTION_SEARCH_PATH}
+   for directory in ${MULLE_FETCH_SEARCH_PATH}
    do
       IFS="${DEFAULT_IFS}"
 
@@ -273,95 +297,5 @@ archive_guess_name_from_url()
    echo "${name}"
 }
 
-
-validate_shasum256()
-{
-   log_entry "validate_shasum256" "$@"
-
-   local filename="$1"
-   local expected="$2"
-
-   case "${UNAME}" in
-      mingw)
-         log_fluff "mingw does not support shasum" # or does it ?
-         return
-      ;;
-   esac
-
-
-   local checksum
-
-   checksum="`shasum -a 256 -p "${filename}" | awk '{ print $1 }'`"
-   if [ "${expected}" != "${checksum}" ]
-   then
-      log_error "${filename} sha256 is ${checksum}, not ${expected} as expected"
-      return 1
-   fi
-   log_fluff "shasum256 did validate \"${filename}\""
-}
-
-
-validate_download()
-{
-   log_entry "validate_download" "$@"
-
-   local filename="$1"
-   local sourceoptions="$2"
-
-   local checksum
-   local expected
-
-   expected="`get_sourceoption "$sourceoptions" "shasum256"`"
-   if [ -z "${expected}" ]
-   then
-      return
-   fi
-
-   validate_shasum256 "${filename}" "${expected}"
-}
-
-
-archive_download()
-{
-   log_entry "archive_download" "$@"
-
-   local url="$1"
-   local download="$2"
-   local curlit="$3"
-   local sourceoptions="$4"
-
-   local options
-
-   if [ "${curlit}" = "YES" ]
-   then
-      log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
-
-      options="`get_sourceoption "${sourceoptions}" "curl"`"
-      exekutor curl ${OPTION_CURL_FLAGS} \
-                  -o "${download}" \
-                  -O -L \
-                  ${options} \
-                  "${url}" || fail "failed to download \"${url}\""
-   else
-      if [ "${url}" != "${download}" ]
-      then
-         case "${UNAME}" in
-            mingw)
-               exekutor cp "${url}" "${download}"
-            ;;
-
-            *)
-               exekutor ln -s "${url}" "${download}"
-            ;;
-         esac
-      fi
-   fi
-
-   if ! validate_download "${download}" "${sourceoptions}"
-   then
-      remove_file_if_present "${download}"
-      fail "Can't download archive from \"${url}\""
-   fi
-}
 
 :

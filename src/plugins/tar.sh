@@ -129,7 +129,7 @@ archive_cache_grab()
    [ -z "${url}" ]      && internal_fail "url is empty"
    [ -z "${download}" ] && internal_fail "download is empty"
 
-   if [ -z "${OPTION_CACHE_DIR}" ]
+   if [ -z "${MULLE_FETCH_CACHE_DIR}" ]
    then
       log_fluff "Caching not active"
       return 2
@@ -154,7 +154,8 @@ archive_cache_grab()
       ;;
    esac
 
-   cachable_path="${OPTION_CACHE_DIR}/${filename}"
+   # tar and zip can share a cache due to file extension
+   cachable_path="${MULLE_FETCH_CACHE_DIR}/${filename}"
 
    #
    # if refresh is yes, ignore cache
@@ -188,7 +189,7 @@ archive_cache_grab()
 
    echo "${cached_archive}"
    echo "${cachable_path}"
-   echo "${OPTION_CACHE_DIR}"
+   echo "${MULLE_FETCH_CACHE_DIR}"
 
    return 1
 }
@@ -225,31 +226,9 @@ _tar_download()
    cachable_path="`echo "${results}"  | sed -n '2p'`"
    archive_cache="`echo "${results}"  | sed -n '3p'`"
 
-   #
-   # local urls don't need to be curled
-   #
-   local curlit
-
-   curlit="NO"
-   case "${url}" in
-      file:*)
-         url="`source_check_file_url "${url}"`"
-         [ $? -eq 0 ] || return 1
-      ;;
-
-      *:*)
-         curlit="YES"
-      ;;
-
-      *)
-         url="`source_check_file_url "${url}"`"
-         [ $? -eq 0 ] || return 1
-      ;;
-   esac
-
    if [ -z "${cached_archive}" ]
    then
-      archive_download "${url}" "${download}" "${curlit}" "${sourceoptions}"
+      source_download "${url}" "${download}" "${sourceoptions}"
    fi
 
    [ -f "${download}" ] || internal_fail "expected file \"${download}\" is mising"
@@ -281,6 +260,8 @@ tar_clone_project()
    local sourceoptions="$7"   # options to use on source
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
+   source_prepare_filesystem_for_fetch "${dstdir}"
+
    local tmpdir
    local archive
    local download
@@ -300,8 +281,7 @@ tar_clone_project()
       ;;
    esac
 
-   rmdir_safer "${name}.tmp"
-   tmpdir="`exekutor mktemp -d "${name}.XXXXXXXX"`" || return 1
+   tmpdir="`make_tmp_directory`" || exit 1
    (
       exekutor cd "${tmpdir}" || return 1
 

@@ -90,6 +90,7 @@ print_flags()
    options_technical_flags_usage
 }
 
+
 _usage()
 {
    local verbose="${1:-NO}"
@@ -130,8 +131,8 @@ EOF
 
 usage()
 {
-   _usage >&2
-   exit1
+   _usage "$@" >&2
+   exit 1
 }
 
 #
@@ -225,7 +226,7 @@ _init()
    MULLE_FETCH_LIBEXEC_DIR="`fetch_libexec_path "$0"`"
    if [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ]
    then
-      echo "Fatal Error: Could not find libexec for ${MULLE_EXECUTABLE} ($PWD)" >&2
+      echo "$0 fatal error: Could not find libexec ($PWD)" >&2
       exit 1
    fi
 
@@ -287,9 +288,7 @@ _init()
 
 main()
 {
-   local MULLE_FLAG_ANSWER="ASK"
    local MULLE_FLAG_MAGNUM_FORCE="NONE"
-   local MULLE_FLAG_IGNORE_GRAVEYARD="NO"
 
    # technical flags
    local MULLE_FLAG_EXEKUTOR_DRY_RUN="NO"
@@ -315,14 +314,6 @@ main()
       fi
 
       case "$1" in
-         -a|--prefer-origin)
-            MULLE_FLAG_ANSWER="NO"
-          ;;
-
-         -y|--prefer-local)
-            MULLE_FLAG_ANSWER="YES"
-         ;;
-
          -f|--force)
             MULLE_FLAG_MAGNUM_FORCE="BOTH"
          ;;
