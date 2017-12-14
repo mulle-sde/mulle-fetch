@@ -220,6 +220,10 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    if [ ! -z "${originalurl}" ]
    then
       git_unset_default_remote "${dstdir}"
+      if git_has_remote "${dstdir}" "origin"
+      then
+         git_remove_remote "${dstdir}" "origin"
+      fi
       git_add_remote "${dstdir}" "origin" "${originalurl}"
 
       #

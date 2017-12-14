@@ -242,6 +242,11 @@ EOF
 }
 
 
+#
+# In general fetch is interacted via arguments.
+# There are only a few environment variables, which are assumed to be
+# fairly constant and supply optional caching information
+#
 fetch_common_main()
 {
    log_entry "fetch_common_main" "$@"

@@ -75,10 +75,40 @@ git_add_remote()
    [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && internal_fail "empty parameter"
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
 
-
    (
       cd "${repository}" &&
       git remote add "${remote}" "${url}"
+   )
+}
+
+
+git_has_remote()
+{
+   local repository="$1"
+   local remote="$2"
+
+   [ -z "${repository}" -o -z "${remote}" ] && internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+
+   (
+      local remotes
+      cd "${repository}" &&
+      fgrep -q -x "${remote}" <<< "`git remote`"
+   )
+}
+
+
+git_remove_remote()
+{
+   local repository="$1"
+   local remote="$2"
+
+   [ -z "${repository}" -o -z "${remote}" ] && internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+
+   (
+      cd "${repository}" &&
+      git remote remove "${remote}"
    )
 }
 
