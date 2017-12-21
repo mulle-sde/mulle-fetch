@@ -1,6 +1,8 @@
-# mulle-fetch - 🏃🏿 Download and unpack source repositories or archives 
+# mulle-fetch - 🏃🏿 Download and unpack source repositories or archives
 
 ![Last version](https://img.shields.io/github/tag/mulle-nat/mulle-fetch.svg)
+
+... for Linux, OS X, FreeBSD, Windows
 
 Downloads [zip](http://eab.abime.net/showthread.php?t=5025) and [tar](http://www.grumpynerd.com/?p=132) archives.
 Clones [git](//enux.pl/article/en/2014-01-21/why-git-sucks) repositories and
@@ -23,7 +25,15 @@ macos | `brew install mulle-kybernetik/software/mulle-fetch`
 other | ./install.sh  (Requires: [mulle-bashfunctions](https://github.com/mulle-nat/mulle-bashfunctions))
 
 
-## How mulle-fetch works
+## What mulle-fetch does
+
+Essentially, `mulle-fetch` is a shortcut for either
+
+```
+curl -o download.tgz ${URL}.tgz
+tar xfz download.tgz
+mv download "${DST}"
+```
 
 One invariably specifies the **url** to download from and the **destination**
 directory to download to. The destination directory must not exist yet.

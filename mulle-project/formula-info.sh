@@ -3,7 +3,7 @@
 # formula operations.
 #
 PROJECT="mulle-fetch"      # your project/repository name
-DESC="🏃 Download and unpack source repositories or archives "
+DESC="🏃🏿 Download and unpack source repositories or archives"
 LANGUAGE="bash"                # c,cpp, objc, bash ...
 # NAME="${PROJECT}"        # formula filename without .rb extension
 
