@@ -47,7 +47,7 @@ fetch_log_action()
    local proposition
 
    case "${action}" in
-      fetch|clone)
+      clone)
          [ -z "${url}" ]    && internal_fail "parameter: url is empty"
          [ -z "${dstdir}" ] && internal_fail "parameter: dstdir is empty"
 
@@ -265,7 +265,7 @@ fetch_do_operation()
    local rval
 
    case "${opname}" in
-      "fetch"|"clone")
+      "clone")
          _fetch_operation "$@"
          rval="$?"
 
@@ -287,7 +287,15 @@ fetch_do_operation()
       ;;
 
       *)
-         log_error "\"${sourcetype}\": ${opname} failed for \"${name:-${url}}\""
+         case "${opname}" in
+            "search-local")
+               log_fluff "\"${sourcetype}\": ${opname} failed for \"${name:-${url}}\""
+            ;;
+
+            *)
+               log_error "\"${sourcetype}\": ${opname} failed for \"${name:-${url}}\""
+            ;;
+         esac
       ;;
    esac
 

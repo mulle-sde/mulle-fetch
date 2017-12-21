@@ -51,12 +51,12 @@ fetch_clone_usage()
 {
    cat <<EOF >&2
 Usage:
-   ${MULLE_EXECUTABLE_NAME} clone [options] <url> <directory>
+   ${MULLE_EXECUTABLE_NAME} fetch [options] <url> <directory>
 
    Specify the url to fetch and the directory to fetch into.
    By default the url is assumed to reference a git repository.
 
-      ${MULLE_EXECUTABLE_NAME} clone -b release https://is.gd/3a8oq2 /tmp/my-c11
+      ${MULLE_EXECUTABLE_NAME} fetch -b release https://is.gd/3a8oq2 /tmp/my-c11
 
    You can also use "fetch" as a synonym for fetch.
 
@@ -72,7 +72,7 @@ Options:
    --mirror-dir <dir>     : directory to mirror repositories (git)
    --refresh              : refresh mirrored repositories and cached archives
    --symlink-returns-2    : if a repository was symlinked return with code 2
-   --symlink             : allow symlinks to be create
+   --symlink              : allow symlinks to be create
 EOF
 
 
@@ -87,6 +87,7 @@ EOF
          echo "${plugins}" | sed 's/^/   /'
       ) >&2
    fi
+
    exit 1
 }
 
@@ -118,6 +119,7 @@ EOF
          echo "${plugins}" | sed 's/^/   /'
       ) >&2
    fi
+
    exit 1
 }
 
@@ -148,6 +150,7 @@ EOF
          echo "${plugins}" | sed 's/^/   /'
       ) >&2
    fi
+
    exit 1
 }
 
@@ -179,6 +182,7 @@ EOF
          echo "${plugins}" | sed 's/^/   /'
       ) >&2
    fi
+
    exit 1
 }
 
@@ -207,6 +211,7 @@ EOF
          echo "${plugins}" | sed 's/^/   /'
       ) >&2
    fi
+
    exit 1
 }
 
@@ -224,6 +229,8 @@ Options:
    -s <scm>         : repository or archive format (default git)
    -o <options>     : specify options for the scm (see documentation)
 EOF
+
+   exit 1
 }
 
 
@@ -239,6 +246,8 @@ Options:
    -s <scm>         : repository or archive format (default git)
    -o <options>     : specify options for the scm (see documentation)
 EOF
+
+   exit 1
 }
 
 
@@ -450,7 +459,7 @@ fetch_common_main()
    if [ -z "${OPTION_URL}" ]
    then
       case "${COMMAND}" in
-         clone|fetch|set-url)
+         clone|set-url)
             [ $# -lt 2 ] && log_error "missing argument to \"${COMMAND}\"" && ${USAGE}
             [ $# -gt 2 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
 

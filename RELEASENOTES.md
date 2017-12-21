@@ -1,3 +1,8 @@
+### 1.1.1
+
+* improve documentation a bit
+* two new plugins, local and file
+
 ## 1.1.0
 
 * rename test runner, add travis, general improvements too

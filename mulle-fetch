@@ -36,7 +36,7 @@ fi
 
 MULLE_EXECUTABLE_VERSION_MAJOR=1
 MULLE_EXECUTABLE_VERSION_MINOR=1
-MULLE_EXECUTABLE_VERSION_PATCH=0
+MULLE_EXECUTABLE_VERSION_PATCH=1
 
 MULLE_EXECUTABLE_VERSION="${MULLE_EXECUTABLE_VERSION_MAJOR}.${MULLE_EXECUTABLE_VERSION_MINOR}.${MULLE_EXECUTABLE_VERSION_PATCH}"
 
@@ -64,7 +64,7 @@ SHOWN_COMMANDS="\
 
 HIDDEN_COMMANDS="\
    guess         : guess final filename from url
-   library-path  : print path to mulle-fetch libexec
+   libexec-path  : print path to mulle-fetch libexec
    operations    : list operations available
    tag           : tag repository
    typeguess     : guess plugin name suitable for url
@@ -233,11 +233,12 @@ _init()
    #
    # minimal setup exit
    #
-   if [ "$1" = "library-path" ]
-   then
-      echo "${MULLE_FETCH_LIBEXEC_DIR}"
-      exit 0
-   fi
+   case "$1" in
+      "libexec-path"|"library-path")
+         echo "${MULLE_FETCH_LIBEXEC_DIR}"
+         exit 0
+      ;;
+   esac
 
    MULLE_BASHFUNCTIONS_LIBEXEC_DIR="`mulle-bashfunctions-env library-path 2> /dev/null`"
    if [ -z "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}" ]
@@ -367,7 +368,10 @@ main()
          fetch_checkout_main "$@"
       ;;
 
-      fetch|clone)
+      # for the user it's a fetch, but internally we call it
+      # a clone for historical reasons, and also fetch_fetch is
+      # stupid
+      fetch)
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
@@ -385,7 +389,7 @@ main()
          usage "${MULLE_TRACE}"
       ;;
 
-      library-path)
+      "libexec-path"|"library-path")
          echo "${MULLE_FETCH_LIBEXEC_DIR}"
       ;;
 
