@@ -92,7 +92,7 @@ main()
    archive="${directory}/repo-x.y.z.zip"
    setup_demo_zip "${archive}" "${repo}"  || exit 1
 
-   run_mulle_fetch fetch -s tar "${archive}" "${dstdir}" || exit 1
+   run_mulle_fetch fetch -s zip "${archive}" "${dstdir}" || exit 1
    expect_version "${dstdir}" "1.0.0"
    rmdir_safer "${dstdir}"
    log_verbose "----- #2 PASSED -----"

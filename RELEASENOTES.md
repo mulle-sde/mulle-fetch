@@ -1,3 +1,7 @@
+### 1.1.3
+
+* fix test bug and some uglies
+
 ### 1.1.2
 
 * Various small improvements

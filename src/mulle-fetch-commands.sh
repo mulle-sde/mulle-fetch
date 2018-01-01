@@ -222,7 +222,8 @@ fetch_search_local_usage()
 Usage:
    ${MULLE_EXECUTABLE_NAME} search-local [options] <name>
 
-   Find a repository in the local search path.
+   Find a repository in the local search path, which is defined by
+   MULLE_FETCH_SEARCH_PATH.
 
 Options:
    -l <dir:dir:...> : local search path for repositories

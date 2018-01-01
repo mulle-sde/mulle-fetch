@@ -45,6 +45,9 @@ fetch_log_action()
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
    local proposition
+   local info
+
+   info=" "
 
    case "${action}" in
       clone)
@@ -55,8 +58,6 @@ fetch_log_action()
          if [ -L "${url}" ]
          then
             info=" symlinked "
-         else
-            info=" "
          fi
       ;;
 
