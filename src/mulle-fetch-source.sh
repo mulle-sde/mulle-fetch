@@ -210,6 +210,11 @@ source_search_local_path()
    do
       IFS="${DEFAULT_IFS}"
 
+      if [ -z "${directory}" ]
+      then
+         continue
+      fi
+
       if [ ! -d "${directory}" ]
       then
          if [ "${MULLE_FLAG_LOG_LOCALS}" = "YES" ]

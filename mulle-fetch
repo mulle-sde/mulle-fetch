@@ -36,7 +36,7 @@ fi
 
 MULLE_EXECUTABLE_VERSION_MAJOR=1
 MULLE_EXECUTABLE_VERSION_MINOR=1
-MULLE_EXECUTABLE_VERSION_PATCH=3
+MULLE_EXECUTABLE_VERSION_PATCH=4
 
 MULLE_EXECUTABLE_VERSION="${MULLE_EXECUTABLE_VERSION_MAJOR}.${MULLE_EXECUTABLE_VERSION_MINOR}.${MULLE_EXECUTABLE_VERSION_PATCH}"
 
@@ -64,7 +64,7 @@ SHOWN_COMMANDS="\
 
 HIDDEN_COMMANDS="\
    guess         : guess final filename from url
-   libexec-path  : print path to mulle-fetch libexec
+   libexec-dir  : print path to mulle-fetch libexec
    operations    : list operations available
    tag           : tag repository
    typeguess     : guess plugin name suitable for url
@@ -234,7 +234,7 @@ _init()
    # minimal setup exit
    #
    case "$1" in
-      "libexec-path"|"library-path")
+      "libexec-dir"|"library-path")
          echo "${MULLE_FETCH_LIBEXEC_DIR}"
          exit 0
       ;;
@@ -389,7 +389,7 @@ main()
          usage "${MULLE_TRACE}"
       ;;
 
-      "libexec-path"|"library-path")
+      "libexec-dir"|"library-path")
          echo "${MULLE_FETCH_LIBEXEC_DIR}"
       ;;
 

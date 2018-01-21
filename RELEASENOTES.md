@@ -1,3 +1,7 @@
+### 1.1.4
+
+* libexec-dir is now used properly instead of library-path
+
 ### 1.1.3
 
 * fix test bug and some uglies

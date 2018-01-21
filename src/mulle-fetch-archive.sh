@@ -232,6 +232,11 @@ archive_search_local()
    do
       IFS="${DEFAULT_IFS}"
 
+      if [ -z "${directory}" ]
+      then
+         continue
+      fi
+
       found="`_archive_search_local "${directory}" "${name}" "${filename}"`" || exit 1
       if [ ! -z "${found}" ]
       then
