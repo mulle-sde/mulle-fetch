@@ -4,10 +4,9 @@
 
 ... for Linux, OS X, FreeBSD, Windows
 
-Downloads [zip](http://eab.abime.net/showthread.php?t=5025) and [tar](http://www.grumpynerd.com/?p=132) archives.
-Clones [git](//enux.pl/article/en/2014-01-21/why-git-sucks) repositories and
-it can also checkout
-[svn](//andreasjacobsen.com/2008/10/26/subversion-sucks-get-over-it/).
+* Downloads [zip](http://eab.abime.net/showthread.php?t=5025) and [tar](http://www.grumpynerd.com/?p=132) archives.
+* Clones [git](//enux.pl/article/en/2014-01-21/why-git-sucks) repositories and it can also checkout [svn](//andreasjacobsen.com/2008/10/26/subversion-sucks-get-over-it/).
+* Guess project names from URLs
 
 As a standalone tool, this can be marginally useful as it saves you some typework.
 
@@ -27,7 +26,7 @@ other | ./install.sh  (Requires: [mulle-bashfunctions](https://github.com/mulle-
 
 ## What mulle-fetch does
 
-Essentially, `mulle-fetch` is a shortcut for either
+Essentially, `mulle-fetch` is a shortcut for:
 
 ```
 curl -o download.tgz ${URL}.tgz
@@ -35,13 +34,9 @@ tar xfz download.tgz
 mv download "${DST}"
 ```
 
-One invariably specifies the **url** to download from and the **destination**
-directory to download to. The destination directory must not exist yet.
+One invariably specifies the **url** to download from and the **destination** directory to download to. The destination directory must not exist yet.
 
-Here are two ways to retrieve the tagged version
-[1.3.5](//github.com/mulle-nat/mulle-c11/releases/tag/1.3.5)
-of [mulle-c11](//github.com/mulle-nat/mulle-c11) from
-[github](//github.com).
+Here are two ways to retrieve the tagged version [1.3.5](//github.com/mulle-nat/mulle-c11/releases/tag/1.3.5) of [mulle-c11](//github.com/mulle-nat/mulle-c11) from [github](//github.com).
 
 #### Download and unpack a tar archive:
 
@@ -57,6 +52,15 @@ mulle-fetch fetch -t 1.3.5 https://github.com/mulle-nat/mulle-c11.git mulle-c11
 
 
 ## Tips and Tricks
+
+
+### Reduce the bandwidth
+
+A typical setup might look like this:
+
+![](dox/mulle-fetch-overview.png)
+
+The ideas are explained in the next three chapters. 
 
 #### Use a mirror for git repositories
 
@@ -75,6 +79,8 @@ option.
 mulle-fetch fetch --no-refresh --mirror-dir ~/.cache/mulle-fetch/git-mirrors/ https://github.com/mulle-nat/mulle-c11.git mulle-c11
 ```
 
+> You can also set the environment variable `MULLE_FETCH_MIRROR_DIR`.
+
 #### Use a cache for archives
 
 If you download archives often, it can be useful to cache them, to lighten the
@@ -83,6 +89,9 @@ bandwidth load with `--cache-dir`:
 ```
 mulle-fetch fetch --cache-dir ~/.cache/mulle-fetch/archives https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz mulle-c11
 ```
+
+> You can also set the environment variable `MULLE_FETCH_CACHE_DIR`.
+
 
 #### Use a search path for local repositories
 
@@ -99,6 +108,8 @@ then in `/usr/local/src`. If nothing is found the repository is cloned from
 ```
 mulle-fetch fetch --search-path ${HOME}/src:/usr/local/src https://github.com/mulle-nat/mulle-c11.git mulle-c11
 ```
+
+> You can also set the environment variable `MULLE_FETCH_SEARCH_PATH`.
 
 #### Create symbolic links to local projects
 
