@@ -58,8 +58,6 @@ Usage:
 
       ${MULLE_EXECUTABLE_NAME} fetch -b release https://is.gd/3a8oq2 /tmp/my-c11
 
-   You can also use "fetch" as a synonym for fetch.
-
 Options:
    -b <branch>      : the branch to fetch
    -l <dir:dir:...> : local search path for repositories

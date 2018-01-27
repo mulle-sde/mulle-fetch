@@ -1,3 +1,7 @@
+### 1.1.5
+
+* improved name guessing of github archives
+
 ### 1.1.4
 
 * libexec-dir is now used properly instead of library-path

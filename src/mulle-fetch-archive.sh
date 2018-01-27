@@ -253,6 +253,8 @@ archive_search_local()
 
 archive_guess_name_from_url()
 {
+   log_entry "archive_guess_name_from_url" "$@"
+
    local url="$1"             # URL of the clone
    local ext="$2"
 
@@ -264,9 +266,21 @@ archive_guess_name_from_url()
 
    local urlpath
    local archivename
-   local name
 
    urlpath="`url_get_path "${url}"`"
+
+   # remove version info or such
+
+   case "${url}" in
+      *github.com/*)
+         local tmp
+
+         tmp="`dirname -- "${urlpath}"`"
+         tmp="`dirname -- "${tmp}"`"
+         basename -- "${tmp}"
+         return
+      ;;
+   esac
 
    # remove .tar (or .zip et friends)
    archivename="`extensionless_basename "${urlpath}"`"
@@ -276,30 +290,10 @@ archive_guess_name_from_url()
       ;;
    esac
 
-   # remove version info or such
+   local name
 
-   name="`sed 's/[-]*[0-9]*\.[0-9]*\.[0-9]*[-]*//' <<< "${archivename}"`"
-   if [ ! -z "${name}" ]
-   then
-      echo "${name}"
-      return
-   fi
-
-   local tmp
-
-   #
-   # assume github archive  <name>/<branch>/<version>.tgz
-   #
-   tmp="`dirname -- "${urlpath}"`"
-   tmp="`dirname -- "${tmp}"`"
-   name="`basename -- "${tmp}"`"
-
-   if [ -z "${name}" ]
-   then
-      fail "Could not figure out name from path \"$urlpath\" of url \"$url\""
-   fi
-
-   echo "${name}"
+   # remove version info if present
+   sed 's/[-]*[0-9]*\.[0-9]*\.[0-9]*[-]*//' <<< "${archivename}"
 }
 
 
