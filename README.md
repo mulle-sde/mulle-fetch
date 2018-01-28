@@ -68,7 +68,8 @@ If you clone certain (git) repositories often, it can be useful to use a mirror
 to lighten the bandwidth load with `--mirror-dir`:
 
 ```
-mulle-fetch fetch --mirror-dir ~/.cache/mulle-fetch/git-mirrors/ https://github.com/mulle-nat/mulle-c11.git mulle-c11
+mulle-fetch fetch --mirror-dir ~/.cache/mulle-fetch/git-mirrors/ \
+   https://github.com/mulle-nat/mulle-c11.git mulle-c11
 ```
 
 This will still create network connections to update the mirror. If you don't
@@ -76,7 +77,8 @@ want that to happen, when a repository has a mirror use the `--no-refresh`
 option.
 
 ```
-mulle-fetch fetch --no-refresh --mirror-dir ~/.cache/mulle-fetch/git-mirrors/ https://github.com/mulle-nat/mulle-c11.git mulle-c11
+mulle-fetch fetch --no-refresh --mirror-dir ~/.cache/mulle-fetch/git-mirrors/ \
+   https://github.com/mulle-nat/mulle-c11.git mulle-c11
 ```
 
 > You can also set the environment variable `MULLE_FETCH_MIRROR_DIR`.
@@ -87,7 +89,8 @@ If you download archives often, it can be useful to cache them, to lighten the
 bandwidth load with `--cache-dir`:
 
 ```
-mulle-fetch fetch --cache-dir ~/.cache/mulle-fetch/archives https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz mulle-c11
+mulle-fetch fetch --cache-dir ~/.cache/mulle-fetch/archives \
+   https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz mulle-c11
 ```
 
 > You can also set the environment variable `MULLE_FETCH_CACHE_DIR`.
@@ -106,7 +109,8 @@ then in `/usr/local/src`. If nothing is found the repository is cloned from
 `https://github.com/mulle-nat/mulle-c11.git`:
 
 ```
-mulle-fetch fetch --search-path ${HOME}/src:/usr/local/src https://github.com/mulle-nat/mulle-c11.git mulle-c11
+mulle-fetch fetch --search-path ${HOME}/src:/usr/local/src \
+   https://github.com/mulle-nat/mulle-c11.git mulle-c11
 ```
 
 > You can also set the environment variable `MULLE_FETCH_SEARCH_PATH`.
@@ -120,7 +124,8 @@ development is still ongoing. You'd have to sync the clone to often.
 You can allow **mulle-fetch** with `--symlink` to install a symlink instead with:
 
 ```
-mulle-fetch fetch --symlink --search-path ${HOME}/src:/usr/local/src https://github.com/mulle-nat/mulle-c11.git mulle-c11
+mulle-fetch fetch --symlink --search-path ${HOME}/src:/usr/local/src \
+   https://github.com/mulle-nat/mulle-c11.git mulle-c11
 ```
 
 Since one is not actually cloning anything the found project directory, does
