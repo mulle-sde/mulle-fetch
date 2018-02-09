@@ -167,7 +167,7 @@ archive_move_stuff()
    fi
 
    log_debug "Moving \"${src}\" to \"${dstdir}\""
-   log_trace "src: `ls -lR "${src}" `"
+#   log_trace "src: `ls -lR "${src}" `"
 
    exekutor mv "${src}" "${dstdir}"
 

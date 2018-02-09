@@ -1,3 +1,7 @@
+### 1.1.6
+
+* Various small improvements
+
 ### 1.1.5
 
 * improved name guessing of github archives
