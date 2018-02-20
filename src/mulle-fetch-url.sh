@@ -95,6 +95,19 @@ url_typeguess()
    urlpath="`url_get_path "$*"`"
    tarcompressed="NO"
 
+   # this works for gitlist
+   case "${urlpath}" in
+      */tarball/*)
+         echo "tar"
+         return
+      ;;
+
+      */zipball/*)
+         echo "zip"
+         return
+      ;;
+   esac
+
    while :
    do
       ext="`path_extension "${urlpath}"`"

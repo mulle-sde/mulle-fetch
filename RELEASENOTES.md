@@ -1,3 +1,8 @@
+## 1.3.0
+
+* improve gitlist recognition
+
+
 ## 1.2.0
 
 * use new mulle-init from mulle-bashfunctions to reduce init size

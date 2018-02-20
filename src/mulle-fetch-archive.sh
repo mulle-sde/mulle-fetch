@@ -269,15 +269,25 @@ archive_guess_name_from_url()
 
    urlpath="`url_get_path "${url}"`"
 
-   # remove version info or such
+   case "${urlpath}" in
+      */tarball/*|*/zipball/*)
+         local tmp
 
+         tmp="`fast_dirname "${urlpath}"`"
+         tmp="`fast_dirname "${tmp}"`"
+         fast_basename "${tmp}"
+         return
+      ;;
+   esac
+
+   # remove version info or such
    case "${url}" in
       *github.com/*)
          local tmp
 
-         tmp="`dirname -- "${urlpath}"`"
-         tmp="`dirname -- "${tmp}"`"
-         basename -- "${tmp}"
+         tmp="`fast_dirname "${urlpath}"`"
+         tmp="`fast_dirname "${tmp}"`"
+         fast_basename "${tmp}"
          return
       ;;
    esac
