@@ -145,12 +145,12 @@ fetch_typeguess_usage()
 {
    cat <<EOF >&2
 Usage:
-   ${MULLE_EXECUTABLE_NAME} typeguess <url>
+   ${MULLE_USAGE_NAME} typeguess <url>
 
    Guess the plugin name responsible for the URL. If in doubt it returns
    nothing.
 
-      ${MULLE_EXECUTABLE_NAME} typeguess https://foo.com/bla.git?version=last
+      ${MULLE_USAGE_NAME} typeguess https://foo.com/bla.git?version=last
 
    returns "git"
 EOF

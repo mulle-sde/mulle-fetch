@@ -3,14 +3,24 @@
 	[
 		{
 			"path": ".",
-         "file_exclude_patterns": [ "*~", "*~.*", "*.chk", ".DS_Store", "*.sublime-workspace", "tmp.*" ],
-	 "folder_exclude_patterns": [
-		"package",
-		"build",
-		".repos",
-		".bootstrap*",
-		".git*",
-	 ],
+			"file_exclude_patterns": [
+				"*~",
+				"*~.*",
+				"*.chk",
+				".DS_Store",
+				"._.DS_Store",
+				"*.sublime-workspace",
+				"tmp.*"
+			],
+			"folder_exclude_patterns": [
+				"package",
+				"build",
+				".repos",
+				".mulle-env",
+				".mulle-sde"
+				".bootstrap*",
+				".git*",
+			],
 
 		}
 	]
