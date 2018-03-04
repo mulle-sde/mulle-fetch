@@ -1,3 +1,7 @@
+### 1.3.2
+
+* * make help command/option more uniform
+
 ## 1.3.0
 
 * improve gitlist recognition
