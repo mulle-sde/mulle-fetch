@@ -31,6 +31,26 @@
 MULLE_FETCH_OPERATION_SH="included"
 
 
+fetch_operation_usage()
+{
+   [ "$#" -ne 0 ] && log_error "$1"
+
+   cat <<EOF >&2
+Usage:
+   ${MULLE_USAGE_NAME} operation [option] <command>
+
+   Currently the only command is "list".
+
+Options:
+   -s <scm>  : specify SCM to query operations off
+
+EOF
+
+   exit 1
+}
+
+
+
 fetch_log_action()
 {
    local action="$1" ; shift
@@ -103,6 +123,15 @@ can_symlink_it()
          return 1
       ;;
    esac
+
+   #
+   # lazy load this as we need it now
+   #
+   if [ -z "${MULLE_FETCH_GIT_SH}" ]
+   then
+      # shellcheck source=src/mulle-fetch-git.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-git.sh" || exit 1
+   fi
 
    if git_is_repository "${directory}"
    then
@@ -270,7 +299,8 @@ fetch_do_operation()
          _fetch_operation "$@"
          rval="$?"
 
-         log_debug "fetch_do_operation \"${opname}\": \"${sourcetype}\" returns with ${rval}"
+         log_debug "fetch_do_operation \"${opname}\": \"${sourcetype}\" \
+returns with ${rval}"
 
          return "${rval}"
       ;;
@@ -304,4 +334,102 @@ fetch_do_operation()
    return "${rval}"
 }
 
-:
+
+_fetch_operation_list()
+{
+   local sourcetype="$1"
+   local operations="$2"
+
+   local opname
+   local operation
+   local funcname
+
+   set -o noglob
+   for opname in ${operations}
+   do
+      set +o noglob
+      funcname="${opname//-/_}"
+      operation="${sourcetype}_${funcname}_project"
+      if [ "`type -t "${operation}"`" = "function" ]
+      then
+         echo "${opname}"
+      fi
+   done
+   set +o noglob
+}
+
+
+fetch_operation_list()
+{
+   log_entry "fetch_operation_list" "$@"
+
+   log_info "Operations"
+   _fetch_operation_list "$1" "\
+checkout
+clone
+search-local
+set-url
+status
+update
+upgrade"
+}
+
+
+
+fetch_operation_main()
+{
+   log_entry "fetch_operation_main" "$@"
+
+   local OPTION_SCM="git"
+
+   while [ $# -ne 0 ]
+   do
+      case "$1" in
+         -h*|--help|help)
+            fetch_operation_usage
+         ;;
+
+         -s|--source|--scm)
+            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            shift
+
+            OPTION_SCM="$1"
+         ;;
+
+         -*)
+            fetch_operation_usage "Unknown option \"$1\""
+         ;;
+
+         *)
+            break
+         ;;
+      esac
+
+      shift
+   done
+
+   [ $# -eq 0 ] && fetch_operation_usage
+
+   local cmd="$1"
+   shift
+
+   case "${cmd}" in
+      list)
+         [ $# -ne 0 ] && fetch_operation_usage "superflous parameters"
+
+         # shellcheck source=mulle-fetch-plugin.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh"
+
+         fetch_plugin_load_all
+         fetch_operation_list "${OPTION_SCM}"
+      ;;
+
+      "")
+         fetch_operation_usage
+      ;;
+
+      *)
+         fetch_operation_usage "Unknown command \"$1\""
+      ;;
+   esac
+}

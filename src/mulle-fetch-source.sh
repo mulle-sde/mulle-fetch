@@ -95,16 +95,17 @@ get_source_function()
    [ -z "$1" -o -z "$2" ] && internal_fail "parameter is empty"
 
    local operation
-   local funcname="$2"
+   local funcname
 
    funcname="${opname//-/_}"
    operation="${sourcetype}_${funcname}_project"
-   if [ "`type -t "${operation}"`" = "function" ]
+   if [ "`type -t "${operation}"`" != "function" ]
    then
-      echo "${operation}"
-   else
-      log_fluff "Function \"${opname}\" is not provided by \"${sourcetype}\" (function \"$operation\" is missing)"
+      log_verbose "Operation \"${opname}\" is not provided by \"${sourcetype}\" \
+(function \"$operation\" is missing)"
+      return 1
    fi
+   echo "${operation}"
 }
 
 
@@ -131,11 +132,12 @@ source_search_local()
 {
    log_entry "source_search_local" "$@"
 
+   local directory="$1"; shift
+
    local name="$1"
    local branch="$2"
    local extension="$3"
    local need_extension="$4"
-   local directory="$5"
 
    local found
 
@@ -231,7 +233,7 @@ source_search_local_path()
 the current directory"
       fi
 
-      found="`source_search_local "$@" "${realdir}"`"
+      found="`source_search_local "${realdir}" "$@"`"
       if [ ! -z "${found}" ]
       then
          echo "${found}"
@@ -317,67 +319,6 @@ source_guess_project()
 }
 
 
-source_all_plugin_names()
-{
-   log_entry "source_all_plugin_names"
-
-   local upcase
-   local plugindefine
-   local pluginpath
-   local name
-
-   [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
-   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
-
-   IFS="
-"
-   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
-   do
-      IFS="${DEFAULT_IFS}"
-
-      name="`basename -- "${pluginpath}" .sh`"
-
-      # don't load xcodebuild on non macos platforms
-      case "${UNAME}" in
-         darwin)
-         ;;
-
-         *)
-            case "${name}" in
-               xcodebuild)
-                  continue
-               ;;
-            esac
-         ;;
-      esac
-
-      echo "${name}"
-   done
-
-   IFS="${DEFAULT_IFS}"
-}
-
-
-_source_list_supported_operations()
-{
-   local sourcetype="$1"
-   local operations="$2"
-
-   local opname
-   local operation
-
-   for opname in ${operations}
-   do
-      funcname="${opname//-/_}"
-      operation="${sourcetype}_${funcname}_project"
-      if [ "`type -t "${operation}"`" = "function" ]
-      then
-         echo "${opname}"
-      fi
-   done
-}
-
-
 source_download()
 {
    log_entry "source_download" "$@"
@@ -439,92 +380,5 @@ source_download()
    fi
 }
 
-
-
-
-source_known_operations()
-{
-   echo "\
-checkout
-clone
-search-local
-set-url
-status
-update
-upgrade"
-}
-
-
-source_list_supported_operations()
-{
-   _source_list_supported_operations "$1" "`source_known_operations`"
-}
-
-
-source_list_plugins()
-{
-   log_entry "source_list_plugins"
-
-   local upcase
-   local plugindefine
-   local pluginpath
-   local name
-
-   [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
-   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
-
-   log_fluff "List source plugins..."
-
-   IFS="
-"
-   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
-   do
-      basename -- "${pluginpath}" .sh
-   done
-
-   IFS="${DEFAULT_IFS}"
-}
-
-
-source_load_plugins()
-{
-   log_entry "source_load_plugins"
-
-   local upcase
-   local plugindefine
-   local pluginpath
-   local name
-
-   [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
-   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
-
-   log_fluff "Loading source plugins..."
-
-   IFS="
-"
-   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
-   do
-      IFS="${DEFAULT_IFS}"
-
-      name="`basename -- "${pluginpath}" .sh`"
-      upcase="`tr 'a-z' 'A-Z' <<< "${name}"`"
-      plugindefine="MULLE_FETCH_PLUGIN_${upcase}_SH"
-
-      if [ -z "`eval echo \$\{${plugindefine}\}`" ]
-      then
-         # shellcheck source=plugins/symlink.sh
-         . "${pluginpath}"
-
-         if [ "`type -t "${name}_clone_project"`" != "function" ]
-         then
-            fail "Source plugin \"${pluginpath}\" has no \"${name}_clone_project\" function"
-         fi
-
-         log_fluff "Source plugin \"${name}\" loaded"
-      fi
-   done
-
-   IFS="${DEFAULT_IFS}"
-}
 
 :

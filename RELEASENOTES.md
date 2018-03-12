@@ -1,3 +1,7 @@
+### 1.3.3
+
+* unify mulle-bashfunctions-env usage and help, also some refactoring
+
 ### 1.3.2
 
 * * make help command/option more uniform

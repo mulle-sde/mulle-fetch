@@ -76,7 +76,7 @@ EOF
 
    local  plugins
 
-   plugins="`source_all_plugin_names`"
+   plugins="`fetch_plugin_all_names`"
    if [ ! -z "${plugins}" ]
    then
       (
@@ -108,7 +108,7 @@ EOF
 
    local  plugins
 
-   plugins="`source_all_plugin_names`"
+   plugins="`fetch_plugin_all_names`"
    if [ ! -z "${plugins}" ]
    then
       (
@@ -139,7 +139,7 @@ EOF
 
    local  plugins
 
-   plugins="`source_all_plugin_names`"
+   plugins="`fetch_plugin_all_names`"
    if [ ! -z "${plugins}" ]
    then
       (
@@ -171,7 +171,7 @@ EOF
 
    local  plugins
 
-   plugins="`source_all_plugin_names`"
+   plugins="`fetch_plugin_all_names`"
    if [ ! -z "${plugins}" ]
    then
       (
@@ -185,11 +185,11 @@ EOF
 }
 
 
-fetch_operations_usage()
+fetch_operation_usage()
 {
    cat <<EOF >&2
 Usage:
-   ${MULLE_EXECUTABLE_NAME} operations [options]
+   ${MULLE_EXECUTABLE_NAME} operation [options]
 
    List the operatios for the specified repository or archive format. The
    default lists operations available for git.
@@ -200,7 +200,7 @@ EOF
 
    local  plugins
 
-   plugins="`source_all_plugin_names`"
+   plugins="`fetch_plugin_all_names`"
    if [ ! -z "${plugins}" ]
    then
       (
@@ -291,7 +291,7 @@ fetch_common_main()
    while [ $# -ne 0 ]
    do
       case "$1" in
-         -h|-help|--help)
+         -h*|--help|help)
             ${USAGE}
          ;;
 
@@ -422,14 +422,11 @@ fetch_common_main()
       shift
    done
 
+   # shellcheck source=mulle-fetch-plugin.sh
+   . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh"
 
-   if [ ! -f "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${OPTION_SCM}.sh" ]
-   then
-      fail "SCM \"${OPTION_SCM}\" is not supported (no plugin found)"
-   fi
-
-   # shellcheck source=plugins/symlink.sh
-   . "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${OPTION_SCM}.sh"
+   fetch_plugin_load "symlink"  # brauchen wir immer
+   fetch_plugin_load "${OPTION_SCM}"
 
    [ -z "${DEFAULT_IFS}" ] && internal_fail "IFS fail"
 
@@ -437,20 +434,6 @@ fetch_common_main()
    local name
    local url
    local cmd
-
-   case "${COMMAND}" in
-      operations)
-         [ $# -ne 0 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
-         source_list_supported_operations "${OPTION_SCM}"
-         return
-      ;;
-
-      plugins)
-         [ $# -ne 0 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
-         source_list_plugins
-         return
-      ;;
-   esac
 
    #
    # ugliness ensues, but having a uniform way of
@@ -519,22 +502,12 @@ fetch_checkout_main()
 }
 
 
-fetch_operations_main()
+fetch_operation_main()
 {
-   log_entry "fetch_operations_main" "$@"
+   log_entry "fetch_operation_main" "$@"
 
-   USAGE="fetch_operations_usage"
-   COMMAND="operations"
-   fetch_common_main "$@"
-}
-
-
-fetch_plugins_main()
-{
-   log_entry "fetch_operations_main" "$@"
-
-   USAGE="fetch_plugins_usage"
-   COMMAND="plugins"
+   USAGE="fetch_operation_usage"
+   COMMAND="operation"
    fetch_common_main "$@"
 }
 

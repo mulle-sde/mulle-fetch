@@ -108,6 +108,12 @@ url_typeguess()
       ;;
    esac
 
+   if [ -d "$*" ]
+   then
+      echo "local"
+      return
+   fi
+
    while :
    do
       ext="`path_extension "${urlpath}"`"
@@ -163,11 +169,12 @@ fetch_typeguess_main()
    while [ $# -ne 0 ]
    do
       case "$1" in
-         -h|-help|--help)
+         -h*|--help|help)
             fetch_typeguess_usage
          ;;
+
          -*)
-            log_error "${MULLE_EXECUTABLE_FAIL_PREFIX}: Unknown fetch option $1"
+            log_error "${MULLE_EXECUTABLE_FAIL_PREFIX}: Unknown option \"$1\""
             ${USAGE}
          ;;
 

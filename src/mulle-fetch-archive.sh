@@ -216,8 +216,9 @@ archive_search_local()
 {
    log_entry "archive_search_local" "$@"
 
-   local url="$1"
+#   local unused="$1"
    local name="$2"
+   local url="$3"
 #   local branch="$3"
 
    local filename
