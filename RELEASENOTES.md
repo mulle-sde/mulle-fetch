@@ -1,3 +1,7 @@
+### 1.3.4
+
+* improve documentation
+
 ### 1.3.3
 
 * unify mulle-bashfunctions-env usage and help, also some refactoring

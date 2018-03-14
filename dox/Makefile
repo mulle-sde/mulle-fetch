@@ -1,5 +1,6 @@
 
-PIX=mulle-fetch-overview.png
+PIX=mulle-fetch-fs.png \
+mulle-fetch-overview.png
 
 %.png: %.dot
 	dot -Tpng -o $*.png $<

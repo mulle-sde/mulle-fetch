@@ -1,0 +1,37 @@
+digraph G {
+    graph [rankdir = TD];
+    edge[ label=" references", style="dotted" ]
+
+    node[ shape="record"];
+
+    { rank="same"; "MULLE_FETCH_SEARCH_PATH", "MULLE_FETCH_CACHE_DIR", "MULLE_FETCH_MIRROR_DIR" }
+
+    "MULLE_FETCH_SEARCH_PATH" -> "src"
+    "MULLE_FETCH_SEARCH_PATH" -> "src2"
+    "MULLE_FETCH_CACHE_DIR"   -> "archives"
+    "MULLE_FETCH_MIRROR_DIR" -> "git-mirrors"
+
+
+    node[ shape="folder", color="gray", fontcolor="gray" ];
+    edge[ arrowhead="none", color="gray", label="" ];
+
+    "MULLE_FETCH_SEARCH_PATH" -> "/"  [ style="invis" ]
+
+    "src2" [ label="src"]
+
+    "project" [ color="blue", penwidth="2", fontcolor="blue" ]
+    "user" -> ".cache"
+    ".cache" -> "mulle-fetch"
+    "mulle-fetch" -> "archives"
+    "mulle-fetch" -> "git-mirrors"
+
+    "/" -> "usr"
+    "usr" -> "local"
+    "local" -> "src2"
+
+    "/" -> "home"
+    "home" -> "user"
+    "user" -> "src"
+    "src" -> "project"
+
+}

@@ -11,6 +11,9 @@
 As a standalone tool, this can be marginally useful as it saves you some typework.
 
 
+![](dox/mulle-fetch-overview.png)
+
+
 Executable          | Description
 --------------------|--------------------------------
 `mulle-fetch`       | Fetch and unpack source distributions and repositories
@@ -58,9 +61,9 @@ mulle-fetch fetch -t 1.3.5 https://github.com/mulle-nat/mulle-c11.git mulle-c11
 
 A typical setup might look like this:
 
-![](dox/mulle-fetch-overview.png)
+![](dox/mulle-fetch-fs.png)
 
-The ideas are explained in the next three chapters. 
+The ideas are explained in the next three chapters.
 
 #### Use a mirror for git repositories
 
