@@ -56,7 +56,7 @@ main()
 
    _options_mini_main "$@"
 
-   case "${UNAME}" in
+   case "${MULLE_UNAME}" in
       mingw)
          log_warning "Symlinks don't work on mingw. Test skipped"
          exit 0

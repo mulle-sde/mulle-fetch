@@ -34,7 +34,7 @@ then
    set -x
 fi
 
-MULLE_EXECUTABLE_VERSION="1.3.4"
+MULLE_EXECUTABLE_VERSION="1.3.5"
 
 
 MULLE_EXECUTABLE_BASHFUNCTIONS="1.3"
@@ -140,6 +140,7 @@ main()
    local MULLE_FLAG_MAGNUM_FORCE="NONE"
 
    # technical flags
+   local MULLE_TRACE
    local MULLE_FLAG_EXEKUTOR_DRY_RUN="NO"
    local MULLE_FLAG_LOG_LOCAL="NO"
    local MULLE_FLAG_LOG_DEBUG="NO"
@@ -274,7 +275,7 @@ main()
       ;;
 
       uname)
-         echo "${UNAME}"
+         echo "${MULLE_UNAME}"
       ;;
 
       update)

@@ -73,7 +73,7 @@ tar_remove_extension()
 
    if [ ! -z "${ext}" ]
    then
-      case "${UNAME}" in
+      case "${MULLE_UNAME}" in
          darwin|freebsd)
             echo "-s/\.$1\$//"
          ;;

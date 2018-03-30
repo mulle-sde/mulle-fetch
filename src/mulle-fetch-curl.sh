@@ -38,7 +38,7 @@ curl_validate_shasum256()
    local filename="$1"
    local expected="$2"
 
-   case "${UNAME}" in
+   case "${MULLE_UNAME}" in
       mingw)
          log_fluff "mingw does not support shasum" # or does it ?
          return

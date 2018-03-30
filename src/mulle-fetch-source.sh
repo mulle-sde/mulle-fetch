@@ -361,7 +361,7 @@ source_download()
    else
       if [ "${url}" != "${download}" ]
       then
-         case "${UNAME}" in
+         case "${MULLE_UNAME}" in
             mingw)
                exekutor cp "${url}" "${download}"
             ;;

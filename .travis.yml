@@ -9,5 +9,5 @@ script:
   - sudo apt-get update
   - sudo apt-get -y install mulle-bashfunctions
   - sudo ./install.sh /usr
-  - cd tests && ./run-test
+  - cd test && ./run-test
 

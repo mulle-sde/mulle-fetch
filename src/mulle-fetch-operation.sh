@@ -117,7 +117,7 @@ can_symlink_it()
       return 1
    fi
 
-   case "${UNAME}" in
+   case "${MULLE_UNAME}" in
       minwgw)
          log_fluff "Can't symlink it, because symlinking is unavailable on this platform"
          return 1

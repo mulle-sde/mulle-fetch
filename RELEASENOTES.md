@@ -1,3 +1,7 @@
+### 1.3.5
+
+* use `MULLE_UNAME` instead of UNAME
+
 ### 1.3.4
 
 * improve documentation

@@ -49,7 +49,7 @@ _archive_test()
 
    tarcommand="tf"
 
-   case "${UNAME}" in
+   case "${MULLE_UNAME}" in
       darwin)
          # don't need it
       ;;
@@ -89,7 +89,7 @@ _tar_unpack()
 
    tarcommand="xf"
 
-   case "${UNAME}" in
+   case "${MULLE_UNAME}" in
       darwin)
          # don't need it
       ;;
