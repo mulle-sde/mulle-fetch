@@ -364,6 +364,7 @@ fetch_operation_list()
    log_entry "fetch_operation_list" "$@"
 
    log_info "Operations"
+
    _fetch_operation_list "$1" "\
 checkout
 clone

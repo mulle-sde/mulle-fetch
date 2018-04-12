@@ -1,3 +1,7 @@
+### 1.3.6
+
+* miniscule code improvement
+
 ### 1.3.5
 
 * use `MULLE_UNAME` instead of UNAME

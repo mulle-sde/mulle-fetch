@@ -34,7 +34,7 @@ then
    set -x
 fi
 
-MULLE_EXECUTABLE_VERSION="1.3.5"
+MULLE_EXECUTABLE_VERSION="1.3.6"
 
 
 MULLE_EXECUTABLE_BASHFUNCTIONS="1.3"
@@ -362,8 +362,6 @@ _init()
 
    trap trap_fail INT
    set -o pipefail
-
-   MULLE_ARGUMENTS="$*"
 }
 ###
 ### INIT
