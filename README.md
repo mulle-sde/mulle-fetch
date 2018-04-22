@@ -132,7 +132,7 @@ mulle-fetch fetch --symlink --search-path ${HOME}/src:/usr/local/src \
 ```
 
 Since one is not actually cloning anything the found project directory, does
-not need ot be under version control even.
+not need to be under version control.
 
 
 ## GitHub and Mulle kybernetiK

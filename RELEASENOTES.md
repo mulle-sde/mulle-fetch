@@ -1,3 +1,7 @@
+### 1.3.7
+
+* README fix
+
 ### 1.3.6
 
 * miniscule code improvement
