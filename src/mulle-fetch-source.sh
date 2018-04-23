@@ -207,10 +207,10 @@ source_search_local_path()
    fi
 
    curdir="`pwd -P`"
-   IFS=":"
+   set -f ; IFS=":"
    for directory in ${MULLE_FETCH_SEARCH_PATH}
    do
-      IFS="${DEFAULT_IFS}"
+      set +f ; IFS="${DEFAULT_IFS}"
 
       if [ -z "${directory}" ]
       then
@@ -241,7 +241,8 @@ the current directory"
       fi
    done
 
-   IFS="${DEFAULT_IFS}"
+   set +f; IFS="${DEFAULT_IFS}"
+
    return 1
 }
 

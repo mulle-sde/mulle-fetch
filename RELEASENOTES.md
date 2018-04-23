@@ -1,3 +1,7 @@
+### 1.3.8
+
+* fix potential bugs
+
 ### 1.3.7
 
 * README fix
