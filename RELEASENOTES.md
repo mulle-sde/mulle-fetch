@@ -1,3 +1,7 @@
+### 1.3.9
+
+* fix usage bug
+
 ## 1.4.0
 
 * be more convenient, by supporting mulle-fetch `<url>`

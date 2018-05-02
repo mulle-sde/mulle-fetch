@@ -419,7 +419,8 @@ fetch_operation_main()
          [ $# -ne 0 ] && fetch_operation_usage "superflous parameters"
 
          # shellcheck source=mulle-fetch-plugin.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh"
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || \
+            fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh"
 
          fetch_plugin_load_all
          fetch_operation_list "${OPTION_SCM}"

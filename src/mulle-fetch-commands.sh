@@ -47,6 +47,30 @@ MULLE_FETCH_FETCH_SH="included"
 # sourceoptions="$7" # sourceoptions
 # dstdir="$8"        # dstdir of this clone (absolute or relative to $PWD)
 #
+
+list_plugins()
+{
+   if [ -z "$MULLE_FETCH_PLUGIN_SH" ]
+   then
+      # shellcheck source=mulle-fetch-plugin.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || \
+         fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh"
+   fi
+
+   local  plugins
+
+   plugins="`fetch_plugin_all_names`"
+   if [ ! -z "${plugins}" ]
+   then
+      (
+         echo
+         echo "Available source types are:"
+         echo "${plugins}" | sed 's/^/   /'
+      )
+   fi
+}
+
+
 fetch_clone_usage()
 {
    cat <<EOF >&2
@@ -73,19 +97,7 @@ Options:
    --symlink              : allow symlinks to be create
 EOF
 
-
-   local  plugins
-
-   plugins="`fetch_plugin_all_names`"
-   if [ ! -z "${plugins}" ]
-   then
-      (
-         echo
-         echo "Available source types are:"
-         echo "${plugins}" | sed 's/^/   /'
-      ) >&2
-   fi
-
+   list_plugins >&2
    exit 1
 }
 
@@ -106,17 +118,7 @@ Options:
    -s <scm>         : source type, either a repository or archive format (git)
 EOF
 
-   local  plugins
-
-   plugins="`fetch_plugin_all_names`"
-   if [ ! -z "${plugins}" ]
-   then
-      (
-         echo
-         echo "Available source types are:"
-         echo "${plugins}" | sed 's/^/   /'
-      ) >&2
-   fi
+   list_plugins >&2
 
    exit 1
 }
@@ -137,17 +139,7 @@ Options:
    -o <options>     : specify options for the scm (see documentation)
 EOF
 
-   local  plugins
-
-   plugins="`fetch_plugin_all_names`"
-   if [ ! -z "${plugins}" ]
-   then
-      (
-         echo
-         echo "Available source types are:"
-         echo "${plugins}" | sed 's/^/   /'
-      ) >&2
-   fi
+   list_plugins >&2
 
    exit 1
 }
@@ -169,17 +161,7 @@ Options:
    -t <tag>         : tag to checkout
 EOF
 
-   local  plugins
-
-   plugins="`fetch_plugin_all_names`"
-   if [ ! -z "${plugins}" ]
-   then
-      (
-         echo
-         echo "Available source types are:"
-         echo "${plugins}" | sed 's/^/   /'
-      ) >&2
-   fi
+   list_plugins >&2
 
    exit 1
 }
@@ -198,17 +180,7 @@ Options:
    -s <scm>         : repository or archive format (default git)
 EOF
 
-   local  plugins
-
-   plugins="`fetch_plugin_all_names`"
-   if [ ! -z "${plugins}" ]
-   then
-      (
-         echo
-         echo "Available source types are:"
-         echo "${plugins}" | sed 's/^/   /'
-      ) >&2
-   fi
+   list_plugins >&2
 
    exit 1
 }
@@ -229,6 +201,8 @@ Options:
    -o <options>     : specify options for the scm (see documentation)
 EOF
 
+   list_plugins >&2
+
    exit 1
 }
 
@@ -245,6 +219,8 @@ Options:
    -s <scm>         : repository or archive format (default git)
    -o <options>     : specify options for the scm (see documentation)
 EOF
+
+   list_plugins >&2
 
    exit 1
 }
