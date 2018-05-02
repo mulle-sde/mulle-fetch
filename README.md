@@ -41,16 +41,28 @@ One invariably specifies the **url** to download from and the **destination** di
 
 Here are two ways to retrieve the tagged version [1.3.5](//github.com/mulle-nat/mulle-c11/releases/tag/1.3.5) of [mulle-c11](//github.com/mulle-nat/mulle-c11) from [github](//github.com).
 
+
 #### Download and unpack a tar archive:
 
 ```
 mulle-fetch fetch -s tar https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz mulle-c11
 ```
 
+
 #### Clone a git repository:
 
 ```
 mulle-fetch fetch -t 1.3.5 https://github.com/mulle-nat/mulle-c11.git mulle-c11
+```
+
+#### Or even more convenient
+
+mulle-fetch can often guess the correct type and name of an URL. To enable
+more user laziness, just give it the URL and let the magic happen:
+
+```
+mulle-fetch https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz
+mulle-fetch https://github.com/mulle-nat/mulle-c11.git
 ```
 
 
