@@ -31,21 +31,12 @@ mulle-fetch
 )
 
 
-set( LIBRARY_SCRIPTS
-src/mulle-fetch-archive.sh
-src/mulle-fetch-commands.sh
-src/mulle-fetch-git.sh
-src/mulle-fetch-operation.sh
-src/mulle-fetch-source.sh
+file( GLOB LIBRARY_SCRIPTS
+   "src/*.sh"
 )
 
-
-set( PLUGIN_SCRIPTS
-src/plugins/git.sh
-src/plugins/svn.sh
-src/plugins/symlink.sh
-src/plugins/tar.sh
-src/plugins/zip.sh
+file( GLOB PLUGIN_SCRIPTS
+   "src/plugins/*.sh"
 )
 
 

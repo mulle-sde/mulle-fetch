@@ -57,8 +57,8 @@ mulle-fetch fetch -t 1.3.5 https://github.com/mulle-nat/mulle-c11.git mulle-c11
 
 #### Or even more convenient:
 
-mulle-fetch can often guess the correct type and name of an URL. To enable
-more user laziness, just give it the URL and let the magic happen:
+mulle-fetch can often guess the correct type and project-name of an URL. Just
+give it the URL and let the magic happen:
 
 ```
 mulle-fetch https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz

@@ -1,3 +1,7 @@
+### 1.3.10
+
+* simpler CMakeLists.txt
+
 ### 1.3.9
 
 * fix usage bug
