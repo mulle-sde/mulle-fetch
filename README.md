@@ -8,7 +8,8 @@
 * Clones [git](//enux.pl/article/en/2014-01-21/why-git-sucks) repositories and it can also checkout [svn](//andreasjacobsen.com/2008/10/26/subversion-sucks-get-over-it/).
 * Guess project names from URLs
 
-As a standalone tool, this can be marginally useful as it saves you some typework.
+As a standalone tool, this can be marginally useful as it saves you some type-
+work.
 
 
 ![](dox/mulle-fetch-overview.png)
@@ -21,10 +22,21 @@ Executable          | Description
 
 ## Install
 
-OS    | Command
-------|------------------------------------
-macos | `brew install mulle-kybernetik/software/mulle-fetch`
-other | ./install.sh  (Requires: [mulle-bashfunctions](https://github.com/mulle-nat/mulle-bashfunctions))
+Install the pre-requisite [mulle-bashfunctions](https://github.com/mulle-nat/mulle-bashfunctions).
+
+Install into `/usr` with sudo:
+
+```
+curl -L 'https://github.com/mulle-sde/mulle-fetch/archive/latest.tar.gz' \
+ | tar xfz - && cd 'mulle-fetch-latest' && sudo ./install /usr
+```
+
+### Packages
+
+OS          | Command
+------------|------------------------------------
+macos       | `brew install mulle-kybernetik/software/mulle-fetch`
+
 
 
 ## What mulle-fetch does

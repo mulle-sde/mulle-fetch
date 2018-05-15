@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 
-# use C, because otherwise a CXX compiler is required
-project( mulle-fetch C)
+project( mulle-fetch NONE)
 
 #
 # Primarily used for packaging on Linux

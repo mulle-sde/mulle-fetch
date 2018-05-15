@@ -1,3 +1,7 @@
+### 1.3.11
+
+* improve CMakeLists.txt, update README.md, rename install.sh to install
+
 ### 1.3.10
 
 * simpler CMakeLists.txt
