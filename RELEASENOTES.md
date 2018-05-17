@@ -1,3 +1,7 @@
+### 1.3.12
+
+* small beauty fix
+
 ### 1.3.11
 
 * improve CMakeLists.txt, update README.md, rename install.sh to install

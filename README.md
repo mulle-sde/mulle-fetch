@@ -38,7 +38,6 @@ OS          | Command
 macos       | `brew install mulle-kybernetik/software/mulle-fetch`
 
 
-
 ## What mulle-fetch does
 
 Essentially, `mulle-fetch` is a shortcut for:
