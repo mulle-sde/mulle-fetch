@@ -1,3 +1,7 @@
+### 1.3.13
+
+* rename install to installer, because of name conflict
+
 ### 1.3.12
 
 * small beauty fix

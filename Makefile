@@ -1,14 +1,19 @@
-SCRIPTS=install.sh \
-src/mulle-fetch-archive.sh \
-src/mulle-fetch-commands.sh \
-src/mulle-fetch-git.sh \
-src/mulle-fetch-operation.sh \
-src/mulle-fetch-source.sh \
+SCRIPTS=installer \
+src/plugins/file.sh \
 src/plugins/git.sh \
+src/plugins/local.sh \
 src/plugins/svn.sh \
 src/plugins/symlink.sh \
 src/plugins/tar.sh \
-src/plugins/zip.sh
+src/plugins/zip.sh \
+src/mulle-fetch-archive.sh \
+src/mulle-fetch-commands.sh \
+src/mulle-fetch-curl.sh \
+src/mulle-fetch-git.sh \
+src/mulle-fetch-operation.sh \
+src/mulle-fetch-plugin.sh \
+src/mulle-fetch-source.sh \
+src/mulle-fetch-url.sh
 
 CHECKSTAMPS=$(SCRIPTS:.sh=.chk)
 
@@ -31,8 +36,8 @@ mulle-fetch.chk:	mulle-fetch
 	- shellcheck $(SHELLFLAGS) $<
 	(shellcheck -f json $(SHELLFLAGS) $< | jq '.[].level' | grep -w error > /dev/null ) && exit 1 || touch $@
 
-install:
-	@ ./install.sh
+installer:
+	@ ./installer
 
 clean:
 	@- rm src/*.chk
