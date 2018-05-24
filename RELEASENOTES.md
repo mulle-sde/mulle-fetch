@@ -1,3 +1,7 @@
+### 1.3.14
+
+* fix homebrew install ruby script
+
 ### 1.3.13
 
 * rename install to installer, because of name conflict
