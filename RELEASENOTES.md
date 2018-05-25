@@ -1,3 +1,7 @@
+### 1.3.16
+
+* fix package dependencies more
+
 ### 1.3.15
 
 * fix package dependencies

@@ -9,4 +9,5 @@ LANGUAGE="bash"                # c,cpp, objc, bash ...
 
 DEPENDENCIES='${BOOTSTRAP_TAP}mulle-bashfunctions'
 
-DEBIAN_DEPENDENCIES="mulle-bashfunctions (>= 1.0.0), curl, git, tar, unzip"
+# more convenient to have this ad dependencies I think
+DEBIAN_DEPENDENCIES="mulle-bashfunctions (>= 1.5.0), curl, git, tar, unzip"
