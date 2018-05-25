@@ -17,8 +17,9 @@ set( CPACK_STRIP_FILES false)
 # CPackDeb doesn't produce 100% proper debian file unfortunately
 #
 set( CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/mulle-nat/${PROJECT_NAME}")
-# not strictly required
-#set( CPACK_DEBIAN_PACKAGE_DEPENDS "cmake (>= 3.0.0)")
+
+# cmake is not strictly required
+set( CPACK_DEBIAN_PACKAGE_DEPENDS "mulle-bashfunctions")
 
 # stuff needed for RPM
 
