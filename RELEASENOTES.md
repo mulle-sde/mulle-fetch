@@ -1,3 +1,7 @@
+### 1.3.17
+
+* use wget if curl is not available
+
 ### 1.3.16
 
 * fix package dependencies more

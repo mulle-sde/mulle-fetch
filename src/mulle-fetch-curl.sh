@@ -87,6 +87,30 @@ curl_validate_download()
 }
 
 
+wget_download()
+{
+   log_entry "wget_download" "$@"
+
+   local url="$1"
+   local download="$2"
+   local sourceoptions="$3"
+
+   WGET="${WGET:-`command -v wget`}"
+   if [ -z "${WGET}" ]
+   then
+      fail "Neither \"curl\" nor \"wget\" are installed. Can not fetch anything."
+   fi
+
+   local options
+
+   options="`get_sourceoption "${sourceoptions}" "wget"`"
+   exekutor ${WGET} ${OPTION_WGET_FLAGS} \
+               -O "${download}" \
+               ${options} \
+               "${url}" || fail "failed to download \"${url}\""
+}
+
+
 curl_download()
 {
    log_entry "curl_download" "$@"
@@ -95,18 +119,25 @@ curl_download()
    local download="$2"
    local sourceoptions="$3"
 
-   local options
 
    log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
 
+   CURL="${CURL:-`command -v curl`}"
+   if [ -z "${CURL}" ]
+   then
+      wget_download "$@"
+      return $?
+   fi
+
+   local options
+
    options="`get_sourceoption "${sourceoptions}" "curl"`"
-   exekutor curl ${OPTION_CURL_FLAGS} \
+   exekutor ${CURL} ${OPTION_CURL_FLAGS} \
                -o "${download}" \
                -O -L \
                ${options} \
                "${url}" || fail "failed to download \"${url}\""
 }
-
 
 
 :
