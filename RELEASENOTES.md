@@ -1,3 +1,7 @@
+### 1.3.20
+
+* remove file from git
+
 ### 1.3.19
 
 * simplify README
