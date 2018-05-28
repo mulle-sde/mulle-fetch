@@ -1,3 +1,7 @@
+### 1.3.18
+
+* improved brew formula defintion
+
 ### 1.3.17
 
 * use wget if curl is not available
