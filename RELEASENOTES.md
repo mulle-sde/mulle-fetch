@@ -1,3 +1,7 @@
+### 1.3.19
+
+* simplify README
+
 ### 1.3.18
 
 * improved brew formula defintion

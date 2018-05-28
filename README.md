@@ -22,20 +22,8 @@ Executable          | Description
 
 ## Install
 
-Install the pre-requisite [mulle-bashfunctions](https://github.com/mulle-nat/mulle-bashfunctions).
-
-Install into `/usr` with sudo:
-
-```
-curl -L 'https://github.com/mulle-sde/mulle-fetch/archive/latest.tar.gz' \
- | tar xfz - && cd 'mulle-fetch-latest' && sudo ./install /usr
-```
-
-### Packages
-
-OS          | Command
-------------|------------------------------------
-macos       | `brew install mulle-kybernetik/software/mulle-fetch`
+See [mulle-sde-developer](//github.com/mulle-sde/mulle-sde-developer) how
+to install mulle-sde.
 
 
 ## What mulle-fetch does
