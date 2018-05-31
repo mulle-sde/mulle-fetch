@@ -1,3 +1,7 @@
+### 1.3.21
+
+* improve usage info
+
 ### 1.3.20
 
 * remove file from git

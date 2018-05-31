@@ -34,7 +34,7 @@ then
    set -x
 fi
 
-MULLE_EXECUTABLE_VERSION="1.3.20"
+MULLE_EXECUTABLE_VERSION="1.3.21"
 
 
 MULLE_EXECUTABLE_BASHFUNCTIONS="1.3"
@@ -56,20 +56,20 @@ print_commands()
    local  show_all="${1:-NO}"
 
    SHOWN_COMMANDS="\
-   fetch         : fetch archive or repository [default]
-   update        : update repository (-> git fetch)
-   upgrade       : upgrade repository (-> git pull)"
+   fetch       : fetch archive or repository [default]
+   update      : update repository (-> git fetch)
+   upgrade     : upgrade repository (-> git pull)"
 
 
    HIDDEN_COMMANDS="\
-   nameguess     : guess final filename from url, (hint: specify -s <scm>)
-   libexec-dir   : print path to mulle-fetch libexec
-   operation     : list operations available (for mulle-sourcetree)
-   plugin        : list plugins available
-   tag           : tag repository
-   typeguess     : guess plugin name suitable for url
-   uname         : mulle-fetchs simplified uname(1)
-   version       : print mulle-fetch version"
+   nameguess   : guess final filename from url, (hint: specify -s <scm>)
+   libexec-dir : print path to mulle-fetch libexec
+   operation   : list operations available (for mulle-sourcetree)
+   plugin      : list plugins available
+   tag         : tag repository
+   typeguess   : guess plugin name suitable for url
+   uname       : mulle-fetchs simplified uname(1)
+   version     : print mulle-fetch version"
 
 
    echo "${SHOWN_COMMANDS}"
@@ -82,9 +82,9 @@ print_commands()
 
 print_flags()
 {
-   echo "   -f    : force operation"
+   echo "   -f          : force operation"
 
-   options_technical_flags_usage
+   options_technical_flags_usage "       : "
 }
 
 
@@ -100,7 +100,7 @@ Usage:
 
 Flags:
 EOF
-   print_flags  | sort
+   print_flags  | LC_ALL=C sort
 
 
    cat <<EOF
@@ -108,7 +108,22 @@ EOF
 Commands:
 EOF
 
-   print_commands "${verbose}" | sort
+   print_commands "${verbose}" | LC_ALL=C sort
+
+
+   cat <<EOF
+
+      (Options are command specific. Use mulle-fetch <command> -h for help.)
+EOF
+ 
+   cat <<EOF
+
+Environment:
+   MULLE_FETCH_CACHE_DIR   : local cache of archives
+   MULLE_FETCH_MIRROR_DIR  : local mirror of git repositories
+   MULLE_FETCH_SEARCH_PATH : specify local directories to search, : separated
+
+EOF
 
    if [ "${verbose}" = "NO" ]
    then
@@ -116,11 +131,6 @@ EOF
       (use mulle-fetch -v help to show more commands)
 EOF
    fi
-
-   cat <<EOF
-
-   Options are command specific. Use mulle-fetch <command> -h for help.
-EOF
 
    exit 1
 }
