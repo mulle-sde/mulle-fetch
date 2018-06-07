@@ -302,14 +302,14 @@ fetch_common_main()
          ;;
 
          --cache-dir)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             MULLE_FETCH_CACHE_DIR="$1"
          ;;
 
          --mirror-dir)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             MULLE_FETCH_MIRROR_DIR="$1"
@@ -319,7 +319,7 @@ fetch_common_main()
          # more common flags
          #
          -b|--branch)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             OPTION_BRANCH="$1"
@@ -333,14 +333,14 @@ fetch_common_main()
          ;;
 
          -o|--options)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             OPTION_OPTIONS="$1"
          ;;
 
          -s|--source|--scm)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             OPTION_SCM="$1"
@@ -354,7 +354,7 @@ fetch_common_main()
          ;;
 
          -u|--url)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             OPTION_URL="$1"
@@ -364,7 +364,7 @@ fetch_common_main()
          # ugly hackish options
          #
          --curl-flags)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             OPTION_CURL_FLAGS="$1"
@@ -372,14 +372,14 @@ fetch_common_main()
 
 
          --tool-flags)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             OPTION_TOOL_FLAGS="$1"
          ;;
 
          --tool-options)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             OPTION_TOOL_OPTIONS="$1"
@@ -418,7 +418,7 @@ fetch_common_main()
    then
       case "${COMMAND}" in
          clone|set-url)
-            [ $# -lt 2 ] && log_error "missing argument to \"${COMMAND}\"" && ${USAGE}
+            [ $# -lt 2 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
             [ $# -gt 2 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
 
             url="$1"
@@ -426,13 +426,13 @@ fetch_common_main()
          ;;
 
          search-local|guess)
-            [ $# -eq 0 ] && log_error "missing argument to \"${COMMAND}\"" && ${USAGE}
+            [ $# -eq 0 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
             [ $# -ne 1 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
             url="$1"
          ;;
 
          *)
-            [ $# -eq 0 ] && log_error "missing argument to \"${COMMAND}\"" && ${USAGE}
+            [ $# -eq 0 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
             [ $# -ne 1 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
             directory="$1"
          ;;

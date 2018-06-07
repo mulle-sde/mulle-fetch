@@ -1,3 +1,7 @@
+### 1.3.22
+
+* add support for gitlab.com archive guessing
+
 ### 1.3.21
 
 * improve usage info

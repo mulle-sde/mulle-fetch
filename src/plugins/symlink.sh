@@ -52,6 +52,7 @@ symlink_clone_project()
    then
       return 1
    fi
+   log_info "Created symlink."
 
    local branchlabel
 

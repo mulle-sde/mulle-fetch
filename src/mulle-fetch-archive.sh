@@ -282,7 +282,10 @@ archive_guess_name_from_url()
       ;;
    esac
 
+   #
    # remove version info or such
+   # these "hacks" should move into some kind of plugin scheme
+   #
    case "${url}" in
       *github.com/*)
          local tmp
@@ -290,6 +293,15 @@ archive_guess_name_from_url()
          tmp="`fast_dirname "${urlpath}"`"
          tmp="`fast_dirname "${tmp}"`"
          fast_basename "${tmp}"
+         return
+      ;;
+
+      *gitlab.com/*)
+         local tmp
+
+         tmp="${urlpath#*gitlab.com/}" # remove scheme and host
+         tmp="${tmp#*/}" # remove org or user
+         echo "${tmp%%/*}" # grab that entry
          return
       ;;
    esac

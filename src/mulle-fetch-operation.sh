@@ -142,8 +142,7 @@ can_symlink_it()
          return 1
       fi
    else
-      log_info "${directory} is not a git repository (yet ?)
-So symlinking is the only way to go."
+      log_info "${directory} is not a git repository. Can only symlink."
    fi
 
   return 0
@@ -201,7 +200,7 @@ _fetch_operation()
    local rval
 
    case "${url}" in
-      /*)
+      "/"*)
          if can_symlink_it "${url}"
          then
             sourcetype="symlink"
@@ -211,8 +210,11 @@ _fetch_operation()
       #
       # don't move up using url
       #
-      */\.\./*|\.\./*|*/\.\.|\.\.)
-         internal_fail "Faulty url \"${url}\" should have been caught before"
+      *"/../"*|"../"*|*"/.."|"..")
+         if [ "${sourcetype}" != "symlink" ]
+         then
+            internal_fail "Faulty url \"${url}\" should have been caught before"
+         fi
       ;;
 
       *)
