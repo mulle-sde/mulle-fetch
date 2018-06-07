@@ -1,3 +1,7 @@
+### 1.3.23
+
+* add `._.DS_Store` to .gitignore
+
 ### 1.3.22
 
 * add support for gitlab.com archive guessing
