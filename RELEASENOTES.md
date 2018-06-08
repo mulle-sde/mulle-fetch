@@ -1,3 +1,7 @@
+### 1.3.24
+
+* nicer output
+
 ### 1.3.23
 
 * add `._.DS_Store` to .gitignore

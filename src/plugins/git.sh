@@ -413,7 +413,7 @@ git_update_project()
    options="`get_sourceoption "${sourceoptions}" "update"`"
    remote="`_get_fetch_remote "${url}"`" || internal_fail "can't figure out remote"
 
-   log_info "Fetching ${C_MAGENTA}${C_BOLD}${dstdir}${C_INFO} ..."
+   log_info "Fetching ${C_MAGENTA}${C_BOLD}${dstdir#${PWD}/}${C_INFO} ..."
 
    (
       exekutor cd "${dstdir}" &&

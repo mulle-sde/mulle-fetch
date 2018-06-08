@@ -326,7 +326,7 @@ fetch_common_main()
          ;;
 
          -l|--search-path|--locals-search-path)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             MULLE_FETCH_SEARCH_PATH="$1"
@@ -347,7 +347,7 @@ fetch_common_main()
          ;;
 
          -t|--tag)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             OPTION_TAG="$1"

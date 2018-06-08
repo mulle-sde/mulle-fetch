@@ -393,7 +393,7 @@ fetch_operation_main()
          ;;
 
          -s|--source|--scm)
-            [ $# -eq 1 ] && fail "missing argument to \"$1\""
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
             OPTION_SCM="$1"
