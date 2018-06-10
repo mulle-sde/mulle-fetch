@@ -76,8 +76,8 @@ git_add_remote()
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
 
    (
-      cd "${repository}" &&
-      git remote add "${remote}" "${url}"
+      rexekutor cd "${repository}" &&
+      exekutor git remote add "${remote}" "${url}"
    )
 }
 
@@ -92,8 +92,8 @@ git_has_remote()
 
    (
       local remotes
-      cd "${repository}" &&
-      fgrep -q -x "${remote}" <<< "`git remote`"
+      rexekutor cd "${repository}" &&
+      rexekutor fgrep -q -x -e "${remote}" <<< "`rexekutor git remote`"
    )
 }
 
@@ -107,8 +107,8 @@ git_remove_remote()
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
 
    (
-      cd "${repository}" &&
-      git remote remove "${remote}"
+      rexekutor cd "${repository}" &&
+      exekutor git remote remove "${remote}"
    )
 }
 
@@ -123,8 +123,8 @@ git_set_url()
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
 
    (
-      cd "${repository}" &&
-      git remote set-url "${remote}" "${url}"
+      rexekutor cd "${repository}" &&
+      exekutor git remote set-url "${remote}" "${url}"
    )
 }
 
@@ -137,8 +137,8 @@ git_unset_default_remote()
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
 
    (
-      cd "${repository}" &&
-      git branch --unset-upstream
+      rexekutor cd "${repository}" &&
+      exekutor git branch --unset-upstream
    )
 }
 
@@ -157,9 +157,9 @@ git_set_default_remote()
    local branch="$3"
 
    (
-      cd "${repository}" &&
-      git fetch "${remote}" &&
-      git branch --set-upstream-to "${remote}/${branch}"
+      rexekutor cd "${repository}" &&
+      exekutor git fetch "${remote}" &&
+      exekutor git branch --set-upstream-to "${remote}/${branch}"
    )
 }
 
@@ -173,8 +173,8 @@ git_has_branch()
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
 
    (
-      cd "${repository}" &&
-      git branch | cut -c3- | fgrep -q -s -x "$2" > /dev/null
+      rexekutor cd "${repository}" &&
+      rexekutor git branch | cut -c3- | fgrep -q -s -x -e "$2" > /dev/null
    )
 }
 
@@ -187,8 +187,8 @@ git_has_fetched_tags()
    (
       local tags
 
-      cd "$1" &&
-      tags="`git show-ref --tags | head -1`" &&
+      rexekutor cd "$1" &&
+      tags="`rexekutor git show-ref --tags | head -1`" &&
       [ ! -z "${tags}" ]
    )
 }
@@ -200,8 +200,8 @@ git_has_tag()
    [ ! -d "$1" ] && internal_fail "directory does not exist"
 
    (
-      cd "$1" &&
-      git tag -l | fgrep -s -x "$2" > /dev/null
+      rexekutor cd "$1" &&
+      rexekutor git tag -l | fgrep -s -x -e "$2" > /dev/null
    )
 }
 
@@ -212,8 +212,8 @@ git_branch_contains_tag()
    [ ! -d "$1" ] && internal_fail "directory does not exist"
 
    (
-      cd "$1" &&
-      git branch --contains "$3"| cut -c3- | fgrep -s -x "$2" > /dev/null
+      rexekutor cd "$1" &&
+      rexekutor git branch --contains "$3"| cut -c3- | fgrep -s -x -e "$2" > /dev/null
    )
 
 }
@@ -225,8 +225,8 @@ git_get_branch()
    [ ! -d "$1" ] && internal_fail "directory does not exist"
 
    (
-      cd "$1" &&
-      git rev-parse --abbrev-ref HEAD 2> /dev/null
+      rexekutor cd "$1" &&
+      rexekutor git rev-parse --abbrev-ref HEAD 2> /dev/null
    )
 }
 
@@ -294,7 +294,7 @@ append_dir_to_gitignore_if_needed()
    local terminator
 
    line="/${directory}"
-   terminator="`tail -c 1 ".gitignore" 2> /dev/null | tr '\012' '|'`"
+   terminator="`rexekutor tail -c 1 ".gitignore" 2> /dev/null | tr '\012' '|'`"
 
    if [ "${terminator}" != "|" ]
    then
@@ -314,7 +314,7 @@ fork_and_name_from_url()
    local hack
    local fork
 
-   hack="`sed 's|^[^:]*:|:|' <<< "${url}"`"
+   hack="`LC_ALL=C sed -e 's|^[^:]*:|:|' <<< "${url}"`"
    name="`basename -- "${hack}"`"
    fork="`dirname -- "${hack}"`"
    fork="`basename -- "${fork}"`"
@@ -328,7 +328,7 @@ fork_and_name_from_url()
       ;;
    esac
 
-   echo "${fork}" | sed 's|^:||'
+   echo "${fork}" | LC_ALL=C sed -e 's|^:||'
    echo "${name}"
 }
 
@@ -347,8 +347,8 @@ git_is_bare_repository()
 
    # if bare repo, we can only clone anyway
    is_bare="$(
-               cd "$1" &&
-               git rev-parse --is-bare-repository 2> /dev/null
+               rexekutor cd "$1" &&
+               rexekutor git rev-parse --is-bare-repository 2> /dev/null
              )" || internal_fail "wrong \"$1\" for \"`pwd`\""
    [ "${is_bare}" = "true" ]
 }

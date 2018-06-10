@@ -1,3 +1,7 @@
+### 1.3.25
+
+* use more exekutor wrappers for git commands
+
 ### 1.3.24
 
 * nicer output

@@ -52,7 +52,7 @@ symlink_clone_project()
    then
       return 1
    fi
-   log_info "Created symlink ${C_RESET_BOLD}${dstdir#${MULLE_VIRTUAL_ROOT}/}${C_INFO}"
+   log_info "Created symlink ${C_RESET_BOLD}${dstdir#${MULLE_USER_PWD}/}${C_INFO}"
 
    local branchlabel
 
