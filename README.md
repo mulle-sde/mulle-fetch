@@ -106,7 +106,7 @@ mulle-fetch fetch --cache-dir ~/.cache/mulle-fetch/archives \
    https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz mulle-c11
 ```
 
-> You can also set the environment variable `MULLE_FETCH_CACHE_DIR`.
+> You can also set the environment variable `MULLE_FETCH_ARCHIVE_DIR`.
 
 
 #### Use a search path for local repositories

@@ -256,7 +256,7 @@ fetch_common_main()
 # there are not local but can be set by the environment
 #
 #   local MULLE_FETCH_SEARCH_PATH
-#   local MULLE_FETCH_CACHE_DIR
+#   local MULLE_FETCH_ARCHIVE_DIR
 #   local MULLE_FETCH_MIRROR_DIR
 
    # need this for usage now
@@ -305,7 +305,7 @@ fetch_common_main()
             [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
-            MULLE_FETCH_CACHE_DIR="$1"
+            MULLE_FETCH_ARCHIVE_DIR="$1"
          ;;
 
          --mirror-dir)

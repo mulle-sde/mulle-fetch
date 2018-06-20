@@ -129,7 +129,7 @@ archive_cache_grab()
    [ -z "${url}" ]      && internal_fail "url is empty"
    [ -z "${download}" ] && internal_fail "download is empty"
 
-   if [ -z "${MULLE_FETCH_CACHE_DIR}" ]
+   if [ -z "${MULLE_FETCH_ARCHIVE_DIR}" ]
    then
       log_fluff "Caching not active"
       return 2
@@ -155,7 +155,7 @@ archive_cache_grab()
    esac
 
    # tar and zip can share a cache due to file extension
-   cachable_path="${MULLE_FETCH_CACHE_DIR}/${filename}"
+   cachable_path="${MULLE_FETCH_ARCHIVE_DIR}/${filename}"
 
    #
    # if refresh is yes, ignore cache
@@ -174,8 +174,14 @@ archive_cache_grab()
             # we are in a tmp dir
             cachable_path=""
 
+            if [ -z "${MULLE_FETCH_CURL_SH}" ]
+            then
+               # shellcheck source=src/mulle-fetch-archive.sh
+               . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-curl.sh" || exit 1
+            fi
+
             if ! _archive_test "${cached_archive}" || \
-               ! validate_download "${cached_archive}" "${sourceoptions}"
+               ! curl_validate_download "${cached_archive}" "${sourceoptions}"
             then
                remove_file_if_present "${cached_archive}"
                cached_archive=""
@@ -189,7 +195,7 @@ archive_cache_grab()
 
    echo "${cached_archive}"
    echo "${cachable_path}"
-   echo "${MULLE_FETCH_CACHE_DIR}"
+   echo "${MULLE_FETCH_ARCHIVE_DIR}"
 
    return 1
 }

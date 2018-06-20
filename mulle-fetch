@@ -34,7 +34,7 @@ then
    set -x
 fi
 
-MULLE_EXECUTABLE_VERSION="1.3.25"
+MULLE_EXECUTABLE_VERSION="1.4.0"
 
 
 MULLE_EXECUTABLE_BASHFUNCTIONS="1.3"
@@ -119,7 +119,7 @@ EOF
    cat <<EOF
 
 Environment:
-   MULLE_FETCH_CACHE_DIR   : local cache of archives
+   MULLE_FETCH_ARCHIVE_DIR   : local cache of archives
    MULLE_FETCH_MIRROR_DIR  : local mirror of git repositories
    MULLE_FETCH_SEARCH_PATH : specify local directories to search, : separated
 

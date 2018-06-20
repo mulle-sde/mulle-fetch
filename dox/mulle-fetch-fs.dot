@@ -4,11 +4,11 @@ digraph G {
 
     node[ shape="record"];
 
-    { rank="same"; "MULLE_FETCH_SEARCH_PATH", "MULLE_FETCH_CACHE_DIR", "MULLE_FETCH_MIRROR_DIR" }
+    { rank="same"; "MULLE_FETCH_SEARCH_PATH", "MULLE_FETCH_ARCHIVE_DIR", "MULLE_FETCH_MIRROR_DIR" }
 
     "MULLE_FETCH_SEARCH_PATH" -> "src"
     "MULLE_FETCH_SEARCH_PATH" -> "src2"
-    "MULLE_FETCH_CACHE_DIR"   -> "archives"
+    "MULLE_FETCH_ARCHIVE_DIR"   -> "archives"
     "MULLE_FETCH_MIRROR_DIR" -> "git-mirrors"
 
 

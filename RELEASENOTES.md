@@ -1,3 +1,8 @@
+## 1.4.0
+
+* rename `MULLE_FETCH_CACHE_DIR` to `MULLE_FETCH_ARCHIVE_DIR` (as used by rest of mulle-sde)
+
+
 ### 1.3.25
 
 * use more exekutor wrappers for git commands
