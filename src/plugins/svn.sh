@@ -39,7 +39,7 @@ MULLE_FETCH_PLUGIN_SVN_SH="included"
 # if svn wants to use MULLE_FETCH_MIRROR_DIR, it should
 # make a svn subdirectory
 #
-svn_clone_project()
+svn_fetch_project()
 {
    [ $# -lt 8 ] && internal_fail "parameters missing"
 

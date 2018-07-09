@@ -1,3 +1,7 @@
+### 1.4.1
+
+* internal rename of clone command to fetch
+
 ## 1.4.0
 
 * rename `MULLE_FETCH_CACHE_DIR` to `MULLE_FETCH_ARCHIVE_DIR` (as used by rest of mulle-sde)

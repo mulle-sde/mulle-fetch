@@ -54,9 +54,9 @@ _file_download()
 ### PLUGIN API
 ###
 
-file_clone_project()
+file_fetch_project()
 {
-   log_entry "file_clone_project" "$@"
+   log_entry "file_fetch_project" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 

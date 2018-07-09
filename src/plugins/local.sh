@@ -39,7 +39,7 @@ MULLE_FETCH_PLUGIN_LOCAL_SH="included"
 # this is useful in mulle-sourcetree to add existing subprojects that
 # need to be compiled separately
 #
-local_clone_project()
+local_fetch_project()
 {
    [ $# -lt 8 ] && internal_fail "parameters missing"
 

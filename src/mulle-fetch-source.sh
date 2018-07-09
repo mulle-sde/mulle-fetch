@@ -291,7 +291,7 @@ source_prepare_filesystem_for_fetch()
 
    if [ -e "${dstdir}" ]
    then
-      if [ "${MULLE_FLAG_MAGNUM_FORCE}" = "NO" ]
+      if [ "${MULLE_FLAG_MAGNUM_FORCE}" != "NO" ]
       then
          fail "\"${dstdir}\" already exists"
       fi

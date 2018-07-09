@@ -158,9 +158,9 @@ fetch_plugin_load_all()
          # shellcheck source=plugins/symlink.sh
          . "${pluginpath}"
 
-         if [ "`type -t "${name}_clone_project"`" != "function" ]
+         if [ "`type -t "${name}_fetch_project"`" != "function" ]
          then
-            fail "Source plugin \"${pluginpath}\" has no \"${name}_clone_project\" function"
+            fail "Source plugin \"${pluginpath}\" has no \"${name}_fetch_project\" function"
          fi
 
          log_fluff "Source plugin \"${name}\" loaded"

@@ -294,9 +294,9 @@ _get_fetch_remote()
 ### Plugin API
 ###
 
-git_clone_project()
+git_fetch_project()
 {
-   log_entry "git_clone_project" "$@"
+   log_entry "git_fetch_project" "$@"
 
    source_prepare_filesystem_for_fetch "${dstdir}"
 

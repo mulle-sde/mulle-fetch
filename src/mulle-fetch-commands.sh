@@ -71,7 +71,7 @@ list_plugins()
 }
 
 
-fetch_clone_usage()
+fetch_fetch_usage()
 {
    cat <<EOF >&2
 Usage:
@@ -417,7 +417,7 @@ fetch_common_main()
    if [ -z "${OPTION_URL}" ]
    then
       case "${COMMAND}" in
-         clone|set-url)
+         fetch|set-url)
             [ $# -lt 2 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
             [ $# -gt 2 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
 
@@ -458,12 +458,12 @@ fetch_common_main()
 }
 
 
-fetch_clone_main()
+fetch_fetch_main()
 {
-   log_entry "fetch_clone_main" "$@"
+   log_entry "fetch_fetch_main" "$@"
 
-   USAGE="fetch_clone_usage"
-   COMMAND="clone"
+   USAGE="fetch_fetch_usage"
+   COMMAND="fetch"
    fetch_common_main "$@"
 }
 

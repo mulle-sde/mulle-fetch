@@ -35,7 +35,7 @@ MULLE_FETCH_PLUGIN_SYMLINK_SH="included"
 ### PLUGIN API
 ###
 
-symlink_clone_project()
+symlink_fetch_project()
 {
 #   local unused="$1"
 #   local name="$2"         # name of the clone

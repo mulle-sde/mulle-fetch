@@ -29,16 +29,9 @@
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #   POSSIBILITY OF SUCH DAMAGE.
 #
-if [ "${TRACE}" = "YES" ]
-then
-   set -x
-fi
+[ "${TRACE}" = "YES" -o "${MULLE_FETCH_TRACE}" = "YES" ] && set -x && : "$0" "$@"
 
-MULLE_EXECUTABLE_VERSION="1.4.0"
-
-
-MULLE_EXECUTABLE_BASHFUNCTIONS="1.3"
-
+MULLE_EXECUTABLE_VERSION="1.4.1"
 
 #
 # This is the main user interface to mulle-fetch
@@ -145,7 +138,7 @@ usage()
 
 main()
 {
-   local MULLE_FLAG_MAGNUM_FORCE="NONE"
+   local MULLE_FLAG_MAGNUM_FORCE="NO"
 
    # technical flags
    local MULLE_TRACE
@@ -173,7 +166,7 @@ main()
 
       case "$1" in
          -f|--force)
-            MULLE_FLAG_MAGNUM_FORCE="BOTH"
+            MULLE_FLAG_MAGNUM_FORCE="YES"
          ;;
 
          -h*|--help|help)
@@ -226,7 +219,7 @@ main()
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
-         fetch_clone_main "$@"
+         fetch_fetch_main "$@"
       ;;
 
       nameguess|guess)
@@ -323,7 +316,7 @@ main()
          fi
 
          log_info "Fetching into ${C_RESET_BOLD}${dstdir}"
-         fetch_clone_main -s "${scmtype}" "${cmd}" "${dstdir}"
+         fetch_fetch_main -s "${scmtype}" "${cmd}" "${dstdir}"
       ;;
    esac
 }

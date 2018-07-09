@@ -70,7 +70,7 @@ fetch_log_action()
    info=" "
 
    case "${action}" in
-      clone)
+      fetch)
          [ -z "${url}" ]    && internal_fail "parameter: url is empty"
          [ -z "${dstdir}" ] && internal_fail "parameter: dstdir is empty"
 
@@ -239,7 +239,7 @@ _fetch_operation()
       ;;
    esac
 
-   source_operation "clone" \
+   source_operation "fetch" \
                     "${unused}" \
                     "${name}" \
                     "${url}" \
@@ -297,7 +297,7 @@ fetch_do_operation()
    local rval
 
    case "${opname}" in
-      "clone")
+      'fetch')
          _fetch_operation "$@"
          rval="$?"
 
@@ -369,7 +369,7 @@ fetch_operation_list()
 
    _fetch_operation_list "$1" "\
 checkout
-clone
+fetch
 search-local
 set-url
 status

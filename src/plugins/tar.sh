@@ -251,9 +251,9 @@ _tar_download()
 ### PLUGIN API
 ###
 
-tar_clone_project()
+tar_fetch_project()
 {
-   log_entry "tar_clone_project" "$@"
+   log_entry "tar_fetch_project" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 

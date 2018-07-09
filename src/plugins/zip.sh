@@ -31,9 +31,9 @@
 MULLE_FETCH_PLUGIN_ZIP_SH="included"
 
 
-zip_clone_project()
+zip_fetch_project()
 {
-   log_entry "zip_clone_project" "$@"
+   log_entry "zip_fetch_project" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
