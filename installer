@@ -183,13 +183,6 @@ main()
       mkdir -p "${PLUGIN_DIR}" 2> /dev/null
       install -v -m "${mode}" "${i}" "${PLUGIN_DIR}" || exit 1
    done
-
-   if [ -d "test" ]
-   then
-      # use attractive colors :)
-      printf "${C_GREEN}If you are new to mulle-fetch I would suggest checking out\n" >&2
-      printf "the ${C_YELLOW}README.md${C_GREEN} in ${C_CYAN}./test${C_GREEN} and doing the examples.\n" >&2
-   fi
 }
 
 main "$@"

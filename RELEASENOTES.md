@@ -1,3 +1,7 @@
+### 1.4.2
+
+* remove obsolete verbose output
+
 ### 1.4.1
 
 * internal rename of clone command to fetch
