@@ -100,7 +100,7 @@ __git_check_file_url()
             log_warning "Hint: You may want to symlink it."
          fi
       else
-         log_error "\"${url}\" does not exist ($PWD)"
+         log_error "Repository \"${url}\" does not exist ($PWD)"
       fi
       return 1
    fi

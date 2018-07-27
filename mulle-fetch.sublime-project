@@ -17,10 +17,10 @@
 				"build",
 				".repos",
 				".mulle-env",
-				".mulle-sde"
+				".mulle-sde",
 				".bootstrap*",
-				".git*",
-			],
+				".git*"
+			]
 
 		}
 	]

@@ -73,6 +73,12 @@ main()
    local repo
    local archive
 
+   local TAR
+   local ZIP
+
+   TAR="`command -v tar`"
+   ZIP="`command -v zip`"
+
    directory="`make_tmp_directory`" || exit 1
    directory="${directory:-/tmp/exekutor}"
 
@@ -81,21 +87,31 @@ main()
 
    setup_demo_repo "${repo}" || exit 1
 
-   archive="${directory}/repo-x.y.z.tgz"
-   setup_demo_tar "${archive}" "${repo}"  || exit 1
+   if [ ! -z "${TAR}" ]
+   then
+      archive="${directory}/repo-x.y.z.tgz"
+      setup_demo_tar "${archive}" "${repo}"  || exit 1
 
-   run_mulle_fetch fetch -s tar "${archive}" "${dstdir}" || exit 1
-   expect_version "${dstdir}" "1.0.0"
-   rmdir_safer "${dstdir}"
-   log_verbose "----- #1 PASSED -----"
+      run_mulle_fetch fetch -s tar "${archive}" "${dstdir}" || exit 1
+      expect_version "${dstdir}" "1.0.0"
+      rmdir_safer "${dstdir}"
+      log_verbose "----- #1 PASSED -----"
+   else
+      log_warning "----- #1 SKIPPED as tar is unavailable -----"
+   fi
 
-   archive="${directory}/repo-x.y.z.zip"
-   setup_demo_zip "${archive}" "${repo}"  || exit 1
+   if [ ! -z "${ZIP}" ]
+   then
+      archive="${directory}/repo-x.y.z.zip"
+      setup_demo_zip "${archive}" "${repo}"  || exit 1
 
-   run_mulle_fetch fetch -s zip "${archive}" "${dstdir}" || exit 1
-   expect_version "${dstdir}" "1.0.0"
-   rmdir_safer "${dstdir}"
-   log_verbose "----- #2 PASSED -----"
+      run_mulle_fetch fetch -s zip "${archive}" "${dstdir}" || exit 1
+      expect_version "${dstdir}" "1.0.0"
+      rmdir_safer "${dstdir}"
+      log_verbose "----- #2 PASSED -----"
+   else
+      log_warning "----- #2 SKIPPED as zip is unavailable -----"
+   fi
 
    log_info "----- ALL PASSED -----"
 

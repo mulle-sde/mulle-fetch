@@ -242,7 +242,7 @@ archive_search_local()
       if [ ! -z "${found}" ]
       then
          found="`absolutepath "${found}"`"
-         echo "file:///${found}"
+         echo "file://${found}"
          return 0
       fi
    done
