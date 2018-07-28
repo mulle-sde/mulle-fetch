@@ -1,3 +1,7 @@
+### 1.4.3
+
+* fixes for mingw
+
 ### 1.4.2
 
 * remove obsolete verbose output
