@@ -46,7 +46,6 @@ EOF
 }
 
 
-
 fetch_plugin_all_names()
 {
    log_entry "fetch_plugin_all_names"

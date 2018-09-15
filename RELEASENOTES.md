@@ -1,3 +1,8 @@
+## 1.5.0
+
+* improved debian packaging with recommends. uses mulle-bashfunctions 1.8.0 now
+
+
 ### 1.4.3
 
 * fixes for mingw

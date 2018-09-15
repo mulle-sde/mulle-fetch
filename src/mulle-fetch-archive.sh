@@ -30,7 +30,7 @@
 #
 MULLE_FETCH_ARCHIVE_SH="included"
 
-_find_best_directory()
+r_find_best_directory()
 {
    local directory="$1"
 
@@ -40,14 +40,14 @@ _find_best_directory()
    filenames="`ls -1A "${directory}" 2> /dev/null`"
    if [ -z "${filenames}" ]
    then
-      echo "${directory}"
+      RVAL="${directory}"
       return
    fi
 
    count="`echo "${filenames}" | wc -l`"
-   if [ $count -ne 1 ]
+   if [ "${count}" -ne 1 ]
    then
-      echo "${directory}"
+      RVAL="${directory}"
       return
    fi
 
@@ -60,10 +60,11 @@ _find_best_directory()
    next="${directory}/${filenames}"
    if [ -d "${next}" ]
    then
-      next="`_find_best_directory "${next}" `"
+      r_find_best_directory "${next}"
+      next="${RVAL}"
    fi
 
-   echo "${next}"
+   RVAL="${next}"
 }
 
 
@@ -147,6 +148,7 @@ archive_move_stuff()
 
    local src
    local toremove
+   local RVAL
 
    [ ! -e "${dstdir}" ] || internal_fail "destination must not exist"
 
@@ -158,7 +160,8 @@ archive_move_stuff()
       src="${tmpdir}/${name}"
       if [ ! -d "${src}" ]
       then
-         src="`_find_best_directory "${tmpdir}"`"
+         r_find_best_directory "${tmpdir}"
+         src="${RVAL}"
          if [ "${src}" = "${tmpdir}" ]
          then
             toremove=""
@@ -178,9 +181,9 @@ archive_move_stuff()
 }
 
 
-_archive_search_local()
+r_archive_search_local()
 {
-   log_entry "_archive_search_local" "$@"
+   log_entry "r_archive_search_local" "$@"
 
    local directory="$1"
    local name="$2"
@@ -196,8 +199,8 @@ _archive_search_local()
    then
       log_fluff "Found \"${name}\" in \"${directory}\" as \"${found}\""
 
-      echo "${found}"
-      return
+      RVAL="${found}"
+      return 0
    fi
 
    found="${directory}/${filename}"
@@ -206,9 +209,12 @@ _archive_search_local()
    then
       log_fluff "Found \"${name}\" in \"${directory}\" as \"${found}\""
 
-      echo "${found}"
-      return
+      RVAL="${found}"
+      return 0
    fi
+
+   RVAL=""
+   return 1
 }
 
 
@@ -238,7 +244,8 @@ archive_search_local()
          continue
       fi
 
-      found="`_archive_search_local "${directory}" "${name}" "${filename}"`" || exit 1
+      r_archive_search_local "${directory}" "${name}" "${filename}" || exit 1
+      found="${RVAL}"
       if [ ! -z "${found}" ]
       then
          found="`absolutepath "${found}"`"

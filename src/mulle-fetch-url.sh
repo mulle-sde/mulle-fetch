@@ -85,6 +85,7 @@ url_typeguess()
 
    local urlpath
    local compressed
+   local RVAL
 
    if [ -z "${MULLE_PATH_INCLUDED_SH}" ]
    then
@@ -116,7 +117,8 @@ url_typeguess()
 
    while :
    do
-      ext="`path_extension "${urlpath}"`"
+      r_path_extension "${urlpath}"
+      ext="${RVAL}"
       case "${ext}" in
          "gz"|"xz"|"bz2"|"bz")
             # remove kwnon compression suffixes handled by tar
@@ -142,7 +144,8 @@ url_typeguess()
             return 1
          ;;
       esac
-      urlpath="`extensionless_basename "${urlpath}"`"
+      r_extensionless_basename "${urlpath}"
+      urlpath="${RVAL}"
    done
 }
 

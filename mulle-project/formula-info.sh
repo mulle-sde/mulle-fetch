@@ -10,4 +10,5 @@ LANGUAGE="bash"                # c,cpp, objc, bash ...
 DEPENDENCIES='${MULLE_NAT_TAP}mulle-bashfunctions'
 
 #
-DEBIAN_DEPENDENCIES="mulle-bashfunctions (>= 1.5.0), tar, unzip"
+DEBIAN_DEPENDENCIES="mulle-bashfunctions (>= 1.8.0)"
+DEBIAN_RECOMMENDATIONS="tar, unzip"
