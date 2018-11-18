@@ -52,6 +52,11 @@ local_fetch_project()
    local sourceoptions="$1"; shift
    local dstdir="$1"; shift
 
+   #
+   # Could copy url which is a local directory now wholesale, which
+   # might make sense on mingw, but would be really bothersome, when
+   # you really wanted to symlink
+   #
    [ ! -e "${dstdir}" ] && fail "${dstdir} not present"
 
    :

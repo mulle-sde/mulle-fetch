@@ -38,7 +38,7 @@ MULLE_FETCH_PLUGIN_SYMLINK_SH="included"
 symlink_fetch_project()
 {
 #   local unused="$1"
-#   local name="$2"         # name of the clone
+   local name="$2"         # name of the clone
    local url="$3"           # URL of the clone
    local branch="$4"        # branch of the clone
    local tag="$5"           # tag to checkout of the clone
@@ -52,7 +52,9 @@ symlink_fetch_project()
    then
       return 1
    fi
-   log_info "Created symlink ${C_RESET_BOLD}${dstdir#${MULLE_USER_PWD}/}${C_INFO}"
+
+   log_info "Symlinked ${C_MAGENTA}${C_BOLD}${name}${C_INFO} to \
+${C_RESET_BOLD}${url}${C_INFO}."
 
    local branchlabel
 
@@ -81,7 +83,7 @@ symlink_search_local_project()
    local name="$2"
    local branch="$3"
 
-   source_search_local_path "${name}" "${branch}" "" "YES"
+   source_search_local_path "${name}" "${branch}" "" 'YES'
 }
 
 

@@ -94,7 +94,7 @@ url_typeguess()
    fi
 
    urlpath="`url_get_path "$*"`"
-   tarcompressed="NO"
+   tarcompressed='NO'
 
    # this works for gitlist
    case "${urlpath}" in
@@ -122,7 +122,7 @@ url_typeguess()
       case "${ext}" in
          "gz"|"xz"|"bz2"|"bz")
             # remove kwnon compression suffixes handled by tar
-            tarcompressed="YES"
+            tarcompressed='YES'
          ;;
 
          "tgz"|"tar")
@@ -131,7 +131,7 @@ url_typeguess()
          ;;
 
          "git"|"svn"|"zip")
-            if [ "${tarcompressed}" = "YES" ]
+            if [ "${tarcompressed}" = 'YES' ]
             then
                return 1
             fi

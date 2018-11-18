@@ -126,7 +126,7 @@ _unarchive_files()
 
    (
       exekutor cd "${dstdir}" ;
-      if [ "${noclobber}" = "NO" ]
+      if [ "${noclobber}" = 'NO' ]
       then
          exekutor tar -x ${TARFLAGS} -f -
       else
@@ -275,16 +275,15 @@ archive_guess_name_from_url()
 
    local urlpath
    local archivename
+   local tmp
 
    urlpath="`url_get_path "${url}"`"
 
    case "${urlpath}" in
       */tarball/*|*/zipball/*)
-         local tmp
-
-         tmp="`fast_dirname "${urlpath}"`"
-         tmp="`fast_dirname "${tmp}"`"
-         fast_basename "${tmp}"
+         r_fast_dirname "${urlpath}"
+         r_fast_dirname "${RVAL}"
+         fast_basename "${RVAL}"
          return
       ;;
    esac
@@ -295,17 +294,13 @@ archive_guess_name_from_url()
    #
    case "${url}" in
       *github.com/*)
-         local tmp
-
-         tmp="`fast_dirname "${urlpath}"`"
-         tmp="`fast_dirname "${tmp}"`"
-         fast_basename "${tmp}"
+         r_fast_dirname "${urlpath}"
+         r_fast_dirname "${RVAL}"
+         fast_basename "${RVAL}"
          return
       ;;
 
       *gitlab.com/*)
-         local tmp
-
          tmp="${urlpath#*gitlab.com/}" # remove scheme and host
          tmp="${tmp#*/}" # remove org or user
          echo "${tmp%%/*}" # grab that entry
@@ -317,7 +312,8 @@ archive_guess_name_from_url()
    archivename="`extensionless_basename "${urlpath}"`"
    case "${archivename}" in
       *${ext})
-         archivename="`extensionless_basename "${archivename}"`"
+         r_extensionless_basename "${archivename}"
+         archivename="${RVAL}"
       ;;
    esac
 

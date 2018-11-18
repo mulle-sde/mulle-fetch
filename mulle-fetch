@@ -29,7 +29,7 @@
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #   POSSIBILITY OF SUCH DAMAGE.
 #
-[ "${TRACE}" = "YES" -o "${MULLE_FETCH_TRACE}" = "YES" ] && set -x && : "$0" "$@"
+[ "${TRACE}" = 'YES' -o "${MULLE_FETCH_TRACE}" = 'YES' ] && set -x && : "$0" "$@"
 
 MULLE_EXECUTABLE_VERSION="1.5.0"
 
@@ -67,7 +67,7 @@ print_commands()
 
    echo "${SHOWN_COMMANDS}"
 
-   if [ "${show_all}" != "NO" ]
+   if [ "${show_all}" != 'NO' ]
    then
       echo "${HIDDEN_COMMANDS}"
    fi
@@ -112,13 +112,13 @@ EOF
    cat <<EOF
 
 Environment:
-   MULLE_FETCH_ARCHIVE_DIR   : local cache of archives
+   MULLE_FETCH_ARCHIVE_DIR : local cache of archives
    MULLE_FETCH_MIRROR_DIR  : local mirror of git repositories
    MULLE_FETCH_SEARCH_PATH : specify local directories to search, : separated
 
 EOF
 
-   if [ "${verbose}" = "NO" ]
+   if [ "${verbose}" = 'NO' ]
    then
       cat <<EOF
       (use ${MULLE_USAGE_NAME} -v help to show more commands)
@@ -136,20 +136,20 @@ usage()
 
 main()
 {
-   local MULLE_FLAG_MAGNUM_FORCE="NO"
+   local MULLE_FLAG_MAGNUM_FORCE='NO'
 
    # technical flags
    local MULLE_TRACE
-   local MULLE_FLAG_EXEKUTOR_DRY_RUN="NO"
-   local MULLE_FLAG_LOG_LOCAL="NO"
-   local MULLE_FLAG_LOG_DEBUG="NO"
-   local MULLE_FLAG_LOG_EXEKUTOR="NO"
-   local MULLE_FLAG_LOG_FLUFF="NO"
-   local MULLE_FLAG_LOG_SCRIPTS="NO"
-   local MULLE_FLAG_LOG_SETTINGS="NO"
-   local MULLE_FLAG_LOG_VERBOSE="NO"
-   local MULLE_FLAG_LOG_MERGE="NO"
-   local MULLE_TRACE_POSTPONE="NO"
+   local MULLE_FLAG_EXEKUTOR_DRY_RUN='NO'
+   local MULLE_FLAG_LOG_LOCAL='NO'
+   local MULLE_FLAG_LOG_DEBUG='NO'
+   local MULLE_FLAG_LOG_EXEKUTOR='NO'
+   local MULLE_FLAG_LOG_FLUFF='NO'
+   local MULLE_FLAG_LOG_SCRIPTS='NO'
+   local MULLE_FLAG_LOG_SETTINGS='NO'
+   local MULLE_FLAG_LOG_VERBOSE='NO'
+   local MULLE_FLAG_LOG_MERGE='NO'
+   local MULLE_TRACE_POSTPONE='NO'
 
    #
    # simple option handling
@@ -164,7 +164,7 @@ main()
 
       case "$1" in
          -f|--force)
-            MULLE_FLAG_MAGNUM_FORCE="YES"
+            MULLE_FLAG_MAGNUM_FORCE='YES'
          ;;
 
          -h*|--help|help)

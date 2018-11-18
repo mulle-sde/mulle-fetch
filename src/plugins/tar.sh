@@ -266,6 +266,9 @@ tar_fetch_project()
    local sourceoptions="$7"   # options to use on source
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
+   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
+${C_RESET_BOLD}${url}${C_INFO}."
+
    source_prepare_filesystem_for_fetch "${dstdir}"
 
    local tmpdir
@@ -316,7 +319,7 @@ tar_search_local_project()
 
 
    #  look for a git repo of same name (or a local project)
-   found="`source_search_local_path "${name}" "${branch}" ".git" "NO"`"
+   found="`source_search_local_path "${name}" "${branch}" ".git" 'NO'`"
    if [ ! -z "${found}" ]
    then
       echo "${found}"

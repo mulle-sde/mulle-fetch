@@ -111,15 +111,16 @@ can_symlink_it()
       return 1
    fi
 
-   if [ "${OPTION_SYMLINK}" != "YES" ]
+   if [ "${OPTION_SYMLINK}" != 'YES' ]
    then
-      log_fluff "Not allowed to symlink it. (Use --symlink to allow)"
+      log_verbose "Not allowed to symlink it. (Use --symlink to allow)"
       return 1
    fi
 
    case "${MULLE_UNAME}" in
       minwgw)
-         log_fluff "Can't symlink it, because symlinking is unavailable on this platform"
+         log_verbose "Can't symlink it, because symlinking is unavailable on \
+this platform"
          return 1
       ;;
    esac
@@ -264,7 +265,7 @@ _fetch_operation()
       ;;
    esac
 
-   if [ "${sourcetype}" = "symlink" -a "${OPTION_SYMLINK_RETURNS_2}" = "YES" ]
+   if [ "${sourcetype}" = "symlink" -a "${OPTION_SYMLINK_RETURNS_2}" = 'YES' ]
    then
       return 2
    fi

@@ -231,7 +231,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       # get the origin branch. Funnily enough git works fine
       # even without it..
       #
-      if [ "${MULLE_FETCH_SET_GIT_DEFAULT_REMOTE}" = "YES" ]
+      if [ "${MULLE_FETCH_SET_GIT_DEFAULT_REMOTE}" = 'YES' ]
       then
          git_set_default_remote "${dstdir}" "origin" "${branch}"
       fi
@@ -298,6 +298,13 @@ git_fetch_project()
 {
    log_entry "git_fetch_project" "$@"
 
+#   local unused="$1"
+   local name="$2"
+   local url="$3"
+
+   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
+${C_RESET_BOLD}${url}${C_INFO}."
+
    source_prepare_filesystem_for_fetch "${dstdir}"
 
    if ! __git_clone "$@"
@@ -338,14 +345,14 @@ git_checkout_project()
    local curr_branch
    local need_fetch
 
-   need_fetch="NO"
+   need_fetch='NO'
    curr_branch="`git_get_branch "${dstdir}"`"
 
    if [ -z "${tag}" ]
    then
       if [ "${curr_branch}" != "${branch}" ]
       then
-         need_fetch="YES"
+         need_fetch='YES'
       fi
       log_info "Checking out branch ${C_RESET_BOLD}${branch}${C_INFO} of \
 ${C_MAGENTA}${C_BOLD}${name}${C_INFO} ..."
@@ -359,13 +366,13 @@ ${C_RESET_BOLD}${tag}${C_WARNING_TEXT} is set"
 
       if ! git_has_tag "${dstdir}" "${tag}"
       then
-         need_fetch="YES"
+         need_fetch='YES'
       fi
       log_info "Checking out tag ${C_RESET_BOLD}${tag}${C_INFO} of \
 ${C_MAGENTA}${C_BOLD}${name}${C_INFO} ..."
    fi
 
-   if [ "${need_fetch}" = "YES" ]
+   if [ "${need_fetch}" = 'YES' ]
    then
       (
          exekutor cd "${dstdir}" &&
@@ -530,10 +537,10 @@ git_search_local_project()
    # there should be a generic method for this though
    [ -z "${url}" ] && internal_fail "empty url"
 
-   reponame="`basename -- "${url}"`"
-   reponame="`basename -- "${reponame}" .git`"
+   r_extensionless_basename "${url}" ".git"
+   reponame="${RVAL}"
 
-   source_search_local_path "${reponame}" "${branch}" ".git" "NO"
+   source_search_local_path "${reponame}" "${branch}" ".git" 'NO'
 }
 
 

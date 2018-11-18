@@ -52,6 +52,9 @@ svn_fetch_project()
    local sourceoptions="$1"; shift
    local dstdir="$1"; shift
 
+   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
+${C_RESET_BOLD}${url}${C_INFO}."
+
    source_prepare_filesystem_for_fetch "${dstdir}"
 
    local options
@@ -148,7 +151,7 @@ svn_search_local_project()
    local name="$2"
    local branch="$3"
 
-   source_search_local_path "${name}" "${branch}" ".svn" "YES"
+   source_search_local_path "${name}" "${branch}" ".svn" 'YES'
 }
 
 

@@ -70,16 +70,23 @@ file_fetch_project()
    local destination="$8"     # destination of file (absolute or relative to $PWD)
 
    local dstdir
+   local RVAL
 
-   dstdir="`dirname -- "${destination}"`"
+   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
+${C_RESET_BOLD}${url}${C_INFO}."
+
+   r_fast_dirname "${destination}"
+   dstdir="${RVAL}"
+
    mkdir_if_missing "${dstdir}" || return 1
 
    local download
 
-   download="`basename -- "${destination}"`"
+   r_fast_basename "${destination}"
+   download="${RVAL}"
    (
       exekutor cd "${dstdir}" &&
-      source_download "${url}" "${download}" "${sourceoptions}" "${curlit}"
+      source_download "${url}" "${download}" "${sourceoptions}"
    ) || return 1
 }
 

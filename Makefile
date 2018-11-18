@@ -1,4 +1,4 @@
-SCRIPTS=installer \
+SCRIPTS=./bin/installer \
 src/plugins/file.sh \
 src/plugins/git.sh \
 src/plugins/local.sh \
@@ -37,7 +37,7 @@ mulle-fetch.chk:	mulle-fetch
 	(shellcheck -f json $(SHELLFLAGS) $< | jq '.[].level' | grep -w error > /dev/null ) && exit 1 || touch $@
 
 installer:
-	@ ./installer
+	@ ./bin/installer
 
 clean:
 	@- rm src/*.chk

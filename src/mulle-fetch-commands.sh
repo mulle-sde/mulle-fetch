@@ -48,7 +48,7 @@ MULLE_FETCH_FETCH_SH="included"
 # dstdir="$8"        # dstdir of this clone (absolute or relative to $PWD)
 #
 
-list_plugins()
+show_plugins()
 {
    if [ -z "$MULLE_FETCH_PLUGIN_SH" ]
    then
@@ -97,7 +97,7 @@ Options:
    --symlink              : allow symlinks to be create
 EOF
 
-   list_plugins >&2
+   show_plugins >&2
    exit 1
 }
 
@@ -118,7 +118,7 @@ Options:
    -s <scm>         : source type, either a repository or archive format (git)
 EOF
 
-   list_plugins >&2
+   show_plugins >&2
 
    exit 1
 }
@@ -139,7 +139,7 @@ Options:
    -o <options>     : specify options for the scm (see documentation)
 EOF
 
-   list_plugins >&2
+   show_plugins >&2
 
    exit 1
 }
@@ -161,7 +161,7 @@ Options:
    -t <tag>         : tag to checkout
 EOF
 
-   list_plugins >&2
+   show_plugins >&2
 
    exit 1
 }
@@ -173,14 +173,14 @@ fetch_operation_usage()
 Usage:
    ${MULLE_EXECUTABLE_NAME} operation [options]
 
-   List the operatios for the specified repository or archive format. The
+   List the operations for the specified repository or archive format. The
    default lists operations available for git.
 
 Options:
-   -s <scm>         : repository or archive format (default git)
+   -s <scm>   : repository or archive format (default git)
 EOF
 
-   list_plugins >&2
+   show_plugins >&2
 
    exit 1
 }
@@ -201,7 +201,7 @@ Options:
    -o <options>     : specify options for the scm (see documentation)
 EOF
 
-   list_plugins >&2
+   show_plugins >&2
 
    exit 1
 }
@@ -220,7 +220,7 @@ Options:
    -o <options>     : specify options for the scm (see documentation)
 EOF
 
-   list_plugins >&2
+   show_plugins >&2
 
    exit 1
 }
@@ -245,8 +245,8 @@ fetch_common_main()
    local OPTION_URL
    local OPTION_SYMLINK="DEFAULT"
    local OPTION_REFRESH="DEFAULT"
-   local OPTION_ABSOLUTE_SYMLINK="NO"
-   local OPTION_SYMLINK_RETURNS_2="NO"
+   local OPTION_ABSOLUTE_SYMLINK='NO'
+   local OPTION_SYMLINK_RETURNS_2='NO'
 
    local OPTION_OPTIONS
    local OPTION_TOOL_FLAGS
@@ -272,33 +272,33 @@ fetch_common_main()
          ;;
 
          --refresh)
-            OPTION_REFRESH="YES"
+            OPTION_REFRESH='YES'
          ;;
 
          --no-refresh)
-            OPTION_REFRESH="NO"
+            OPTION_REFRESH='NO'
          ;;
 
          --symlink)
-            OPTION_SYMLINK="YES"
+            OPTION_SYMLINK='YES'
          ;;
 
          --no-symlinks)
-            OPTION_ABSOLUTE_SYMLINK="NO"
+            OPTION_ABSOLUTE_SYMLINK='NO'
          ;;
 
          --absolute-symlinks)
-            OPTION_SYMLINK="YES"
-            OPTION_ABSOLUTE_SYMLINK="YES"
+            OPTION_SYMLINK='YES'
+            OPTION_ABSOLUTE_SYMLINK='YES'
          ;;
 
          --no-absolute-symlinks)
-            OPTION_ABSOLUTE_SYMLINK="NO"
+            OPTION_ABSOLUTE_SYMLINK='NO'
          ;;
 
          -2|--symlink-returns-2)
-            OPTION_SYMLINK="YES"
-            OPTION_SYMLINK_RETURNS_2="YES"
+            OPTION_SYMLINK='YES'
+            OPTION_SYMLINK_RETURNS_2='YES'
          ;;
 
          --cache-dir)

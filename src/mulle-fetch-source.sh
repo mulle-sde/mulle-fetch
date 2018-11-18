@@ -141,7 +141,7 @@ source_search_local()
 
    local found
 
-   if [ "${MULLE_FLAG_LOG_LOCALS}" = "YES" ]
+   if [ "${MULLE_FLAG_LOG_LOCALS}" = 'YES' ]
    then
       log_trace "Checking local path \"${directory}\""
    fi
@@ -170,7 +170,7 @@ source_search_local()
       return
    fi
 
-   if [ "${need_extension}" != "YES" ]
+   if [ "${need_extension}" != 'YES' ]
    then
       found="${directory}/${name}"
       log_fluff "Looking for \"${found}\""
@@ -201,7 +201,7 @@ source_search_local_path()
 
    [ -z "${name}" ] && internal_fail "empty name"
 
-   if [ "${MULLE_FLAG_LOG_LOCAL}" = "YES" -a -z "${MULLE_FETCH_SEARCH_PATH}" ]
+   if [ "${MULLE_FLAG_LOG_LOCAL}" = 'YES' -a -z "${MULLE_FETCH_SEARCH_PATH}" ]
    then
       log_trace "MULLE_FETCH_SEARCH_PATH is empty"
    fi
@@ -219,7 +219,7 @@ source_search_local_path()
 
       if [ ! -d "${directory}" ]
       then
-         if [ "${MULLE_FLAG_LOG_LOCALS}" = "YES" ]
+         if [ "${MULLE_FLAG_LOG_LOCALS}" = 'YES' ]
          then
             log_trace2 "Local path \"${realdir}\" does not exist"
          fi
@@ -291,13 +291,16 @@ source_prepare_filesystem_for_fetch()
 
    if [ -e "${dstdir}" ]
    then
-      if [ "${MULLE_FLAG_MAGNUM_FORCE}" != "NO" ]
+      if [ "${MULLE_FLAG_MAGNUM_FORCE}" != 'NO' ]
       then
          fail "\"${dstdir}\" already exists"
       fi
       rmdir_safer "${dstdir}" || exit 1
    fi
-   mkdir_parent_if_missing "${dstdir}" > /dev/null
+
+   local RVAL
+
+   r_mkdir_parent_if_missing "${dstdir}"
 }
 
 
@@ -338,7 +341,7 @@ source_download()
    #
    local curlit
 
-   curlit="NO"
+   curlit='NO'
    case "${url}" in
       file:*)
          url="`source_check_file_url "${url}"`"
@@ -346,7 +349,7 @@ source_download()
       ;;
 
       *:*)
-         curlit="YES"
+         curlit='YES'
       ;;
 
       *)
@@ -355,7 +358,7 @@ source_download()
       ;;
    esac
 
-   if [ "${curlit}" = "YES" ]
+   if [ "${curlit}" = 'YES' ]
    then
       curl_download "${url}" "${download}" "${sourceoptions}" \
          || fail "failed to download \"${url}\""
