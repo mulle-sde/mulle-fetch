@@ -83,7 +83,8 @@ fetch_log_action()
 
       search-local|guess)
          [ -z "${url}" ]      && internal_fail "parameter: url is empty"
-         proposition=" "
+         info=" of "
+         proposition=" at "
       ;;
 
       *)

@@ -194,7 +194,7 @@ r_archive_search_local()
    local found
 
    found="${directory}/${name}-${filename}"
-   log_fluff "Looking for \"${found}\""
+   log_fluff "Looking for archive \"${found}\""
    if [ -f "${found}" ]
    then
       log_fluff "Found \"${name}\" in \"${directory}\" as \"${found}\""
@@ -204,7 +204,7 @@ r_archive_search_local()
    fi
 
    found="${directory}/${filename}"
-   log_fluff "Looking for \"${found}\""
+   log_fluff "Looking for archive \"${found}\""
    if [ -f "${found}" ]
    then
       log_fluff "Found \"${name}\" in \"${directory}\" as \"${found}\""
@@ -228,8 +228,10 @@ archive_search_local()
 #   local branch="$3"
 
    local filename
+   local RVAL
 
-   filename="`basename -- "${url}"`"
+   r_fast_basename "${url}"
+   filename="${RVAL}"
 
    local found
    local directory
@@ -248,7 +250,8 @@ archive_search_local()
       found="${RVAL}"
       if [ ! -z "${found}" ]
       then
-         found="`absolutepath "${found}"`"
+         r_absolutepath "${found}"
+         found="${RVAL}"
          echo "file://${found}"
          return 0
       fi

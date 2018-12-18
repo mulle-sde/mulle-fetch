@@ -141,15 +141,19 @@ source_search_local()
 
    local found
 
-   if [ "${MULLE_FLAG_LOG_LOCALS}" = 'YES' ]
+   if [ "${MULLE_FLAG_LOG_SETTINGS}" = 'YES' ]
    then
-      log_trace "Checking local path \"${directory}\""
+      log_trace2 "directory      : ${directory}"
+      log_trace2 "branch         : ${branch}"
+      log_trace2 "name           : ${name}"
+      log_trace2 "extension      : ${extension}"
+      log_trace2 "need_extension : ${need_extension}"
    fi
 
    if [ ! -z "${branch}" ]
    then
       found="${directory}/${name}.${branch}${extension}"
-      log_fluff "Looking for \"${found}\""
+      log_fluff "Looking for local project \"${found}\""
 
       if [ -d "${found}" ]
       then
@@ -161,7 +165,7 @@ source_search_local()
    fi
 
    found="${directory}/${name}${extension}"
-   log_fluff "Looking for \"${found}\""
+   log_fluff "Looking for local project \"${found}\""
    if [ -d "${found}" ]
    then
       log_fluff "Found \"${name}${extension}\" in \"${directory}\""
@@ -173,7 +177,7 @@ source_search_local()
    if [ "${need_extension}" != 'YES' ]
    then
       found="${directory}/${name}"
-      log_fluff "Looking for \"${found}\""
+      log_fluff "Looking for local project \"${found}\""
       if [ -d "${found}" ]
       then
          log_fluff "Found \"${name}\" in \"${directory}\""
@@ -219,10 +223,7 @@ source_search_local_path()
 
       if [ ! -d "${directory}" ]
       then
-         if [ "${MULLE_FLAG_LOG_LOCALS}" = 'YES' ]
-         then
-            log_trace2 "Local path \"${realdir}\" does not exist"
-         fi
+         log_debug "Local path \"${directory}\" does not exist, continueing"
          continue
       fi
 
@@ -252,6 +253,7 @@ source_operation()
    log_entry "source_operation" "$@"
 
    local opname="$1" ; shift
+
 
    local unused="$1"
    local name="$2"            # name of the clone

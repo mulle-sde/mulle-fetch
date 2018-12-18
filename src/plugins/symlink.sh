@@ -79,9 +79,38 @@ symlink_search_local_project()
 {
    log_entry "symlink_search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
-   local url="$1"
-   local name="$2"
-   local branch="$3"
+#   local unused="$1"
+   local name="$2"            # name of the clone
+   local url="$3"             # URL of the clone
+   local branch="$4"          # branch of the clone
+#   local tag="$5"             # tag to checkout of the clone
+#   local sourcetype="$6"      # source to use for this clone
+#   local sourceoptions="$7"   # options to use on source
+#   local dstdir="$8"     # dstdir of this clone (absolute or relative to $PWD)
+
+   local RVAL
+   local filename
+   local found
+
+   #
+   # the URL can be used to find a local repository
+   #
+   case "${url}" in
+      file://*)
+         r_simplified_absolutepath "${url:7}"
+         r_fast_dirname "${RVAL}"  # remove name from url
+         filename="${RVAL}"
+
+         found="`source_search_local "${filename}" "${name}" "${branch}" "" "NO"`"
+         if [ ! -z "${found}" ]
+         then
+            log_fluff "Found via URL \"${url}\""
+            echo "${found}"
+            return
+         fi
+         log_warning "Not found via URL \"${url}\""
+      ;;
+   esac
 
    source_search_local_path "${name}" "${branch}" "" 'YES'
 }

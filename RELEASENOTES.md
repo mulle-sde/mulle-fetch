@@ -1,3 +1,9 @@
+## 1.6.0
+
+* support file:// for local search
+* rename list to showcommand
+
+
 ## 1.5.0
 
 * improved debian packaging with recommends. uses mulle-bashfunctions 1.8.0 now
