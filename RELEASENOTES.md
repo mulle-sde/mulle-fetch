@@ -1,3 +1,7 @@
+### 1.6.1
+
+* better search-local with file:// urls
+
 ## 1.6.0
 
 * support file:// for local search

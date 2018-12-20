@@ -198,6 +198,7 @@ Usage:
 Options:
    -l <dir:dir:...> : local search path for repositories
    -s <scm>         : repository or archive format (default git)
+   -u <url>         : file URL to look for
    -o <options>     : specify options for the scm (see documentation)
 EOF
 

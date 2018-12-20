@@ -151,7 +151,7 @@ svn_search_local_project()
    local name="$2"
    local branch="$3"
 
-   source_search_local_path "${name}" "${branch}" ".svn" 'YES'
+   source_search_local_path "${name}" "${branch}" ".svn" 'YES' "${url}"
 }
 
 

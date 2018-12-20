@@ -54,7 +54,7 @@ symlink_fetch_project()
    fi
 
    log_info "Symlinked ${C_MAGENTA}${C_BOLD}${name}${C_INFO} to \
-${C_RESET_BOLD}${url}${C_INFO}."
+${C_RESET_BOLD}${url}${C_INFO}"
 
    local branchlabel
 
@@ -112,7 +112,7 @@ symlink_search_local_project()
       ;;
    esac
 
-   source_search_local_path "${name}" "${branch}" "" 'YES'
+   source_search_local_path "${name}" "${branch}" "" 'YES' "${url}"
 }
 
 

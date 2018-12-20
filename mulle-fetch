@@ -31,7 +31,7 @@
 #
 [ "${TRACE}" = 'YES' -o "${MULLE_FETCH_TRACE}" = 'YES' ] && set -x && : "$0" "$@"
 
-MULLE_EXECUTABLE_VERSION="1.6.0"
+MULLE_EXECUTABLE_VERSION="1.6.1"
 
 #
 # This is the main user interface to mulle-fetch
@@ -203,6 +203,10 @@ main()
    [ $# -eq 0 ] || shift
 
    case "${cmd}" in
+      ""|help)
+         usage
+      ;;
+
       checkout)
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
@@ -210,9 +214,6 @@ main()
          fetch_checkout_main "$@"
       ;;
 
-      # for the user it's a fetch, but internally we call it
-      # a clone for historical reasons, and also fetch_fetch is
-      # stupid
       fetch)
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
@@ -297,7 +298,21 @@ main()
       ;;
 
       *)
-         [ "$#" -eq 0 ] || _usage
+         local dstdir
+
+         if [ "$#" -eq 1 ]
+         then
+            case "$1" in
+               ""|-*)
+                  usage
+               ;;
+            esac
+
+            dstdir="$1"
+            shift
+         fi
+
+         [ "$#" -eq 0 ] || usage
 
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
@@ -308,12 +323,14 @@ main()
          scmtype="`fetch_typeguess_main "${cmd}"`"
          scmtype="${scmtype:-git}"
 
-         if ! dstdir="`fetch_guess_main -s "${scmtype}" "${cmd}"`"
+         if [ -z "${dstdir}" ]
          then
-            fail "Failed to guess project name from url \"${cmd}\""
+            if ! dstdir="`fetch_guess_main -s "${scmtype}" "${cmd}"`"
+            then
+               fail "Failed to guess project name from url \"${cmd}\""
+            fi
          fi
 
-         log_info "Fetching into ${C_RESET_BOLD}${dstdir}"
          fetch_fetch_main -s "${scmtype}" "${cmd}" "${dstdir}"
       ;;
    esac

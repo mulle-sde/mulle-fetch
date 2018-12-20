@@ -540,7 +540,7 @@ git_search_local_project()
    r_extensionless_basename "${url}" ".git"
    reponame="${RVAL}"
 
-   source_search_local_path "${reponame}" "${branch}" ".git" 'NO'
+   source_search_local_path "${reponame}" "${branch}" ".git" 'NO' "${url}"
 }
 
 

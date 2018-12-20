@@ -109,17 +109,35 @@ get_source_function()
 }
 
 
-source_check_file_url()
+source_validate_file_url()
 {
+   log_entry "source_validate_file_url" "$@"
+
    local url="$1"
 
    case "${url}" in
       file://*)
          url="${url:7}"
       ;;
+
+      *)
+         return 1
+      ;;
    esac
 
-   if [ ! -e "${url}" ]
+   log_fluff "Looking for local \"${url}\""
+
+   [ -e "${url}" ]
+}
+
+
+source_check_file_url()
+{
+   log_entry "source_check_file_url" "$@"
+
+   local url="$1"
+
+   if ! source_validate_file_url "${url}"
    then
       log_error "\"${url}\" does not exist ($PWD)"
       return 1
@@ -133,6 +151,7 @@ source_search_local()
    log_entry "source_search_local" "$@"
 
    local directory="$1"; shift
+   local url="$1"; shift
 
    local name="$1"
    local branch="$2"
@@ -144,16 +163,24 @@ source_search_local()
    if [ "${MULLE_FLAG_LOG_SETTINGS}" = 'YES' ]
    then
       log_trace2 "directory      : ${directory}"
+      log_trace2 "url            : ${url}"
       log_trace2 "branch         : ${branch}"
       log_trace2 "name           : ${name}"
       log_trace2 "extension      : ${extension}"
       log_trace2 "need_extension : ${need_extension}"
    fi
 
+   if source_validate_file_url "${url}"
+   then
+      log_fluff "Local \"${url}\" matches"
+      echo "${url:7}"
+      return
+   fi
+
    if [ ! -z "${branch}" ]
    then
       found="${directory}/${name}.${branch}${extension}"
-      log_fluff "Looking for local project \"${found}\""
+      log_fluff "Looking for local \"${found}\""
 
       if [ -d "${found}" ]
       then
@@ -165,7 +192,7 @@ source_search_local()
    fi
 
    found="${directory}/${name}${extension}"
-   log_fluff "Looking for local project \"${found}\""
+   log_fluff "Looking for local \"${found}\""
    if [ -d "${found}" ]
    then
       log_fluff "Found \"${name}${extension}\" in \"${directory}\""
@@ -177,7 +204,7 @@ source_search_local()
    if [ "${need_extension}" != 'YES' ]
    then
       found="${directory}/${name}"
-      log_fluff "Looking for local project \"${found}\""
+      log_fluff "Looking for local \"${found}\""
       if [ -d "${found}" ]
       then
          log_fluff "Found \"${name}\" in \"${directory}\""
@@ -197,6 +224,7 @@ source_search_local_path()
    local branch="$2"
    local extension="$3"
    local required="$4"
+   local url="$5"
 
    local found
    local directory
@@ -234,7 +262,7 @@ source_search_local_path()
 the current directory"
       fi
 
-      found="`source_search_local "${realdir}" "$@"`"
+      found="`source_search_local "${realdir}" "${url}" "$@"`"
       if [ ! -z "${found}" ]
       then
          echo "${found}"
@@ -345,7 +373,7 @@ source_download()
 
    curlit='NO'
    case "${url}" in
-      file:*)
+      file://*)
          url="`source_check_file_url "${url}"`"
          [ $? -eq 0 ] || return 1
       ;;

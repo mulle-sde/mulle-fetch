@@ -310,7 +310,7 @@ tar_search_local_project()
 
 #   local unused="$1"
    local name="$2"
-#   local url="$3"
+   local url="$3"
    local branch="$4"
 #   local tag="$5"
 #   local sourcetype="$6"
@@ -319,7 +319,7 @@ tar_search_local_project()
 
 
    #  look for a git repo of same name (or a local project)
-   found="`source_search_local_path "${name}" "${branch}" ".git" 'NO'`"
+   found="`source_search_local_path "${name}" "${branch}" ".git" 'NO' "${url}"`"
    if [ ! -z "${found}" ]
    then
       echo "${found}"

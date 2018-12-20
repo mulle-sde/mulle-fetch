@@ -152,6 +152,12 @@ main()
       installer_fail "\"${prefix}\" does not exist"
    fi
 
+   local directory
+
+   directory="`dirname -- "$0"`"
+   cd "${directory}" || installer_fail "Could not cd to \"$directory\" ($PWD)"
+   cd .. || installer_fail "Could not cd to \"..\" ($PWD)"  # compensate for installer being in bin
+
    local bin
    local libexec
 
