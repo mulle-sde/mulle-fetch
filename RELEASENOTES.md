@@ -1,3 +1,7 @@
+### 1.6.3
+
+* can now fetch repositories who dont have master
+
 ### 1.6.2
 
 * a bit less verbose when fetching

@@ -193,15 +193,16 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    then
       mkdir_if_missing "${dstdir}" &&
       (
-         local  actualbranch
-
-         actualbranch="${branch:-master}" # local to shell
-
          exekutor cd "${dstdir}"
          exekutor git init &&
-         exekutor git remote add origin "${url}" &&
-         exekutor git fetch --no-tags "origin" "${actualbranch}" &&
-         exekutor git checkout -b "${actualbranch}" "origin/${actualbranch}"
+         exekutor git remote add origin "${url}" || exit 1
+         if [ -z "${branch}" ]
+         then
+            branch="`exekutor git ls-remote --heads origin | head -1 | sed -e 's|.*/||'`"
+            branch="${branch:-master}"
+         fi
+         exekutor git fetch --no-tags "origin" "${branch}" &&
+         exekutor git checkout -b "${branch}" "origin/${branch}"
       ) >&2
       rval="$?"
    else
