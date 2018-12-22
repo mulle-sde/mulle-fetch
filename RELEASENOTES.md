@@ -1,3 +1,7 @@
+### 1.6.2
+
+* a bit less verbose when fetching
+
 ### 1.6.1
 
 * better search-local with file:// urls

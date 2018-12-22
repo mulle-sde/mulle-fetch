@@ -121,7 +121,7 @@ curl_download()
    local sourceoptions="$3"
 
 
-   log_info "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+   log_verbose "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
 
    CURL="${CURL:-`command -v curl`}"
    if [ -z "${CURL}" ]
