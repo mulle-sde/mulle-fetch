@@ -1,3 +1,7 @@
+### 1.6.4
+
+* fix default git branch checkout, be less verbose on fetch
+
 ### 1.6.3
 
 * can now fetch repositories who dont have master

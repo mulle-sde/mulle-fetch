@@ -1,6 +1,8 @@
-# mulle-fetch - 🏃🏿 Download and unpack source repositories or archives
+# mulle-fetch
 
-![Last version](https://img.shields.io/github/tag/mulle-nat/mulle-fetch.svg)
+🏃🏿 Download and unpack source repositories or archives
+
+![Last version](https://img.shields.io/github/tag/mulle-sde/mulle-fetch.svg)
 
 ... for Linux, OS X, FreeBSD, Windows
 

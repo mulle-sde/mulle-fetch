@@ -198,9 +198,18 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
          exekutor git remote add origin "${url}" || exit 1
          if [ -z "${branch}" ]
          then
-            branch="`exekutor git ls-remote --heads origin | head -1 | sed -e 's|.*/||'`"
-            branch="${branch:-master}"
+            local branches
+
+            branches="`exekutor git ls-remote --heads origin | sed -e 's|.*/||'`"
+            if grep -s -q -x 'master' <<< "${branches}"
+            then
+               branch="master"
+            else
+               branch="`head -1 <<< "${branches}"`"
+               log_info "Checking out \"${branch}\" for \"${url}\" as \"master\" doesn't exist"
+            fi
          fi
+
          exekutor git fetch --no-tags "origin" "${branch}" &&
          exekutor git checkout -b "${branch}" "origin/${branch}"
       ) >&2

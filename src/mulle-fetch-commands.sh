@@ -309,6 +309,13 @@ fetch_common_main()
             MULLE_FETCH_ARCHIVE_DIR="$1"
          ;;
 
+         --github)
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
+            shift
+
+            OPTION_GITHUB="$1"
+         ;;
+
          --mirror-dir)
             [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
@@ -411,6 +418,31 @@ fetch_common_main()
    local name
    local url
    local cmd
+
+   if [ ! -z "${OPTION_GITHUB}" ]
+   then
+      case "${OPTION_SCM}" in
+         git)
+            case "${url}" in
+               *://*)
+               ;;
+
+               *)
+                  url="https://github.com/${OPTION_GITHUB}/${url}.git"
+               ;;
+            esac
+         ;;
+
+         tar)
+            url="https://github.com/${OPTION_GITHUB}/${url}/archive/${OPTION_TAG:-latest}.tar.gz"
+         ;;
+
+         zip)
+            url="https://github.com/${OPTION_GITHUB}/${url}/archive/${OPTION_TAG:-latest}.zip"
+         ;;
+      esac
+      log_fluff "Modified URL \"${url}\""
+   fi
 
    #
    # ugliness ensues, but having a uniform way of

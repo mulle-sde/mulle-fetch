@@ -105,7 +105,16 @@ wget_download()
    local options
 
    options="`get_sourceoption "${sourceoptions}" "wget"`"
-   exekutor ${WGET} ${OPTION_WGET_FLAGS} \
+
+   local defaultflags
+
+   defaultflags="-nv"
+   if [ "${MULLE_FLAG_LOG_VERBOSE}" = 'YES' ]
+   then
+      defaultflags=""
+   fi
+
+   exekutor ${WGET} ${OPTION_WGET_FLAGS:-${defaultflags}} \
                -O "${download}" \
                ${options} \
                "${url}" || fail "failed to download \"${url}\""
@@ -133,7 +142,16 @@ curl_download()
    local options
 
    options="`get_sourceoption "${sourceoptions}" "curl"`"
-   exekutor ${CURL} ${OPTION_CURL_FLAGS} \
+
+   local defaultflags
+
+   defaultflags="-fsSL"
+   if [ "${MULLE_FLAG_LOG_VERBOSE}" = 'YES' ]
+   then
+      defaultflags="-fSL"
+   fi
+
+   exekutor ${CURL} ${OPTION_CURL_FLAGS:-${defaultflags}} \
                -o "${download}" \
                -O -L \
                ${options} \

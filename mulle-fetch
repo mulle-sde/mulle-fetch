@@ -31,7 +31,7 @@
 #
 [ "${TRACE}" = 'YES' -o "${MULLE_FETCH_TRACE}" = 'YES' ] && set -x && : "$0" "$@"
 
-MULLE_EXECUTABLE_VERSION="1.6.3"
+MULLE_EXECUTABLE_VERSION="1.6.4"
 
 #
 # This is the main user interface to mulle-fetch
@@ -169,6 +169,13 @@ main()
 
          -h*|--help|help)
             usage "${MULLE_TRACE}"
+         ;;
+
+         --github)
+            [ $# -eq 1 ] && fail "Missing argument to \"$1\""
+            shift
+
+            OPTION_GITHUB="$1"
          ;;
 
          --git-terminal-prompt)
