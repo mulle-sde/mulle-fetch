@@ -116,6 +116,9 @@ source_validate_file_url()
    local url="$1"
 
    case "${url}" in
+      /*)
+      ;;
+
       file://*)
          url="${url:7}"
       ;;

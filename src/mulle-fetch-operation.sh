@@ -112,6 +112,9 @@ can_symlink_it()
       return 1
    fi
 
+   #
+   # DEFAULT is no
+   #
    if [ "${OPTION_SYMLINK}" != 'YES' ]
    then
       log_verbose "Not allowed to symlink it. (Use --symlink to allow)"

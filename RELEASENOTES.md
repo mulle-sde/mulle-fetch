@@ -1,3 +1,7 @@
+### 1.6.5
+
+* fix `source_validate_file_url`
+
 ### 1.6.4
 
 * fix default git branch checkout, be less verbose on fetch
