@@ -148,8 +148,6 @@ archive_move_stuff()
 
    local src
    local toremove
-   local RVAL
-
    [ ! -e "${dstdir}" ] || internal_fail "destination must not exist"
 
    toremove="${tmpdir}"
@@ -228,8 +226,6 @@ archive_search_local()
 #   local branch="$3"
 
    local filename
-   local RVAL
-
    r_fast_basename "${url}"
    filename="${RVAL}"
 

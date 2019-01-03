@@ -1,3 +1,7 @@
+### 1.6.6
+
+* Various small improvements
+
 ### 1.6.5
 
 * fix `source_validate_file_url`

@@ -131,7 +131,7 @@ archive_cache_grab()
 
    if [ -z "${MULLE_FETCH_ARCHIVE_DIR}" ]
    then
-      log_fluff "Caching not active"
+      log_fluff "Caching not active as MULLE_FETCH_ARCHIVE_DIR is empty"
       return 2
    fi
 

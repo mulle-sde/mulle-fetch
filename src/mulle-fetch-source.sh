@@ -145,7 +145,8 @@ source_check_file_url()
       log_error "\"${url}\" does not exist ($PWD)"
       return 1
    fi
-   echo "${url}"
+
+   return 0
 }
 
 
@@ -331,8 +332,6 @@ source_prepare_filesystem_for_fetch()
       rmdir_safer "${dstdir}" || exit 1
    fi
 
-   local RVAL
-
    r_mkdir_parent_if_missing "${dstdir}"
 }
 
@@ -374,20 +373,22 @@ source_download()
    #
    local curlit
 
-   curlit='NO'
+   curlit='YES'
    case "${url}" in
       file://*)
-         url="`source_check_file_url "${url}"`"
-         [ $? -eq 0 ] || return 1
+         source_check_file_url "${url}"  || return 1
+         url="${url:7}"
+         curlit='NO'
       ;;
 
       *:*)
-         curlit='YES'
       ;;
 
       *)
-         url="`source_check_file_url "${url}"`"
-         [ $? -eq 0 ] || return 1
+         if source_check_file_url "${url}"
+         then
+            curlit='NO'
+         fi
       ;;
    esac
 

@@ -69,11 +69,10 @@ file_fetch_project()
    local sourceoptions="$7"   # options to use on source
    local destination="$8"     # destination of file (absolute or relative to $PWD)
 
-   local dstdir
-   local RVAL
-
    log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
 ${C_RESET_BOLD}${url}${C_INFO}."
+
+   local dstdir
 
    r_fast_dirname "${destination}"
    dstdir="${RVAL}"

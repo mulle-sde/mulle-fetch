@@ -85,8 +85,6 @@ url_typeguess()
 
    local urlpath
    local compressed
-   local RVAL
-
    if [ -z "${MULLE_PATH_INCLUDED_SH}" ]
    then
       # shellcheck source=../mulle-bashfunctions/src/mulle-path.sh

@@ -16,8 +16,7 @@
 				"package",
 				"build",
 				".repos",
-				".mulle-env",
-				".mulle-sde",
+				".mulle",
 				".bootstrap*",
 				".git*"
 			]

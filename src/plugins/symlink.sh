@@ -88,7 +88,7 @@ symlink_search_local_project()
 #   local sourceoptions="$7"   # options to use on source
 #   local dstdir="$8"     # dstdir of this clone (absolute or relative to $PWD)
 
-   local RVAL
+
    local filename
    local found
 

@@ -31,7 +31,7 @@
 #
 [ "${TRACE}" = 'YES' -o "${MULLE_FETCH_TRACE}" = 'YES' ] && set -x && : "$0" "$@"
 
-MULLE_EXECUTABLE_VERSION="1.6.5"
+MULLE_EXECUTABLE_VERSION="1.6.6"
 
 #
 # This is the main user interface to mulle-fetch
