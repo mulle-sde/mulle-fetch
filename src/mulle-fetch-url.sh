@@ -85,6 +85,7 @@ url_typeguess()
 
    local urlpath
    local compressed
+
    if [ -z "${MULLE_PATH_INCLUDED_SH}" ]
    then
       # shellcheck source=../mulle-bashfunctions/src/mulle-path.sh
@@ -119,7 +120,7 @@ url_typeguess()
       ext="${RVAL}"
       case "${ext}" in
          "gz"|"xz"|"bz2"|"bz")
-            # remove kwnon compression suffixes handled by tar
+            # remove known compression suffixes handled by tar
             tarcompressed='YES'
          ;;
 
@@ -139,7 +140,21 @@ url_typeguess()
          ;;
 
          *)
-            return 1
+            case "$1" in
+               *:*)
+                  echo "git"
+                  return 0
+               ;;
+
+               "")
+                  return 1
+               ;;
+
+               *)
+                  echo "none"
+                  return
+               ;;
+            esac
          ;;
       esac
       r_extensionless_basename "${urlpath}"
