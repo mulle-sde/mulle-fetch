@@ -1,3 +1,8 @@
+### 1.6.7
+
+* improved typeguess from url
+* improve nodetype guessing a little bit
+
 ### 1.6.6
 
 * Various small improvements

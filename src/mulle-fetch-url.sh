@@ -150,6 +150,11 @@ url_typeguess()
                   return 1
                ;;
 
+               */*|~*|.*)
+                  echo "local"
+                  return 0
+               ;;
+
                *)
                   echo "none"
                   return
