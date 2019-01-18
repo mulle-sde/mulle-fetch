@@ -77,7 +77,7 @@ git_add_remote()
 
    (
       rexekutor cd "${repository}" &&
-      exekutor git remote add "${remote}" "${url}"
+      exekutor "${GIT}" remote add "${remote}" "${url}"
    )
 }
 
@@ -108,7 +108,7 @@ git_remove_remote()
 
    (
       rexekutor cd "${repository}" &&
-      exekutor git remote remove "${remote}"
+      exekutor "${GIT}" remote remove "${remote}"
    )
 }
 
@@ -124,7 +124,7 @@ git_set_url()
 
    (
       rexekutor cd "${repository}" &&
-      exekutor git remote set-url "${remote}" "${url}"
+      exekutor "${GIT}" remote set-url "${remote}" "${url}"
    )
 }
 
@@ -138,7 +138,7 @@ git_unset_default_remote()
 
    (
       rexekutor cd "${repository}" &&
-      exekutor git branch --unset-upstream
+      exekutor "${GIT}" branch --unset-upstream
    )
 }
 
@@ -158,8 +158,8 @@ git_set_default_remote()
 
    (
       rexekutor cd "${repository}" &&
-      exekutor git fetch "${remote}" &&
-      exekutor git branch --set-upstream-to "${remote}/${branch}"
+      exekutor "${GIT}" fetch "${remote}" &&
+      exekutor "${GIT}" branch --set-upstream-to "${remote}/${branch}"
    )
 }
 
@@ -174,7 +174,7 @@ git_has_branch()
 
    (
       rexekutor cd "${repository}" &&
-      rexekutor git branch | cut -c3- | fgrep -q -s -x -e "$2" > /dev/null
+      rexekutor "${GIT}" branch | cut -c3- | fgrep -q -s -x -e "$2" > /dev/null
    )
 }
 
@@ -201,7 +201,7 @@ git_has_tag()
 
    (
       rexekutor cd "$1" &&
-      rexekutor git tag -l | fgrep -s -x -e "$2" > /dev/null
+      rexekutor "${GIT}" tag -l | fgrep -s -x -e "$2" > /dev/null
    )
 }
 
@@ -213,7 +213,7 @@ git_branch_contains_tag()
 
    (
       rexekutor cd "$1" &&
-      rexekutor git branch --contains "$3"| cut -c3- | fgrep -s -x -e "$2" > /dev/null
+      rexekutor "${GIT}" branch --contains "$3"| cut -c3- | fgrep -s -x -e "$2" > /dev/null
    )
 
 }
@@ -226,7 +226,7 @@ git_get_branch()
 
    (
       rexekutor cd "$1" &&
-      rexekutor git rev-parse --abbrev-ref HEAD 2> /dev/null
+      rexekutor "${GIT}" rev-parse --abbrev-ref HEAD 2> /dev/null
    )
 }
 
@@ -348,8 +348,15 @@ git_is_bare_repository()
    # if bare repo, we can only clone anyway
    is_bare="$(
                rexekutor cd "$1" &&
-               rexekutor git rev-parse --is-bare-repository 2> /dev/null
-             )" || internal_fail "wrong \"$1\" for \"`pwd`\""
+               rexekutor "${GIT}" rev-parse --is-bare-repository 2> /dev/null
+             )"
+   if [ -z "${is_bare}" ]
+   then
+      [ ! -x "$1" ]    && internal_fail "Given wrong or protected directory \"$1\" (${PWD})"
+      [ -d "$1/.git" ] && internal_fail "Given non git directory \"$1\" (${PWD})"
+      return 1
+   fi
+
    [ "${is_bare}" = "true" ]
 }
 
@@ -357,6 +364,12 @@ git_is_bare_repository()
 git_initialize()
 {
    log_entry "git_initialize"
+
+   GIT="${GIT:-`command -v "git"`}"
+   if [ -z "${GIT}" ]
+   then
+      fail "git is not in PATH"
+   fi
 
    if [ -z "${MULLE_FETCH_SOURCE_SH}" ]
    then

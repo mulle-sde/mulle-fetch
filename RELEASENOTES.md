@@ -1,3 +1,7 @@
+### 1.6.8
+
+* check for git presence before failing in a more obscure way
+
 ### 1.6.7
 
 * improved typeguess from url
