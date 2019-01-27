@@ -572,8 +572,10 @@ git_guess_project()
 
    urlpath="`url_get_path "${url}"`"
 
-   name="`basename -- "${urlpath}"`"
-   name="`extensionless_basename "${name}"`"
+   r_fast_basename "${urlpath}"
+   name="${RVAL}"
+   r_extensionless_basename "${name}"
+   name="${RVAL}"
 
    echo "${name}"
 }

@@ -74,6 +74,7 @@ git_add_remote()
 
    [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && internal_fail "empty parameter"
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${GIT}" ] && "git is not in PATH"
 
    (
       rexekutor cd "${repository}" &&
@@ -89,6 +90,7 @@ git_has_remote()
 
    [ -z "${repository}" -o -z "${remote}" ] && internal_fail "empty parameter"
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${GIT}" ] && "git is not in PATH"
 
    (
       local remotes
@@ -105,6 +107,7 @@ git_remove_remote()
 
    [ -z "${repository}" -o -z "${remote}" ] && internal_fail "empty parameter"
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${GIT}" ] && "git is not in PATH"
 
    (
       rexekutor cd "${repository}" &&
@@ -121,6 +124,7 @@ git_set_url()
 
    [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && internal_fail "empty parameter"
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${GIT}" ] && "git is not in PATH"
 
    (
       rexekutor cd "${repository}" &&
@@ -135,6 +139,7 @@ git_unset_default_remote()
 
    [ -z "${repository}" ] && internal_fail "empty parameter"
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${GIT}" ] && "git is not in PATH"
 
    (
       rexekutor cd "${repository}" &&
@@ -151,6 +156,7 @@ git_set_default_remote()
 
    [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && internal_fail "empty parameter"
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${GIT}" ] && "git is not in PATH"
 
    local repository="$1"
    local remote="$2"
@@ -171,6 +177,7 @@ git_has_branch()
 
    [ -z "${repository}" -o -z "${branch}" ] && internal_fail "empty parameter"
    [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${GIT}" ] && "git is not in PATH"
 
    (
       rexekutor cd "${repository}" &&
@@ -183,6 +190,7 @@ git_has_fetched_tags()
 {
    [ -z "$1" ] && internal_fail "empty parameter"
    [ ! -d "$1" ] && internal_fail "directory does not exist"
+   [ -z "${GIT}" ] && "git is not in PATH"
 
    (
       local tags
@@ -198,6 +206,7 @@ git_has_tag()
 {
    [ -z "$1" -o -z "$2" ] && internal_fail "empty parameter"
    [ ! -d "$1" ] && internal_fail "directory does not exist"
+   [ -z "${GIT}" ] && "git is not in PATH"
 
    (
       rexekutor cd "$1" &&
@@ -210,6 +219,7 @@ git_branch_contains_tag()
 {
    [ -z "$1" -o -z "$2" -o -z "$3" ] && internal_fail "empty parameter"
    [ ! -d "$1" ] && internal_fail "directory does not exist"
+   [ -z "${GIT}" ] && "git is not in PATH"
 
    (
       rexekutor cd "$1" &&
@@ -223,6 +233,7 @@ git_get_branch()
 {
    [ -z "$1" ] && internal_fail "empty parameter"
    [ ! -d "$1" ] && internal_fail "directory does not exist"
+   [ -z "${GIT}" ] && "git is not in PATH"
 
    (
       rexekutor cd "$1" &&
@@ -332,7 +343,10 @@ fork_and_name_from_url()
    echo "${name}"
 }
 
-
+#
+# its important for mulle-sourcetree that git_is_repository and
+# git_is_bare_repository do not actually need a git installed
+#
 git_is_repository()
 {
    [ -z "$1" ] && internal_fail "empty parameter"
@@ -344,6 +358,13 @@ git_is_repository()
 git_is_bare_repository()
 {
    local is_bare
+
+   if [ -z "${GIT}" ]
+   then
+      # literal tab character in sed command
+      egrep -q -s '^[    ]*bare\ =\ true$' "$1/.git/config"
+      return $?
+   fi
 
    # if bare repo, we can only clone anyway
    is_bare="$(
@@ -366,10 +387,6 @@ git_initialize()
    log_entry "git_initialize"
 
    GIT="${GIT:-`command -v "git"`}"
-   if [ -z "${GIT}" ]
-   then
-      fail "git is not in PATH"
-   fi
 
    if [ -z "${MULLE_FETCH_SOURCE_SH}" ]
    then

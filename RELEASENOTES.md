@@ -1,3 +1,7 @@
+### 1.6.9
+
+* git does not need to be installed anymore for the sourcetree support functions
+
 ### 1.6.8
 
 * check for git presence before failing in a more obscure way

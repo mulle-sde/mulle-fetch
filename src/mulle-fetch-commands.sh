@@ -263,7 +263,8 @@ fetch_common_main()
    # need this for usage now
 
    # shellcheck source=mulle-fetch-source.sh
-   . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh" || fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh"
+   . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh" \
+      || fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh"
 
    while [ $# -ne 0 ]
    do
