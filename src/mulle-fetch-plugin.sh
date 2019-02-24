@@ -58,8 +58,7 @@ fetch_plugin_all_names()
    [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
    [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
 
-   IFS="
-"
+   IFS=$'\n'
    for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
    do
       IFS="${DEFAULT_IFS}"
@@ -117,8 +116,7 @@ fetch_plugin_list()
 
    log_info "Plugins"
 
-   IFS="
-"
+   IFS=$'\n'
    for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
    do
       basename -- "${pluginpath}" .sh
@@ -142,8 +140,7 @@ fetch_plugin_load_all()
 
    log_fluff "Loading source plugins..."
 
-   IFS="
-"
+   IFS=$'\n'
    for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
    do
       IFS="${DEFAULT_IFS}"

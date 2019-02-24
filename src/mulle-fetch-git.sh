@@ -41,8 +41,7 @@ git_get_default_remote()
    local match
 
    match=""
-   IFS="
-"
+   IFS=$'\n'
    for i in `( cd "$1" ; git remote)`
    do
       case "$i" in
