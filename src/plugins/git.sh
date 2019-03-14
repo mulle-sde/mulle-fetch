@@ -189,12 +189,19 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    #
    local rval
 
+   local GIT_QUIET="-q"
+
+   if [ "${MULLE_FLAG_LOG_FLUFF}" = 'YES' ]
+   then
+      GIT_QUIET=""
+   fi
+
    if : # [ -z "${tag}" ]
    then
       mkdir_if_missing "${dstdir}" &&
       (
          exekutor cd "${dstdir}"
-         exekutor git init &&
+         exekutor git init ${GIT_QUIET} &&
          exekutor git remote add origin "${url}" || exit 1
          if [ -z "${branch}" ]
          then
@@ -210,8 +217,8 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
             fi
          fi
 
-         exekutor git fetch --no-tags "origin" "${branch}" &&
-         exekutor git checkout -b "${branch}" "origin/${branch}"
+         exekutor git fetch ${GIT_QUIET} --no-tags "origin" "${branch}" &&
+         exekutor git checkout ${GIT_QUIET} -b "${branch}" "origin/${branch}"
       ) >&2
       rval="$?"
    else
