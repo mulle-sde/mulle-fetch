@@ -207,13 +207,14 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
          then
             local branches
 
-            branches="`exekutor git ls-remote --heads origin | sed -e 's|.*/||'`"
+            branches="`exekutor git ls-remote --heads origin | sed -e 's|.*/||'`" || exit 1
             if grep -s -q -x 'master' <<< "${branches}"
             then
                branch="master"
             else
                branch="`head -1 <<< "${branches}"`"
-               log_info "Checking out \"${branch}\" for \"${url}\" as \"master\" doesn't exist"
+               branch="${branch:-master}"
+               log_info "Checking out branch \"${branch}\" for \"${url}\" as \"master\" doesn't exist"
             fi
          fi
 
@@ -557,7 +558,10 @@ git_search_local_project()
    r_extensionless_basename "${url}" ".git"
    reponame="${RVAL}"
 
-   source_search_local_path "${reponame}" "${branch}" ".git" 'NO' "${url}"
+   if r_source_search_local_path "${reponame}" "${branch}" ".git" 'NO' "${url}"
+   then
+      echo ${RVAL}
+   fi
 }
 
 

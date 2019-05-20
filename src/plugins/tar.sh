@@ -317,12 +317,10 @@ tar_search_local_project()
 #   local sourceoptions="$7"
 #   local dstdir="$8"
 
-
    #  look for a git repo of same name (or a local project)
-   found="`source_search_local_path "${name}" "${branch}" ".git" 'NO' "${url}"`"
-   if [ ! -z "${found}" ]
+   if r_source_search_local_path "${name}" "${branch}" ".git" 'NO' "${url}"
    then
-      echo "${found}"
+      echo "${RVAL}"
       return
    fi
 

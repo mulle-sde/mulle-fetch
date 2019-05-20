@@ -150,9 +150,9 @@ source_check_file_url()
 }
 
 
-source_search_local()
+r_source_search_local()
 {
-   log_entry "source_search_local" "$@"
+   log_entry "r_source_search_local" "$@"
 
    local directory="$1"; shift
    local url="$1"; shift
@@ -174,11 +174,12 @@ source_search_local()
       log_trace2 "need_extension : ${need_extension}"
    fi
 
+   RVAL=
    if source_validate_file_url "${url}"
    then
       log_fluff "Local \"${url}\" matches"
-      echo "${url:7}"
-      return
+      RVAL="${url:7}"
+      return 0
    fi
 
    if [ ! -z "${branch}" ]
@@ -190,8 +191,8 @@ source_search_local()
       then
          log_fluff "Found \"${name}.${branch}${extension}\" in \"${directory}\""
 
-         echo "${found}"
-         return
+         RVAL="${found}"
+         return 0
       fi
    fi
 
@@ -201,8 +202,8 @@ source_search_local()
    then
       log_fluff "Found \"${name}${extension}\" in \"${directory}\""
 
-      echo "${found}"
-      return
+      RVAL="${found}"
+      return 0
    fi
 
    if [ "${need_extension}" != 'YES' ]
@@ -213,16 +214,17 @@ source_search_local()
       then
          log_fluff "Found \"${name}\" in \"${directory}\""
 
-         echo "${found}"
-         return
+         RVAL="${found}"
+         return 0
       fi
    fi
+   return 1
 }
 
 
-source_search_local_path()
+r_source_search_local_path()
 {
-   log_entry "source_search_local_path [${MULLE_FETCH_SEARCH_PATH}]" "$@"
+   log_entry "r_source_search_local_path [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
    local name="$1"
    local branch="$2"
@@ -237,10 +239,7 @@ source_search_local_path()
 
    [ -z "${name}" ] && internal_fail "empty name"
 
-   if [ "${MULLE_FLAG_LOG_LOCAL}" = 'YES' -a -z "${MULLE_FETCH_SEARCH_PATH}" ]
-   then
-      log_trace "MULLE_FETCH_SEARCH_PATH is empty"
-   fi
+   log_debug "MULLE_FETCH_SEARCH_PATH is \"${MULLE_FETCH_SEARCH_PATH}\""
 
    curdir="`pwd -P`"
    set -f ; IFS=":"
@@ -255,7 +254,7 @@ source_search_local_path()
 
       if [ ! -d "${directory}" ]
       then
-         log_debug "Local path \"${directory}\" does not exist, continueing"
+         log_debug "Local path \"${directory}\" does not exist, continuing"
          continue
       fi
 
@@ -266,11 +265,10 @@ source_search_local_path()
 the current directory"
       fi
 
-      found="`source_search_local "${realdir}" "${url}" "$@"`"
-      if [ ! -z "${found}" ]
+
+      if r_source_search_local "${realdir}" "${url}" "$@"
       then
-         echo "${found}"
-         return
+         return 0
       fi
    done
 

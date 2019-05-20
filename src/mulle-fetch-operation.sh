@@ -289,13 +289,13 @@ fetch_do_operation()
    fetch_log_action "${opname}" "$@"
 
 #   local unused="$1"
-   local name="$2"            # name of the clone
+   local name="$2"             # name of the clone
 #   local url="$3"             # URL of the clone
 #   local branch="$4"          # branch of the clone
 #   local tag="$5"             # tag to checkout of the clone
-   local sourcetype="$6"      # source to use for this clone
+   local sourcetype="$6"       # source to use for this clone
 #   local sourceoptions="$7"   # options to use on source
-#   local dstdir="$8"     # dstdir of this clone (absolute or relative to $PWD)
+#   local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
    [ -z "${sourcetype}" ] && internal_fail "source is empty"
 

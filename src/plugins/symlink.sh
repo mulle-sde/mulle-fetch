@@ -101,18 +101,20 @@ symlink_search_local_project()
          r_fast_dirname "${RVAL}"  # remove name from url
          filename="${RVAL}"
 
-         found="`source_search_local "${filename}" "${name}" "${branch}" "" "NO"`"
-         if [ ! -z "${found}" ]
+         if r_source_search_local "${filename}" "${name}" "${branch}" "" "NO"
          then
             log_fluff "Found via URL \"${url}\""
-            echo "${found}"
+            echo "${RVAL}"
             return
          fi
          log_warning "Not found via URL \"${url}\""
       ;;
    esac
 
-   source_search_local_path "${name}" "${branch}" "" 'YES' "${url}"
+   if r_source_search_local_path "${name}" "${branch}" "" 'YES' "${url}"
+   then
+      echo "${RVAL}"
+   fi
 }
 
 
