@@ -218,6 +218,7 @@ r_source_search_local()
          return 0
       fi
    fi
+
    return 1
 }
 

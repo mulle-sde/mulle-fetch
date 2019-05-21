@@ -1,3 +1,8 @@
+### 1.6.10
+
+* dont warn on symlink if branch is latest or master
+* small beauty fixes in output and code
+
 ### 1.6.9
 
 * git does not need to be installed anymore for the sourcetree support functions

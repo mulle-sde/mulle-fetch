@@ -304,7 +304,7 @@ fetch_do_operation()
    case "${opname}" in
       'fetch')
          _fetch_operation "$@"
-         rval="$?"
+         rval=$?
 
          log_debug "fetch_do_operation \"${opname}\": \"${sourcetype}\" \
 returns with ${rval}"
@@ -314,7 +314,7 @@ returns with ${rval}"
    esac
 
    source_operation "${opname}" "$@"
-   rval="$?"
+   rval=$?
 
    case $rval in
       0)

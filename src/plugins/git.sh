@@ -561,7 +561,10 @@ git_search_local_project()
    if r_source_search_local_path "${reponame}" "${branch}" ".git" 'NO' "${url}"
    then
       echo ${RVAL}
+      return 0
    fi
+
+   return 1
 }
 
 
