@@ -79,7 +79,7 @@ fetch_plugin_all_names()
          ;;
       esac
 
-      echo "${name}"
+      printf "%s\n" "${name}"
    done
 
    IFS="${DEFAULT_IFS}"

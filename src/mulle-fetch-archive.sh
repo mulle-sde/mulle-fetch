@@ -44,7 +44,7 @@ r_find_best_directory()
       return
    fi
 
-   count="`echo "${filenames}" | wc -l`"
+   count="`printf "%s\n" "${filenames}" | wc -l`"
    if [ "${count}" -ne 1 ]
    then
       RVAL="${directory}"
@@ -302,7 +302,7 @@ archive_guess_name_from_url()
       *gitlab.com/*)
          tmp="${urlpath#*gitlab.com/}" # remove scheme and host
          tmp="${tmp#*/}" # remove org or user
-         echo "${tmp%%/*}" # grab that entry
+         printf "%s\n" "${tmp%%/*}" # grab that entry
          return
       ;;
    esac

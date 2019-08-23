@@ -61,7 +61,7 @@ git_get_default_remote()
 
    IFS="${DEFAULT_IFS}"
 
-   echo "$match"
+   printf "%s\n" "$match"
 }
 
 
@@ -256,11 +256,11 @@ append_dir_to_gitignore_if_needed()
    # strip slashes
    case "${directory}" in
       /*/)
-         directory="`echo "$1" | sed 's/.$//' | sed 's/^.//'`"
+         directory="`printf "%s\n" "$1" | sed 's/.$//' | sed 's/^.//'`"
       ;;
 
       /*)
-         directory="`echo "$1" | sed 's/^.//'`"
+         directory="`printf "%s\n" "$1" | sed 's/^.//'`"
       ;;
 
       */)
@@ -312,7 +312,7 @@ append_dir_to_gitignore_if_needed()
    fi
 
    log_info "Adding \"/${directory}\" to \".gitignore\""
-   redirect_append_exekutor .gitignore echo "${line}" || fail "Couldn\'t append to .gitignore"
+   redirect_append_exekutor .gitignore printf "%s\n" "${line}" || fail "Couldn\'t append to .gitignore"
 }
 
 
@@ -338,8 +338,8 @@ fork_and_name_from_url()
       ;;
    esac
 
-   echo "${fork}" | LC_ALL=C sed -e 's|^:||'
-   echo "${name}"
+   printf "%s\n" "${fork}" | LC_ALL=C sed -e 's|^:||'
+   printf "%s\n" "${name}"
 }
 
 #

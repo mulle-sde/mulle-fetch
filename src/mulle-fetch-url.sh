@@ -60,18 +60,18 @@ url_get_path()
 
    case "$*" in
       *://*|/*)
-         [[ "$*" =~ $URI_REGEX ]] && echo "${BASH_REMATCH[10]}"
+         [[ "$*" =~ $URI_REGEX ]] && printf "%s\n" "${BASH_REMATCH[10]}"
       ;;
 
       *:*)
-         echo "$*" | \
+         printf "%s\n" "$*" | \
             sed 's/^[^:]*:\(.*\)/\1/' | \
             url_remove_query | \
             url_remove_fragment
       ;;
 
       *)
-         echo "$*" | \
+         printf "%s\n" "$*" | \
             url_remove_query | \
             url_remove_fragment
       ;;
@@ -135,7 +135,7 @@ url_typeguess()
                return 1
             fi
 
-            echo "$ext"
+            printf "%s\n" "$ext"
             return
          ;;
 

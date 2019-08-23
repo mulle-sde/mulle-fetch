@@ -71,7 +71,7 @@ parse_sourceoptions()
          sourceoptions="${sourceoptions#${value},}"
       fi
 
-      echo "${key}=${value}"
+      printf "%s\n" "${key}=${value}"
    done
 }
 
@@ -85,9 +85,9 @@ get_sourceoption()
 }
 
 
-get_source_function()
+r_get_source_function()
 {
-   log_entry "get_source_function" "$@"
+   log_entry "r_get_source_function" "$@"
 
    local sourcetype="$1"
    local opname="$2"
@@ -105,7 +105,7 @@ get_source_function()
 (function \"$operation\" is missing)"
       return 1
    fi
-   echo "${operation}"
+   RVAL="${operation}"
 }
 
 
@@ -150,6 +150,32 @@ source_check_file_url()
 }
 
 
+r_source_search_local_test_directory()
+{
+   log_entry "r_source_search_local_test_directory" "$@"
+
+   local directory="$1"
+   local name="$2"
+
+   local dirpath
+
+   r_filepath_concat "${directory}" "${name}"
+   dirpath="${RVAL}"
+
+   RVAL=""
+   log_fluff "Looking for local \"${dirpath}\""
+
+   if [ -d "${dirpath}" ]
+   then
+      log_fluff "Found \"${name}\" in \"${directory}\""
+      RVAL="${dirpath}"
+      return 0
+   fi
+
+   return 1
+}
+
+
 r_source_search_local()
 {
    log_entry "r_source_search_local" "$@"
@@ -182,43 +208,37 @@ r_source_search_local()
       return 0
    fi
 
+   local inhibit
+
+   inhibit="${directory}/.mulle/etc/fetch/no-search"
+   if [ -f "${inhibit}" ]
+   then
+      log_fluff "\"${directory}\" inhibited by \"${inhibit}\""
+      return 1
+   fi
+
    if [ ! -z "${branch}" ]
    then
-      found="${directory}/${name}.${branch}${extension}"
-      log_fluff "Looking for local \"${found}\""
-
-      if [ -d "${found}" ]
+      if r_source_search_local_test_directory "${directory}" "${name}.${branch}${extension}"
       then
-         log_fluff "Found \"${name}.${branch}${extension}\" in \"${directory}\""
-
-         RVAL="${found}"
          return 0
       fi
    fi
 
-   found="${directory}/${name}${extension}"
-   log_fluff "Looking for local \"${found}\""
-   if [ -d "${found}" ]
+   if r_source_search_local_test_directory "${directory}" "${name}${extension}"
    then
-      log_fluff "Found \"${name}${extension}\" in \"${directory}\""
-
-      RVAL="${found}"
       return 0
    fi
 
    if [ "${need_extension}" != 'YES' ]
    then
-      found="${directory}/${name}"
-      log_fluff "Looking for local \"${found}\""
-      if [ -d "${found}" ]
+      if r_source_search_local_test_directory "${directory}" "${name}"
       then
-         log_fluff "Found \"${name}\" in \"${directory}\""
-
-         RVAL="${found}"
          return 0
       fi
    fi
 
+   log_debug "Found nothing locally for \"${name}\""
    return 1
 }
 
@@ -285,7 +305,6 @@ source_operation()
 
    local opname="$1" ; shift
 
-
    local unused="$1"
    local name="$2"            # name of the clone
    local url="$3"             # URL of the clone
@@ -297,7 +316,8 @@ source_operation()
 
    local operation
 
-   operation="`get_source_function "${sourcetype}" "${opname}" `"
+   r_get_source_function "${sourcetype}" "${opname}"
+   operation="${RVAL}"
    if [ -z "${operation}" ]
    then
       return 111
@@ -400,10 +420,12 @@ source_download()
       then
          case "${MULLE_UNAME}" in
             mingw)
-               exekutor cp "${url}" "${download}"
+               log_fluff "Copying local archive \"${download}\" to \"${url}\""
+               exekutor cp -rA "${url}" "${download}"
             ;;
 
             *)
+               log_fluff "Symlinking local archive \"${download}\" to \"${url}\""
                exekutor ln -s "${url}" "${download}"
             ;;
          esac

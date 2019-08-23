@@ -193,9 +193,9 @@ archive_cache_grab()
       ;;
    esac
 
-   echo "${cached_archive}"
-   echo "${cachable_path}"
-   echo "${MULLE_FETCH_ARCHIVE_DIR}"
+   printf "%s\n" "${cached_archive}"
+   printf "%s\n" "${cachable_path}"
+   printf "%s\n" "${MULLE_FETCH_ARCHIVE_DIR}"
 
    return 1
 }
@@ -228,9 +228,9 @@ _tar_download()
    local cachable_path
    local cached_archive
 
-   cached_archive="`echo "${results}" | sed -n '1p'`"
-   cachable_path="`echo "${results}"  | sed -n '2p'`"
-   archive_cache="`echo "${results}"  | sed -n '3p'`"
+   cached_archive="`printf "%s\n" "${results}" | sed -n '1p'`"
+   cachable_path="`printf "%s\n" "${results}"  | sed -n '2p'`"
+   archive_cache="`printf "%s\n" "${results}"  | sed -n '3p'`"
 
    if [ -z "${cached_archive}" ]
    then
@@ -279,14 +279,17 @@ ${C_RESET_BOLD}${url}${C_INFO}."
    local directory
 
    # fixup github
-   download="`basename -- "${url}"`"
+   r_basename "${url}"
+   download="${RVAL}"
    archive="${download}"
 
    # remove .tar (or .zip et friends)
-   archivename="`extensionless_basename "${download}"`"
+   r_extensionless_basename "${download}"
+   archivename="${RVAL}"
    case "${archivename}" in
       *.tar)
-         archivename="`extensionless_basename "${archivename}"`"
+         r_extensionless_basename "${archivename}"
+         archivename="${RVAL}"
       ;;
    esac
 
@@ -320,7 +323,7 @@ tar_search_local_project()
    #  look for a git repo of same name (or a local project)
    if r_source_search_local_path "${name}" "${branch}" ".git" 'NO' "${url}"
    then
-      echo "${RVAL}"
+      printf "%s\n" "${RVAL}"
       return
    fi
 

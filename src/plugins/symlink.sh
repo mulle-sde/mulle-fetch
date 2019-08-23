@@ -104,7 +104,7 @@ symlink_search_local_project()
          if r_source_search_local "${filename}" "${name}" "${branch}" "" "NO"
          then
             log_fluff "Found via URL \"${url}\""
-            echo "${RVAL}"
+            printf "%s\n" "${RVAL}"
             return
          fi
          log_warning "Not found via URL \"${url}\""
@@ -113,7 +113,7 @@ symlink_search_local_project()
 
    if r_source_search_local_path "${name}" "${branch}" "" 'YES' "${url}"
    then
-      echo "${RVAL}"
+      printf "%s\n" "${RVAL}"
    fi
 }
 

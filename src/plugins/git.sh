@@ -43,8 +43,8 @@ _git_get_mirror_url()
    local result
 
    result="`fork_and_name_from_url "${url}"`"
-   fork="`echo "${result}" | head -1`"
-   name="`echo "${result}" | tail -1`"
+   fork="`printf "%s\n" "${result}" | head -1`"
+   name="`printf "%s\n" "${result}" | tail -1`"
 
    local mirrordir
 
@@ -76,7 +76,7 @@ _git_get_mirror_url()
       esac
    fi
 
-   echo "${mirrordir}"
+   printf "%s\n" "${mirrordir}"
 }
 
 
@@ -105,7 +105,7 @@ __git_check_file_url()
       return 1
    fi
 
-   echo "${url}"
+   printf "%s\n" "${url}"
 }
 
 
@@ -304,7 +304,7 @@ _get_fetch_remote()
       ;;
    esac
 
-   echo "${remote}"
+   printf "%s\n" "${remote}"
 }
 
 
@@ -591,7 +591,7 @@ git_guess_project()
    r_extensionless_basename "${name}"
    name="${RVAL}"
 
-   echo "${name}"
+   printf "%s\n" "${name}"
 }
 
 

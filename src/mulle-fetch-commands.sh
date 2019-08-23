@@ -65,7 +65,7 @@ show_plugins()
       (
          echo
          echo "Available source types are:"
-         echo "${plugins}" | sed 's/^/   /'
+         printf "%s\n" "${plugins}" | sed 's/^/   /'
       )
    fi
 }

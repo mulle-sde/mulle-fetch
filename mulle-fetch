@@ -31,7 +31,7 @@
 #
 [ "${TRACE}" = 'YES' -o "${MULLE_FETCH_TRACE}" = 'YES' ] && set -x && : "$0" "$@"
 
-MULLE_EXECUTABLE_VERSION="1.6.10"
+MULLE_EXECUTABLE_VERSION="1.7.0"
 
 #
 # This is the main user interface to mulle-fetch
@@ -55,21 +55,23 @@ print_commands()
 
 
    HIDDEN_COMMANDS="\
+   allow       : allow this directory being symlinked by projects (default)
    nameguess   : guess final filename from url, (hint: specify -s <scm>)
    libexec-dir : print path to mulle-fetch libexec
    operation   : list operations available (for mulle-sourcetree)
    plugin      : list plugins available
+   prevent     : prevent this directory from being symlinked by other projects
    tag         : tag repository
    typeguess   : guess plugin name suitable for url
    uname       : mulle-fetchs simplified uname(1)
    version     : print mulle-fetch version"
 
 
-   echo "${SHOWN_COMMANDS}"
+   printf "%s\n" "${SHOWN_COMMANDS}"
 
    if [ "${show_all}" != 'NO' ]
    then
-      echo "${HIDDEN_COMMANDS}"
+      printf "%s\n" "${HIDDEN_COMMANDS}"
    fi
 }
 
@@ -187,7 +189,7 @@ main()
          ;;
 
          --version)
-            echo "${MULLE_EXECUTABLE_VERSION}"
+            printf "%s\n" "${MULLE_EXECUTABLE_VERSION}"
             exit 0
          ;;
 
@@ -214,6 +216,19 @@ main()
          usage
       ;;
 
+      allow)
+         if [ -f ".mulle/etc/fetch/no-symlink" -o -f ".mulle/etc/fetch/no-search" ]
+         then
+            log_info "${PWD} is local-searchable and can be symlinked again"
+            remove_file_if_present ".mulle/etc/fetch/no-search"
+            rmdir_if_empty .mulle/etc/fetch
+            rmdir_if_empty .mulle/etc
+            rmdir_if_empty .mulle
+         else
+            log_verbose "${PWD} is already local-searchable and symlinkable"
+         fi
+      ;;
+
       checkout)
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
@@ -236,7 +251,7 @@ main()
       ;;
 
       "libexec-dir"|"library-path")
-         echo "${MULLE_FETCH_LIBEXEC_DIR}"
+         printf "%s\n" "${MULLE_FETCH_LIBEXEC_DIR}"
       ;;
 
       operation)
@@ -251,6 +266,18 @@ main()
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh"
 
          fetch_plugin_main "$@"
+      ;;
+
+      prevent)
+         if [ ! -f ".mulle/etc/fetch/no-symlink" -o ! -f ".mulle/etc/fetch/no-search" ]
+         then
+            log_info "${PWD} will not be local-searched or symlinked anymore"
+            mkdir_if_missing .mulle/etc/fetch
+            redirect_exekutor ".mulle/etc/fetch/no-symlink" echo "# existence of file is enough"
+            redirect_exekutor ".mulle/etc/fetch/no-search" echo "# existence of file is enough"
+         else
+            log_verbose "${PWD} is already not local-searchable and symlinkable"
+         fi
       ;;
 
       search-local)
@@ -282,7 +309,7 @@ main()
       ;;
 
       uname)
-         echo "${MULLE_UNAME}"
+         printf "%s\n" "${MULLE_UNAME}"
       ;;
 
       update)
@@ -300,7 +327,7 @@ main()
       ;;
 
       version)
-         echo "${MULLE_EXECUTABLE_VERSION}"
+         printf "%s\n" "${MULLE_EXECUTABLE_VERSION}"
          return 0
       ;;
 
@@ -355,7 +382,7 @@ _init()
    #
    if [ "$1" = "version" ]
    then
-      echo "${MULLE_EXECUTABLE_VERSION}"
+      printf "%s\n" "${MULLE_EXECUTABLE_VERSION}"
       exit 0
    fi
 
@@ -391,7 +418,7 @@ _init()
    #
    case "$1" in
       "libexec-dir"|"library-path")
-         echo "${MULLE_FETCH_LIBEXEC_DIR}"
+         printf "%s\n" "${MULLE_FETCH_LIBEXEC_DIR}"
          exit 0
       ;;
    esac

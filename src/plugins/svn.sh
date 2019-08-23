@@ -153,7 +153,7 @@ svn_search_local_project()
 
    if r_source_search_local_path "${name}" "${branch}" ".svn" 'YES' "${url}"
    then
-      echo "${RVAL}"
+      printf "%s\n" "${RVAL}"
    fi
 }
 
@@ -179,6 +179,6 @@ svn_guess_project()
    name="`basename -- "${urlpath}"`"
    name="`extensionless_basename "${name}"`"
 
-   echo "${name}"
+   printf "%s\n" "${name}"
 }
 

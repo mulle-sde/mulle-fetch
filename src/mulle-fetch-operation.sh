@@ -107,11 +107,6 @@ can_symlink_it()
 
    local directory="$1"
 
-   if [ ! -d "${directory}" ]
-   then
-      return 1
-   fi
-
    #
    # DEFAULT is no
    #
@@ -128,6 +123,18 @@ this platform"
          return 1
       ;;
    esac
+
+   if [ ! -d "${directory}" ]
+   then
+      log_verbose "Is not a directory, can not symlink"
+      return 1
+   fi
+
+   if [ -e "${directory}/.mulle/etc/fetch/no-symlink" ]
+   then
+      log_verbose "Symlinking disabled by \"${directory}/.mulle/etc/fetch/no-symlink\""
+      return 1
+   fi
 
    #
    # lazy load this as we need it now
@@ -175,7 +182,8 @@ fetch_get_local_item()
 
    local operation
 
-   operation="`get_source_function "${sourcetype}" "search-local"`"
+   r_get_source_function "${sourcetype}" "search-local"
+   operation="${RVAL}"
 
    if [ ! -z "${operation}" ]
    then
@@ -227,11 +235,11 @@ _fetch_operation()
 
          if [ ! -z "${found}" ]
          then
-            log_verbose "Using local item \"${found}\""
+            log_fluff "Using local item \"${found}\""
             url="${found}"
 
             case "${sourcetype}" in
-               "git")
+               git|svn|tar|zip)
                   if can_symlink_it "${url}"
                   then
                      sourcetype="symlink"
@@ -359,7 +367,7 @@ _fetch_operation_list()
       operation="${sourcetype}_${funcname}_project"
       if [ "`type -t "${operation}"`" = "function" ]
       then
-         echo "${opname}"
+         printf "%s\n" "${opname}"
       fi
    done
    set +o noglob
