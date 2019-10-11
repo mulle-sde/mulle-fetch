@@ -331,6 +331,16 @@ tar_search_local_project()
 }
 
 
+tar_exists_project()
+{
+   log_entry "tar_exists_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   source_url_exists "${url}"
+}
+
+
 tar_guess_project()
 {
    log_entry "tar_guess_project" "$@"

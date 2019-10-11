@@ -102,6 +102,29 @@ EOF
 }
 
 
+fetch_exists_usage()
+{
+   cat <<EOF >&2
+Usage:
+   ${MULLE_EXECUTABLE_NAME} exists [options] <url>
+
+   Check if URL exists. URL can be a file, in which case the answer is fairly
+   definitive. If URL is a internet page, it checks for 404 or so (don't
+   expect too much)
+
+      ${MULLE_EXECUTABLE_NAME} exists https://foo.com/bla.git
+
+   Returns status code 0 on success, and something else otherwise.
+
+Options:
+   -s <scm> : source type, either a repository or archive format (git)
+EOF
+
+   show_plugins >&2
+
+   exit 1
+}
+
 fetch_guess_usage()
 {
    cat <<EOF >&2
@@ -115,7 +138,7 @@ Usage:
    returns "bla"
 
 Options:
-   -s <scm>         : source type, either a repository or archive format (git)
+   -s <scm> : source type, either a repository or archive format (git)
 EOF
 
    show_plugins >&2
@@ -451,7 +474,7 @@ fetch_common_main()
    if [ -z "${OPTION_URL}" ]
    then
       case "${COMMAND}" in
-         fetch|set-url)
+         export|fetch|set-url)
             [ $# -lt 2 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
             [ $# -gt 2 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
 
@@ -459,7 +482,7 @@ fetch_common_main()
             directory="$2"
          ;;
 
-         search-local|guess)
+         search-local|guess|exists)
             [ $# -eq 0 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
             [ $# -ne 1 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
             url="$1"
@@ -492,32 +515,31 @@ fetch_common_main()
 }
 
 
+fetch_checkout_main()
+{
+   log_entry "fetch_checkout_main" "$@"
+
+   USAGE="fetch_checkout_usage"
+   COMMAND="checkout"
+   fetch_common_main "$@"
+}
+
+fetch_exists_main()
+{
+   log_entry "fetch_exists_main" "$@"
+
+   USAGE="fetch_exists_usage"
+   COMMAND="exists"
+   fetch_common_main "$@"
+}
+
+
 fetch_fetch_main()
 {
    log_entry "fetch_fetch_main" "$@"
 
    USAGE="fetch_fetch_usage"
    COMMAND="fetch"
-   fetch_common_main "$@"
-}
-
-
-fetch_checkout_main()
-{
-   log_entry "fetch_checkout_main" "$@"
-
-   USAGE="fetch_other_usage"
-   COMMAND="checkout"
-   fetch_common_main "$@"
-}
-
-
-fetch_operation_main()
-{
-   log_entry "fetch_operation_main" "$@"
-
-   USAGE="fetch_operation_usage"
-   COMMAND="operation"
    fetch_common_main "$@"
 }
 
@@ -532,12 +554,24 @@ fetch_guess_main()
 }
 
 
+fetch_operation_main()
+{
+   log_entry "fetch_operation_main" "$@"
+
+   USAGE="fetch_operation_usage"
+   COMMAND="operation"
+   fetch_common_main "$@"
+}
+
+
 fetch_search_local_main()
 {
    log_entry "fetch_search_local_main" "$@"
 
    USAGE="fetch_search_local_usage"
    COMMAND="search-local"
+
+   log_fluff "MULLE_FETCH_SEARCH_PATH: ${MULLE_FETCH_SEARCH_PATH}"
    fetch_common_main "$@"
 }
 

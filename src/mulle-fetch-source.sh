@@ -128,7 +128,7 @@ source_validate_file_url()
       ;;
    esac
 
-   log_fluff "Looking for local \"${url}\""
+   log_fluff "Looking for \"${url}\" in filesystem"
 
    [ -e "${url}" ]
 }
@@ -263,7 +263,7 @@ r_source_search_local_path()
    log_debug "MULLE_FETCH_SEARCH_PATH is \"${MULLE_FETCH_SEARCH_PATH}\""
 
    curdir="`pwd -P`"
-   set -f ; IFS=":"
+   set -f ; IFS=':'
    for directory in ${MULLE_FETCH_SEARCH_PATH}
    do
       set +f ; IFS="${DEFAULT_IFS}"
@@ -421,12 +421,12 @@ source_download()
          case "${MULLE_UNAME}" in
             mingw)
                log_fluff "Copying local archive \"${download}\" to \"${url}\""
-               exekutor cp -rA "${url}" "${download}"
+               exekutor cp -rA "${url}" "${download}" || exit 1
             ;;
 
             *)
                log_fluff "Symlinking local archive \"${download}\" to \"${url}\""
-               exekutor ln -s "${url}" "${download}"
+               exekutor ln -s "${url}" "${download}" || exit 1
             ;;
          esac
       fi
@@ -437,6 +437,40 @@ source_download()
       remove_file_if_present "${download}"
       fail "Can't download archive from \"${url}\""
    fi
+}
+
+
+
+source_url_exists()
+{
+   log_entry "source_url_exists" "$@"
+
+   local url="$1"
+
+   #
+   # local urls don't need to be curled
+   #
+   case "${url}" in
+      file://*)
+         source_validate_file_url "${url}"
+         return $?
+      ;;
+
+      *:*)
+      ;;
+
+      *)
+         if source_validate_file_url "${url}"
+         then
+            return 0
+         fi
+      ;;
+   esac
+
+   [ -z "${MULLE_FETCH_CURL_SH}" ] && \
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-curl.sh"
+
+   curl_exists "${url}"
 }
 
 

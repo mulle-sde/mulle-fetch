@@ -56,6 +56,7 @@ print_commands()
 
    HIDDEN_COMMANDS="\
    allow       : allow this directory being symlinked by projects (default)
+   exists      : check if url is accessible (returns 0=YES)
    nameguess   : guess final filename from url, (hint: specify -s <scm>)
    libexec-dir : print path to mulle-fetch libexec
    operation   : list operations available (for mulle-sourcetree)
@@ -234,6 +235,13 @@ main()
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
          fetch_checkout_main "$@"
+      ;;
+
+      exists)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+
+         fetch_exists_main "$@"
       ;;
 
       fetch)

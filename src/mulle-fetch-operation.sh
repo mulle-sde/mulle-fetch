@@ -81,7 +81,7 @@ fetch_log_action()
          fi
       ;;
 
-      search-local|guess)
+      search-local|guess|exists)
          [ -z "${url}" ]      && internal_fail "parameter: url is empty"
          info=" of "
          proposition=" at "
@@ -194,6 +194,7 @@ fetch_get_local_item()
 }
 
 
+# MEMO: git cannot do "git archive"
 _fetch_operation()
 {
    log_entry "_fetch_operation" "$@"
@@ -213,20 +214,20 @@ _fetch_operation()
    local rval
 
    case "${url}" in
-      "/"*)
-         if can_symlink_it "${url}"
-         then
-            sourcetype="symlink"
-         fi
-      ;;
-
       #
       # don't move up using url
       #
-      *"/../"*|"../"*|*"/.."|"..")
+      *'/../'*|'../'*|*'/..'|'..')
          if [ "${sourcetype}" != "symlink" ]
          then
             internal_fail "Faulty url \"${url}\" should have been caught before"
+         fi
+      ;;
+
+      '/'*)
+         if can_symlink_it "${url}"
+         then
+            sourcetype="symlink"
          fi
       ;;
 
@@ -334,7 +335,7 @@ returns with ${rval}"
 
       *)
          case "${opname}" in
-            "search-local")
+            'search-local'|'exists')
                log_fluff "\"${sourcetype}\": ${opname} failed for \"${name:-${url}}\""
             ;;
 

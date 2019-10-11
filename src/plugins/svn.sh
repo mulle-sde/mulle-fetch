@@ -158,6 +158,16 @@ svn_search_local_project()
 }
 
 
+svn_exists_project()
+{
+   log_entry "svn_exists_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   source_url_exists "${url}"
+}
+
+
 svn_guess_project()
 {
    log_entry "svn_guess_project" "$@"

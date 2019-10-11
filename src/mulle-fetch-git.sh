@@ -354,6 +354,15 @@ git_is_repository()
 }
 
 
+# https://stackoverflow.com/questions/9610131/how-to-check-the-validity-of-a-remote-git-repository-url
+git_is_valid_remote_url()
+{
+   [ -z "$1" ] && internal_fail "empty parameter"
+
+   GIT_ASKPASS=/bin/true git ls-remote "$1" > /dev/null 2>&1
+}
+
+
 git_is_bare_repository()
 {
    local is_bare

@@ -121,6 +121,32 @@ wget_download()
 }
 
 
+wget_exists()
+{
+   log_entry "wget_exists" "$@"
+
+   local url="$1"
+   local download="$2"
+
+   WGET="${WGET:-`command -v wget`}"
+   if [ -z "${WGET}" ]
+   then
+      fail "Neither \"curl\" nor \"wget\" are installed. Can not fetch anything."
+   fi
+
+   local defaultflags
+
+   defaultflags="-nv"
+   if [ "${MULLE_FLAG_LOG_VERBOSE}" = 'YES' ]
+   then
+      defaultflags=""
+   fi
+
+   exekutor ${WGET} --spider "${url}" 2>/dev/null
+}
+
+
+
 curl_download()
 {
    log_entry "curl_download" "$@"
@@ -157,6 +183,35 @@ curl_download()
                ${options} \
                "${url}" || fail "failed to download \"${url}\""
 }
+
+# https://stackoverflow.com/questions/12199059/how-to-check-if-an-url-exists-with-the-shell-and-probably-curl#
+curl_exists()
+{
+   log_entry "curl_exists" "$@"
+
+   local url="$1"
+
+   log_verbose "Checking ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+
+   CURL="${CURL:-`command -v curl`}"
+   if [ -z "${CURL}" ]
+   then
+      wget_exists "$@"
+      return $?
+   fi
+
+   local defaultflags
+
+   defaultflags="-fsSL"
+   if [ "${MULLE_FLAG_LOG_VERBOSE}" = 'YES' ]
+   then
+      defaultflags="-fSL"
+   fi
+
+   exekutor ${CURL} ${OPTION_CURL_FLAGS:-${defaultflags}} \
+               --output /dev/null -r 0-0 "${url}"
+}
+
 
 
 :

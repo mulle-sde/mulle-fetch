@@ -232,7 +232,7 @@ archive_search_local()
    local found
    local directory
 
-   set -f ; IFS=":"
+   set -f ; IFS=':'
    for directory in ${MULLE_FETCH_SEARCH_PATH}
    do
       set +f; IFS="${DEFAULT_IFS}"

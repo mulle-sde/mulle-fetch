@@ -568,6 +568,33 @@ git_search_local_project()
 }
 
 
+git_exists_project()
+{
+   log_entry "git_exists_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   case "${url}" in
+      file://*)
+         source_validate_file_url "${url}"
+         return $?
+      ;;
+
+      *:*)
+      ;;
+
+      *)
+         if source_validate_file_url "${url}"
+         then
+            return 0
+         fi
+      ;;
+   esac
+
+   git_is_valid_remote_url "${url}"
+}
+
+
 git_guess_project()
 {
    log_entry "git_guess_project" "$@"

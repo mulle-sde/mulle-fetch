@@ -90,6 +90,15 @@ ${C_RESET_BOLD}${url}${C_INFO}."
 }
 
 
+file_exists_project()
+{
+   log_entry "file_exists_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   source_validate_file_url "${url}"
+}
+
 
 file_guess_project()
 {

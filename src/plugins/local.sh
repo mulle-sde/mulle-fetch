@@ -62,6 +62,15 @@ local_fetch_project()
    :
 }
 
+local_exists_project()
+{
+   log_entry "local_exists_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   source_validate_file_url "${url}"
+}
+
 
 local_guess_project()
 {

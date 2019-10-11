@@ -118,6 +118,15 @@ symlink_search_local_project()
 }
 
 
+symlink_exists_project()
+{
+   log_entry "symlink_exists_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   source_validate_file_url "${url}"
+}
+
 
 symlink_guess_project()
 {

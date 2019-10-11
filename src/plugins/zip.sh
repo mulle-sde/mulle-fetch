@@ -81,6 +81,16 @@ zip_search_local_project()
 }
 
 
+zip_exists_project()
+{
+   log_entry "zip_exists_project" "$@"
+
+   local url="$3"             # URL of the clone
+
+   source_url_exists "${url}"
+}
+
+
 zip_guess_project()
 {
    log_entry "zip_guess_project" "$@"
