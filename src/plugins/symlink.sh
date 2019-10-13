@@ -98,7 +98,7 @@ symlink_search_local_project()
    case "${url}" in
       file://*)
          r_simplified_absolutepath "${url:7}"
-         r_fast_dirname "${RVAL}"  # remove name from url
+         r_dirname "${RVAL}"  # remove name from url
          filename="${RVAL}"
 
          if r_source_search_local "${filename}" "${name}" "${branch}" "" "NO"

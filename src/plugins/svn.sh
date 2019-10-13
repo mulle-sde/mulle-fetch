@@ -102,11 +102,13 @@ svn_update_project()
 
    if [ ! -z "$branch" ]
    then
-      options="`concat "-r ${branch}" "${options}"`"
+      r_concat "-r ${branch}" "${options}"
+      options="${RVAL}"
    else
       if [ ! -z "$tag" ]
       then
-         options="`concat "-r ${tag}" "${options}"`"
+         r_concat "-r ${tag}" "${options}"
+         options="${RVAL}"
       fi
    fi
 

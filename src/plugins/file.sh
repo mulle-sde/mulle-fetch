@@ -74,14 +74,14 @@ ${C_RESET_BOLD}${url}${C_INFO}."
 
    local dstdir
 
-   r_fast_dirname "${destination}"
+   r_dirname "${destination}"
    dstdir="${RVAL}"
 
    mkdir_if_missing "${dstdir}" || return 1
 
    local download
 
-   r_fast_basename "${destination}"
+   r_basename "${destination}"
    download="${RVAL}"
    (
       exekutor cd "${dstdir}" &&

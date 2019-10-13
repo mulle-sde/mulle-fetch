@@ -226,7 +226,7 @@ archive_search_local()
 #   local branch="$3"
 
    local filename
-   r_fast_basename "${url}"
+   r_basename "${url}"
    filename="${RVAL}"
 
    local found
@@ -280,9 +280,10 @@ archive_guess_name_from_url()
 
    case "${urlpath}" in
       */tarball/*|*/zipball/*)
-         r_fast_dirname "${urlpath}"
-         r_fast_dirname "${RVAL}"
-         fast_basename "${RVAL}"
+         r_dirname "${urlpath}"
+         r_dirname "${RVAL}"
+         r_basename "${RVAL}"
+         printf "%s\n" "${RVAL}"
          return
       ;;
    esac
@@ -293,9 +294,10 @@ archive_guess_name_from_url()
    #
    case "${url}" in
       *github.com/*)
-         r_fast_dirname "${urlpath}"
-         r_fast_dirname "${RVAL}"
-         fast_basename "${RVAL}"
+         r_dirname "${urlpath}"
+         r_dirname "${RVAL}"
+         r_basename "${RVAL}"
+         printf "%s\n" "${RVAL}"
          return
       ;;
 

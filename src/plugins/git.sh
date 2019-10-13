@@ -142,12 +142,14 @@ __git_clone()
    then
       log_info "Cloning branch ${C_RESET_BOLD}$branch${C_INFO} of \
 ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
-      options="`concat "${options}" "-b ${branch}"`"
+      r_concat "${options}" "-b ${branch}"
+      options="${RVAL}"
    else
       log_info "Cloning ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    fi
 
-   options="`concat "${options}" "--single-branch"`"
+   r_concat "${options}" "--single-branch"
+   options="${RVAL}"
 
    local originalurl
 
@@ -613,7 +615,7 @@ git_guess_project()
 
    urlpath="`url_get_path "${url}"`"
 
-   r_fast_basename "${urlpath}"
+   r_basename "${urlpath}"
    name="${RVAL}"
    r_extensionless_basename "${name}"
    name="${RVAL}"
