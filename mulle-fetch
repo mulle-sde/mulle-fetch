@@ -441,4 +441,16 @@ _init()
 
 
 _init "$@" # needs params
-main "$@"
+
+quote="'"
+args=""
+for arg in "$@"
+do
+   arg="${arg//${quote}/${quote}\"${quote}\"${quote}}"
+   args="${args} '${arg}'"
+done
+
+unset quote
+unset arg
+
+eval main "${MULLE_FETCH_FLAGS}" "${args}"

@@ -1,3 +1,10 @@
+## 1.7.0
+
+* changed to mulle-bashfunctions 2 call convention
+* moved to mulle-bashfunctions v2
+* new command "exists"
+
+
 ### 1.6.10
 
 * dont warn on symlink if branch is latest or master
