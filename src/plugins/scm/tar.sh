@@ -28,7 +28,8 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_TAR_SH="included"
+MULLE_FETCH_PLUGIN_SCM_TAR_SH="included"
+
 
 _archive_test()
 {
@@ -119,34 +120,46 @@ _tar_unpack()
 }
 
 
+#
+# returns in
+#
+#  _cached_archive
+#  _cachable_path
+#  _archive_cache
+#
 archive_cache_grab()
 {
    log_entry "archive_cache_grab" "$@"
 
    local url="$1"
    local download="$2"
+   local sourceoptions="$3"
 
    [ -z "${url}" ]      && internal_fail "url is empty"
    [ -z "${download}" ] && internal_fail "download is empty"
 
+   _cachable_path=""
+   _cached_archive=""
+   _archive_cache=""
+
    if [ -z "${MULLE_FETCH_ARCHIVE_DIR}" ]
    then
       log_fluff "Caching not active as MULLE_FETCH_ARCHIVE_DIR is empty"
-      return 2
+      return 4
    fi
 
-   local archive_cache
-   local cachable_path
-   local cached_archive
    local filename
    local directory
 
    # fix for github
    case "${url}" in
       *github.com*/archive/*)
-         directory="`dirname -- "${url}"`" # remove 3.9.2
-         directory="`dirname -- "${directory}"`" # remove archives
-         filename="`basename -- "${directory}"`-${download}"
+         r_dirname "${url}"  # remove 3.9.2
+         r_dirname "${RVAL}" # remove archives
+         directory="${RVAL}"
+
+         r_basename "${directory}"
+         filename="${RVAL}-${download}"
       ;;
 
       *)
@@ -155,24 +168,29 @@ archive_cache_grab()
    esac
 
    # tar and zip can share a cache due to file extension
-   cachable_path="${MULLE_FETCH_ARCHIVE_DIR}/${filename}"
+   _archive_cache="${MULLE_FETCH_ARCHIVE_DIR}"
+   _cachable_path="${_archive_cache}/${filename}"
 
    #
    # if refresh is yes, ignore cache
-   # default and no use it
+   # default is to use the cache
    #
    case "${OPTION_REFRESH}" in
-     DEFAULT|NO)
-         if [ -f "${cachable_path}" ]
+      "")
+         internal_fail "illegal OPTION_REFRESH value"
+      ;;
+
+      DEFAULT|NO)
+         if [ -f "${_cachable_path}" ]
          then
-            cached_archive="${cachable_path}"
+            _cached_archive="${_cachable_path}"
          fi
 
-         if [ ! -z "${cached_archive}" ]
+         if [ ! -z "${_cached_archive}" ]
          then
-            log_info "Using cached \"${cached_archive}\" for ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+            log_info "Using cached \"${_cached_archive}\" for ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
             # we are in a tmp dir
-            cachable_path=""
+            _cachable_path=""
 
             if [ -z "${MULLE_FETCH_CURL_SH}" ]
             then
@@ -180,22 +198,18 @@ archive_cache_grab()
                . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-curl.sh" || exit 1
             fi
 
-            if ! _archive_test "${cached_archive}" || \
-               ! curl_validate_download "${cached_archive}" "${sourceoptions}"
+            if ! _archive_test "${_cached_archive}" || \
+               ! curl_validate_download "${_cached_archive}" "${sourceoptions}"
             then
-               remove_file_if_present "${cached_archive}"
-               cached_archive=""
+               remove_file_if_present "${_cached_archive}"
+               _cached_archive=""
             else
-               exekutor ln -s "${cached_archive}" "${download}" || fail "failed to symlink \"${cached_archive}\""
+               exekutor ln -s "${_cached_archive}" "${download}" || fail "failed to symlink \"${_cached_archive}\""
                return 0
             fi
          fi
       ;;
    esac
-
-   printf "%s\n" "${cached_archive}"
-   printf "%s\n" "${cachable_path}"
-   printf "%s\n" "${MULLE_FETCH_ARCHIVE_DIR}"
 
    return 1
 }
@@ -212,40 +226,36 @@ _tar_download()
 {
    log_entry "_tar_download" "$@"
 
-   local download="$1"  # where we expect the file to be
-   local url="$2"
+   local url="$1"
+   local download="$2"  # where we expect the file to be
    local sourceoptions="$3"
 
-   local results
+   local _cachable_path
+   local _cached_archive
+   local _archive_cache
 
-   results="`archive_cache_grab "${url}" "${download}"`"
-   if [ $? -eq 0 ]
+   if archive_cache_grab  "${url}" "${download}" "${sourceoptions}"
    then
       return 0
    fi
 
-   local archive_cache
-   local cachable_path
-   local cached_archive
-
-   cached_archive="`printf "%s\n" "${results}" | sed -n '1p'`"
-   cachable_path="`printf "%s\n" "${results}"  | sed -n '2p'`"
-   archive_cache="`printf "%s\n" "${results}"  | sed -n '3p'`"
-
-   if [ -z "${cached_archive}" ]
+   if [ -z "${_cached_archive}" ]
    then
       source_download "${url}" "${download}" "${sourceoptions}"
    fi
 
    [ -f "${download}" ] || internal_fail "expected file \"${download}\" is mising"
 
-   if [ -z "${cached_archive}" -a ! -z "${cachable_path}" ]
+   if [ -z "${_cached_archive}" -a ! -z "${_cachable_path}" ]
    then
-      log_verbose "Caching \"${url}\" as \"${cachable_path}\" ..."
-      mkdir_if_missing "${archive_cache}" || fail "failed to create archive cache \"${archive_cache}\""
-      exekutor cp "${download}" "${cachable_path}" || fail "failed to copy \"${download}\" to \"${cachable_path}\""
+      log_verbose "Caching \"${url}\" as \"${_cachable_path}\" ..."
+      mkdir_if_missing "${_archive_cache}" || fail "failed to create archive cache \"${_archive_cache}\""
+      exekutor cp "${download}" "${_cachable_path}" || fail "failed to copy \"${download}\" to \"${_cachable_path}\""
+   else
+      log_fluff "Not caching the archive"
    fi
 }
+
 
 ###
 ### PLUGIN API
@@ -262,7 +272,7 @@ tar_fetch_project()
    local url="$3"             # URL of the clone
    local branch="$4"          # branch of the clone
    local tag="$5"             # tag to checkout of the clone
-   local sourcetype="$6"          # source to use for this clone
+   local sourcetype="$6"      # source to use for this clone
    local sourceoptions="$7"   # options to use on source
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
@@ -297,7 +307,7 @@ ${C_RESET_BOLD}${url}${C_INFO}."
    (
       exekutor cd "${tmpdir}" || return 1
 
-      _tar_download "${download}" "${url}" "${sourceoptions}" || return 1
+      _tar_download "${url}" "${download}" "${sourceoptions}" || return 1
 
       _tar_unpack "${download}" "${sourceoptions}" || return 1
       exekutor rm "${download}" || return 1

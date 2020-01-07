@@ -37,9 +37,14 @@ fetch_plugin_usage()
 
    cat <<EOF >&2
 Usage:
-   ${MULLE_USAGE_NAME} plugin <command>
+   ${MULLE_USAGE_NAME} plugin [options] <command>
 
    Currently the only command is "list".
+
+Options:
+   --scm    : list SCM plugins (default)
+   --domain : list domain plugins
+
 EOF
 
    exit 1
@@ -48,7 +53,9 @@ EOF
 
 fetch_plugin_all_names()
 {
-   log_entry "fetch_plugin_all_names"
+   log_entry "fetch_plugin_all_names" "$@"
+
+   local type="${1:-scm}"
 
    local upcase
    local plugindefine
@@ -59,7 +66,7 @@ fetch_plugin_all_names()
    [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
 
    IFS=$'\n'
-   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
+   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${type}"/*.sh`
    do
       IFS="${DEFAULT_IFS}"
 
@@ -86,25 +93,45 @@ fetch_plugin_all_names()
 }
 
 
-fetch_plugin_load()
+fetch_plugin_load_if_present()
 {
-   log_entry "fetch_plugin_load"
+   log_entry "fetch_plugin_load_if_present" "$@"
 
-   local scm="$1"
+   local name="$1"
+   local type="${2:-scm}"
 
-   if [ ! -f "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${scm}.sh" ]
+   if [ ! -f "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${type}/${name}.sh" ]
    then
-      fail "SCM \"${scm}\" is not supported (no plugin found)"
+      log_verbose "${type} \"${name}\" is not supported (no plugin found)"
+      return 1
    fi
 
    # shellcheck source=plugins/symlink.sh
-   . "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${scm}.sh"
+   . "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${type}/${name}.sh"
+   return 0
+}
+
+
+
+fetch_plugin_load()
+{
+   log_entry "fetch_plugin_load" "$@"
+
+   local name="$1"
+   local type="${2:-scm}"
+
+   if ! fetch_plugin_load_if_present "${name}" "${type}"
+   then
+      fail "${type} \"${name}\" is not supported (no plugin found)"
+   fi
 }
 
 
 fetch_plugin_list()
 {
    log_entry "fetch_plugin_list"
+
+   local type="${1:-scm}"
 
    local upcase
    local plugindefine
@@ -117,7 +144,7 @@ fetch_plugin_list()
    log_info "Plugins"
 
    IFS=$'\n'
-   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
+   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${type}"/*.sh`
    do
       basename -- "${pluginpath}" .sh
    done
@@ -130,6 +157,8 @@ fetch_plugin_load_all()
 {
    log_entry "fetch_plugin_load_all"
 
+   local type="${1:-scm}"
+
    local upcase
    local plugindefine
    local pluginpath
@@ -138,28 +167,33 @@ fetch_plugin_load_all()
    [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
    [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
 
-   log_fluff "Loading source plugins..."
+   log_fluff "Loading ${type} plugins..."
 
    IFS=$'\n'
-   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/"*.sh`
+   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${type}"/*.sh`
    do
       IFS="${DEFAULT_IFS}"
 
       name="`basename -- "${pluginpath}" .sh`"
-      upcase="`tr 'a-z' 'A-Z' <<< "${name}"`"
-      plugindefine="MULLE_FETCH_PLUGIN_${upcase}_SH"
 
-      if [ -z "`eval echo \$\{${plugindefine}\}`" ]
+      r_identifier "${type}_${name}"
+      r_uppercase "${RVAL}"
+      plugindefine="MULLE_FETCH_PLUGIN_${RVAL}_SH"
+
+      if [ -z "${!plugindefine}" ]
       then
          # shellcheck source=plugins/symlink.sh
          . "${pluginpath}"
 
-         if [ "`type -t "${name}_fetch_project"`" != "function" ]
-         then
-            fail "Source plugin \"${pluginpath}\" has no \"${name}_fetch_project\" function"
-         fi
-
-         log_fluff "Source plugin \"${name}\" loaded"
+         case "${type}" in
+            'scm')
+               if [ "`type -t "${name}_fetch_project"`" != "function" ]
+               then
+                  fail "${type} plugin \"${pluginpath}\" has no \"${name}_fetch_project\" function"
+               fi
+            ;;
+         esac
+         log_fluff "${type} plugin \"${name}\" loaded"
       fi
    done
 
@@ -171,11 +205,22 @@ fetch_plugin_main()
 {
    log_entry "fetch_plugin_main" "$@"
 
+   local type=""
+
+
    while [ $# -ne 0 ]
    do
       case "$1" in
          -h*|--help|help)
             fetch_plugin_usage
+         ;;
+
+         --scm)
+            type="scm"
+         ;;
+
+         --domain)
+            type="domain"
          ;;
 
          -*)
@@ -198,7 +243,7 @@ fetch_plugin_main()
    case "${cmd}" in
       list)
          [ $# -ne 0 ] && fetch_plugin_usage "superflous parameters"
-         fetch_plugin_list
+         fetch_plugin_list "${type}"
       ;;
 
       "")

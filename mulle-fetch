@@ -31,7 +31,7 @@
 #
 [ "${TRACE}" = 'YES' -o "${MULLE_FETCH_TRACE}" = 'YES' ] && set -x && : "$0" "$@"
 
-MULLE_EXECUTABLE_VERSION="1.7.0"
+MULLE_EXECUTABLE_VERSION="1.8.0"
 
 #
 # This is the main user interface to mulle-fetch
@@ -50,12 +50,14 @@ print_commands()
 
    SHOWN_COMMANDS="\
    fetch       : fetch archive or repository [default]
+   filter      : evaluate a tag filter (e.g. >= 1.0.5) for known domains
    update      : update repository (-> git fetch)
    upgrade     : upgrade repository (-> git pull)"
 
 
    HIDDEN_COMMANDS="\
    allow       : allow this directory being symlinked by projects (default)
+   compose-url : create an URL for a given domain
    exists      : check if url is accessible (returns 0=YES)
    nameguess   : guess final filename from url, (hint: specify -s <scm>)
    libexec-dir : print path to mulle-fetch libexec
@@ -93,6 +95,11 @@ Usage:
    ${MULLE_USAGE_NAME} [flags] <command>
 
    Retrieve and unpack tar archive, git repositories, svn repositories.
+   For complete control use the explicit fetch command. For quick and dirty
+   fetches use the shortcut without any command:
+
+   Example:
+      mulle-fetch https://github.com/openssl/openssl/archive/OpenSSL_1_0_2u.tar.gz.
 
 Flags:
 EOF
@@ -237,6 +244,13 @@ main()
          fetch_checkout_main "$@"
       ;;
 
+      compose-url)
+         # shellcheck source=src/mulle-fetch-filter.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-filter.sh"
+
+         fetch_compose_url_main "$@"
+      ;;
+
       exists)
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
@@ -288,6 +302,13 @@ main()
          fi
       ;;
 
+      filter)
+         # shellcheck source=src/mulle-fetch-filter.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-filter.sh"
+
+         fetch_filter_main "$@"
+      ;;
+
       search-local)
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
@@ -333,6 +354,7 @@ main()
 
          fetch_upgrade_main "$@"
       ;;
+
 
       version)
          printf "%s\n" "${MULLE_EXECUTABLE_VERSION}"

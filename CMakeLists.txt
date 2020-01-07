@@ -34,8 +34,14 @@ file( GLOB LIBRARY_SCRIPTS
    "src/*.sh"
 )
 
-file( GLOB PLUGIN_SCRIPTS
-   "src/plugins/*.sh"
+
+file( GLOB SCM_PLUGIN_SCRIPTS
+   "src/plugins/scm/*.sh"
+)
+
+
+file( GLOB DOMAIN_PLUGIN_SCRIPTS
+   "src/plugins/domain/*.sh"
 )
 
 
@@ -56,11 +62,17 @@ PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
             WORLD_EXECUTE WORLD_READ
 DESTINATION "libexec/mulle-fetch")
 
-INSTALL( FILES ${PLUGIN_SCRIPTS}
+INSTALL( FILES ${SCM_PLUGIN_SCRIPTS}
 PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
             GROUP_EXECUTE GROUP_READ
             WORLD_EXECUTE WORLD_READ
-DESTINATION "libexec/mulle-fetch/plugins")
+DESTINATION "libexec/mulle-fetch/plugins/scm")
+
+INSTALL( FILES ${DOMAIN_PLUGIN_SCRIPTS}
+PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+            GROUP_EXECUTE GROUP_READ
+            WORLD_EXECUTE WORLD_READ
+DESTINATION "libexec/mulle-fetch/plugins/domain")
 
 
 ######

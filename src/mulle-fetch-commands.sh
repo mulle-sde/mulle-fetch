@@ -50,6 +50,8 @@ MULLE_FETCH_FETCH_SH="included"
 
 show_plugins()
 {
+   local type="${1:-scm}"
+
    if [ -z "$MULLE_FETCH_PLUGIN_SH" ]
    then
       # shellcheck source=mulle-fetch-plugin.sh
@@ -59,12 +61,12 @@ show_plugins()
 
    local  plugins
 
-   plugins="`fetch_plugin_all_names`"
+   plugins="`fetch_plugin_all_names "${type}" `"
    if [ ! -z "${plugins}" ]
    then
       (
          echo
-         echo "Available source types are:"
+         echo "Available ${type} types are:"
          printf "%s\n" "${plugins}" | sed 's/^/   /'
       )
    fi
@@ -93,7 +95,7 @@ Options:
    --cache-dir <dir>      : directory to cache archives
    --mirror-dir <dir>     : directory to mirror repositories (git)
    --refresh              : refresh mirrored repositories and cached archives
-   --symlink-returns-2    : if a repository was symlinked return with code 2
+   --symlink-returns-4    : if a repository was symlinked return with code 4
    --symlink              : allow symlinks to be create
 EOF
 
@@ -270,7 +272,7 @@ fetch_common_main()
    local OPTION_SYMLINK="DEFAULT"
    local OPTION_REFRESH="DEFAULT"
    local OPTION_ABSOLUTE_SYMLINK='NO'
-   local OPTION_SYMLINK_RETURNS_2='NO'
+   local OPTION_SYMLINK_RETURNS_4='NO'
 
    local OPTION_OPTIONS
    local OPTION_TOOL_FLAGS
@@ -321,9 +323,10 @@ fetch_common_main()
             OPTION_ABSOLUTE_SYMLINK='NO'
          ;;
 
-         -2|--symlink-returns-2)
+         # -2 was the old way
+         -2|-4|--symlink-returns-4|--symlink-returns-2)
             OPTION_SYMLINK='YES'
-            OPTION_SYMLINK_RETURNS_2='YES'
+            OPTION_SYMLINK_RETURNS_4='YES'
          ;;
 
          --cache-dir)
@@ -433,8 +436,8 @@ fetch_common_main()
    # shellcheck source=mulle-fetch-plugin.sh
    . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh"
 
-   fetch_plugin_load "symlink"  # brauchen wir immer
-   fetch_plugin_load "${OPTION_SCM}"
+   fetch_plugin_load "symlink" "scm" # brauchen wir immer
+   fetch_plugin_load "${OPTION_SCM}" "scm"
 
    [ -z "${DEFAULT_IFS}" ] && internal_fail "IFS fail"
 
@@ -496,13 +499,14 @@ fetch_common_main()
       esac
    else
       # uniform scheme, when URL is passed
-      # doen't check superflous  or absent arguments
+      # don't check superflous or absent arguments
 
       url="${OPTION_URL}"
       directory="$1"
    fi
 
-   name="$(basename -- "${directory}")"
+   r_basename "${directory}"
+   name="${RVAL}"
 
    fetch_do_operation "${COMMAND}" "unused" \
                                    "${name}" \

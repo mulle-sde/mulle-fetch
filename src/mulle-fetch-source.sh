@@ -103,6 +103,7 @@ r_get_source_function()
    then
       log_verbose "Operation \"${opname}\" is not provided by \"${sourcetype}\" \
 (function \"$operation\" is missing)"
+      RVAL=
       return 1
    fi
    RVAL="${operation}"

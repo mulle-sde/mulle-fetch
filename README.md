@@ -9,10 +9,7 @@
 * Downloads [zip](http://eab.abime.net/showthread.php?t=5025) and [tar](http://www.grumpynerd.com/?p=132) archives.
 * Clones [git](//enux.pl/article/en/2014-01-21/why-git-sucks) repositories and it can also checkout [svn](//andreasjacobsen.com/2008/10/26/subversion-sucks-get-over-it/).
 * Guess project names from URLs
-
-As a standalone tool, this can be marginally useful as it saves you some type-
-work.
-
+* Find the newest archive versions on github using qualifiers like `>= 2.0.0`
 
 ![](dox/mulle-fetch-overview.png)
 
@@ -38,12 +35,14 @@ tar xfz download.tgz
 mv download "${DST}"
 ```
 
-One invariably specifies the **url** to download from and the **destination** directory to download to. The destination directory must not exist yet.
+One invariably specifies the **url** to download from and the **destination**
+directory to download to. The destination directory must not exist yet.
 
-Here are two ways to retrieve the tagged version [1.3.5](//github.com/mulle-nat/mulle-c11/releases/tag/1.3.5) of [mulle-c11](//github.com/mulle-nat/mulle-c11) from [github](//github.com).
 
 
 #### Download and unpack a tar archive:
+
+Here the version is specified in the URL
 
 ```
 mulle-fetch fetch -s tar https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz mulle-c11
@@ -52,8 +51,10 @@ mulle-fetch fetch -s tar https://github.com/mulle-nat/mulle-c11/archive/1.3.5.ta
 
 #### Clone a git repository:
 
+Use a tag to checkout a specific version:
+
 ```
-mulle-fetch fetch -t 1.3.5 https://github.com/mulle-nat/mulle-c11.git mulle-c11
+mulle-fetch fetch -t '1.3.5' https://github.com/mulle-nat/mulle-c11.git mulle-c11
 ```
 
 #### Or even more convenient:
@@ -63,6 +64,74 @@ give it the URL and let the magic happen:
 
 ```
 mulle-fetch https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz
+```
+
+
+## Search for best matching URL
+
+For github archives and repositories you can search for the best fitting
+release archive with a special "tag filter" syntax, that expresses version
+ranges. For this to work the releases must be tagged in [semantic versioning]
+style.
+
+For example '>= 1.0.0 AND < 2.0.0' would get you the lastet version 1. A tag
+filter is of the form
+
+Filter                 |
+-----------------------|-------------------
+'newest:' &lt;qualifier&gt; | Use the newest compatible version
+'oldest:' &lt;qualifier&gt; | Use the oldest compatible version
+&lt;qualifier&gt;           | same as `newest:`, just shorter
+
+
+Qualifier                 | Description
+--------------------------|-----------------------
+&lt;unary qualifier&gt;   | These qualifiers compare the github version with your value
+&lt;binary qualifier&gt;  | Boolean logic AND and OR
+`(` &lt;qualifier&gt; `)` | As there is no precedence, use parentheses to express it
+
+
+Unary Qualifier      | Example
+---------------------|-------------
+`>=` &lt;version&gt; | `>= 1.0.0`  of [ 0.0.0, 1.0.0, 2.0.0 ] gives 2.0.0
+`<=` &lt;version&gt; | `<= 1.0.0`  of [ 0.0.0, 1.0.0, 2.0.0 ] gives 1.0.0
+`<`  &lt;version&gt; | `< 1.0.0`   of [ 0.0.0, 1.0.0, 2.0.0 ] gives 0.0.0
+`>`  &lt;version&gt; | `> 1.0.0`   of [ 0.0.0, 1.0.0, 2.0.0 ] gives 2.0.0
+`!=` &lt;version&gt; | `!= 1.0.0`  of [ 0.0.0, 1.0.0, 2.0.0 ] gives 2.0.0
+`==`  &lt;version&gt;| `== 1.0.0`  of [ 0.0.0, 1.0.0, 2.0.0 ] gives 1.0.0
+&lt;version&gt;      | same as `==`
+
+
+Binary Qualifier                          | Example
+------------------------------------------|-----------------
+&lt;qualifier&gt; `AND` &lt;qualifier&gt; | `>= 1.0.0 AND < 2.0.0`  of [ 0.0.0, 1.0.0, 2.0.0 ] gives 1.0.0
+&lt;qualifier&gt; `OR` &lt;qualifier&gt;  | `>= 1.0.0 OR == 0.0.0` of [ 0.0.0, 1.0.0, 2.0.0 ] gives 0.0.0
+
+
+Version                  | Description
+-------------------------|-------------------------------------------
+[0-9]+'.'[0-9]+'.'[0-9]+ | A version is a semantic versioning triple
+
+
+### Examples
+
+Use version 3.2.x or better up to but not including version 3.3:
+
+```
+mulle-fetch url \
+      --scm tar \
+   '>= 3.2.0 AND < 3.3.0' \
+   https://github.com/mulle-c/mulle-c11
+```
+
+Use version 1 or better up, but not known problem version 1.0.2 and 1.0.3
+
+
+```
+mulle-fetch url \
+      --scm zip \
+   '>= 1.0.0 AND != 1.0.2 AND != 1.0.3' \
+   https://github.com/mulle-c/mulle-allocator
 ```
 
 

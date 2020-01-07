@@ -115,7 +115,7 @@ wget_download()
    fi
 
    exekutor ${WGET} ${OPTION_WGET_FLAGS:-${defaultflags}} \
-               -O "${download}" \
+               -O "${download:--}" \
                ${options} \
                "${url}" || fail "failed to download \"${url}\""
 }
@@ -155,7 +155,6 @@ curl_download()
    local download="$2"
    local sourceoptions="$3"
 
-
    log_verbose "Downloading ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
 
    CURL="${CURL:-`command -v curl`}"
@@ -177,11 +176,19 @@ curl_download()
       defaultflags="-fSL"
    fi
 
-   exekutor ${CURL} ${OPTION_CURL_FLAGS:-${defaultflags}} \
-               -o "${download}" \
-               -O -L \
-               ${options} \
-               "${url}" || fail "failed to download \"${url}\""
+   if [ ! -z "${download}" ]
+   then
+      exekutor ${CURL} ${OPTION_CURL_FLAGS:-${defaultflags}} \
+                  -o "${download}" \
+                  -O -L \
+                  ${options} \
+                  "${url}" || fail "failed to download \"${url}\""
+   else
+      exekutor ${CURL} ${OPTION_CURL_FLAGS:-${defaultflags}} \
+                  -L \
+                  ${options} \
+                  "${url}" || fail "failed to download \"${url}\""
+   fi
 }
 
 # https://stackoverflow.com/questions/12199059/how-to-check-if-an-url-exists-with-the-shell-and-probably-curl#

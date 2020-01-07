@@ -187,7 +187,7 @@ fetch_get_local_item()
 
    if [ ! -z "${operation}" ]
    then
-      "${operation}" "$@"
+      exekutor "${operation}" "$@"
    else
       log_fluff "Not searching locals because source \"${sourcetype}\" does not support \"${operation}\""
    fi
@@ -278,9 +278,9 @@ _fetch_operation()
       ;;
    esac
 
-   if [ "${sourcetype}" = "symlink" -a "${OPTION_SYMLINK_RETURNS_2}" = 'YES' ]
+   if [ "${sourcetype}" = "symlink" -a "${OPTION_SYMLINK_RETURNS_4}" = 'YES' ]
    then
-      return 2
+      return 4
    fi
 
    return 0
@@ -438,8 +438,8 @@ fetch_operation_main()
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || \
             fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh"
 
-         fetch_plugin_load_all
-         fetch_operation_list "${OPTION_SCM}"
+         fetch_plugin_load_all "scm"
+         fetch_operation_list "${OPTION_SCM}" "scm"
       ;;
 
       "")

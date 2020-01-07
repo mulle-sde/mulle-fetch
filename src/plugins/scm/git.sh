@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_GIT_SH="included"
+MULLE_FETCH_PLUGIN_SCM_GIT_SH="included"
 
 
 _git_get_mirror_url()
@@ -637,7 +637,7 @@ git_plugin_initialize()
    if [ -z "${MULLE_FETCH_PLUGIN_SYMLINK_SH}" ]
    then
       # shellcheck source=src/plugins/symlink.sh
-      . "${MULLE_FETCH_LIBEXEC_DIR}/plugins/symlink.sh" || exit 1
+      . "${MULLE_FETCH_LIBEXEC_DIR}/plugins/scm/symlink.sh" || exit 1
    fi
 }
 

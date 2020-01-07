@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 #
-#   Copyright (c) 2017 Nat! - Mulle kybernetiK
+#   Copyright (c) 2020 Nat! - Mulle kybernetiK
 #   All rights reserved.
 #
 #   Redistribution and use in source and binary forms, with or without
@@ -28,54 +28,37 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_LOCAL_SH="included"
+MULLE_FETCH_PLUGIN_DOMAIN_MULLE_KYBERNETIK_SH="included"
 
 
-###
-### PLUGIN API
-###
-
-#
-# this is useful in mulle-sourcetree to add existing subprojects that
-# need to be compiled separately
-#
-local_fetch_project()
+r_domain_mulle_kybernetik_compose()
 {
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   log_entry "r_domain_mulle_kybernetik_compose" "$@"
 
-   local unused="$1" ; shift
-   local name="$1"; shift
-   local url="$1"; shift
-   local branch="$1"; shift
-   local tag="$1"; shift
-   local sourcetype="$1"; shift
-   local sourceoptions="$1"; shift
-   local dstdir="$1"; shift
+   local repo="$1"
+   local user="$2"
+   local tag="$3"
+   local scm="$4"
 
-   #
-   # Could copy url which is a local directory now wholesale, which
-   # might make sense on mingw, but would be really bothersome, when
-   # you really wanted to symlink
-   #
-   [ ! -e "${dstdir}" ] && fail "${dstdir} not present"
+   [ -z "${repo}" ] && fail "Repo is required for mulle-kybernetik URL"
 
-   :
+   case "${scm}" in
+      git)
+         r_concat "https://mulle-kybernetik.com/software/git/${repo}" "${tag}" '##'
+      ;;
+
+      tar)
+         [ -z "${tag}" ]  && fail "Tag is required for mulle-kybernetik tar URL"
+         RVAL="https://mulle-kybernetik.com/software/git/${repo}/tarball/${tag}"
+      ;;
+
+      zip)
+         [ -z "${tag}" ]  && fail "Tag is required for mulle-kybernetik zip URL"
+         RVAL="https://mulle-kybernetik.com/software/git/${repo}/zipball/${tag}"
+      ;;
+
+      *)
+         fail "Unsupported scm ${scm} for mulle-kybernetik"
+      ;;
+   esac
 }
-
-local_exists_project()
-{
-   log_entry "local_exists_project" "$@"
-
-   local url="$3"             # URL of the clone
-
-   source_validate_file_url "${url}"
-}
-
-
-local_guess_project()
-{
-   log_entry "local_guess_project" "$@"
-
-   source_guess_project "$@"
-}
-

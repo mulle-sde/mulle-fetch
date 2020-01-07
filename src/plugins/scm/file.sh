@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_FILE_SH="included"
+MULLE_FETCH_PLUGIN_SCM_FILE_SH="included"
 
 
 #
@@ -105,6 +105,12 @@ file_guess_project()
    log_entry "file_guess_project" "$@"
 
    local url="$3"             # URL of the clone
+
+   if [ -z "${MULLE_FETCH_URL_SH}" ]
+   then
+      # shellcheck source=src/mulle-fetch-archive.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
+   fi
 
    local urlpath
 

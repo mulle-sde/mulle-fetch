@@ -183,11 +183,18 @@ main()
       install -v -m "${mode}" "${i}" "${libexec}" || exit 1
    done
 
-   PLUGIN_DIR="${libexec}/plugins"
-   for i in src/plugins/*.sh
+   SCM_PLUGIN_DIR="${libexec}/plugins/scm"
+   for i in src/plugins/scm/*.sh
    do
-      mkdir -p "${PLUGIN_DIR}" 2> /dev/null
-      install -v -m "${mode}" "${i}" "${PLUGIN_DIR}" || exit 1
+      mkdir -p "${SCM_PLUGIN_DIR}" 2> /dev/null
+      install -v -m "${mode}" "${i}" "${SCM_PLUGIN_DIR}" || exit 1
+   done
+
+   DOMAIN_PLUGIN_DIR="${libexec}/plugins/domain"
+   for i in src/plugins/domain/*.sh
+   do
+      mkdir -p "${DOMAIN_PLUGIN_DIR}" 2> /dev/null
+      install -v -m "${mode}" "${i}" "${DOMAIN_PLUGIN_DIR}" || exit 1
    done
 }
 

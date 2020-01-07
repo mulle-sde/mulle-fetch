@@ -76,7 +76,7 @@ main()
 
    setup_demo_repo "${repo}" || exit 1
 
-   run_mulle_fetch fetch -2 -l "${directory}" "${repo}" "${dstdir}"
+   run_mulle_fetch fetch --symlink-returns-4 -l "${directory}" "${repo}" "${dstdir}"
    rval=$?
    case "${rval}" in
       0)
@@ -85,7 +85,7 @@ main()
          fail "wrong return code (0 instead of 2)"
       ;;
 
-      2)
+      4)
          [ ! -L "${dstdir}" ] && fail "failed to create the proper symlink"
       ;;
 
@@ -106,8 +106,8 @@ main()
          [ ! -L "${dstdir}" ] && fail "failed to create the proper symlink"
       ;;
 
-      2)
-         fail "returned a 2 where it should not have"
+      4)
+         fail "returned a 4 where it should not have"
       ;;
 
       *)
