@@ -267,7 +267,7 @@ r_source_search_local_path()
    set -f ; IFS=':'
    for directory in ${MULLE_FETCH_SEARCH_PATH}
    do
-      set +f ; IFS="${DEFAULT_IFS}"
+      set +o noglob; IFS="${DEFAULT_IFS}"
 
       if [ -z "${directory}" ]
       then
@@ -294,7 +294,7 @@ the current directory"
       fi
    done
 
-   set +f; IFS="${DEFAULT_IFS}"
+   set +o noglob; IFS="${DEFAULT_IFS}"
 
    return 1
 }

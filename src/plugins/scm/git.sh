@@ -379,9 +379,9 @@ ${C_MAGENTA}${C_BOLD}${name}${C_INFO} ..."
    else
       if [ ! -z "${branch}" ]
       then
-         log_warning "Branch ${C_RESET_BOLD}${branch}${C_WARNING_TEXT} of \
-${C_MAGENTA}${C_BOLD}${name}${C_WARNING_TEXT} ignored as tag \
-${C_RESET_BOLD}${tag}${C_WARNING_TEXT} is set"
+         log_warning "Branch ${C_RESET_BOLD}${branch}${C_WARNING} of \
+${C_MAGENTA}${C_BOLD}${name}${C_WARNING} ignored as tag \
+${C_RESET_BOLD}${tag}${C_WARNING} is set"
       fi
 
       if ! git_has_tag "${dstdir}" "${tag}"
