@@ -181,11 +181,11 @@ main()
             usage "${MULLE_TRACE}"
          ;;
 
-         --github)
+         --github|--github-user)
             [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
-            OPTION_GITHUB="$1"
+            OPTION_GITHUB_USER="$1"
          ;;
 
          --git-terminal-prompt)

@@ -336,11 +336,11 @@ fetch_common_main()
             MULLE_FETCH_ARCHIVE_DIR="$1"
          ;;
 
-         --github)
+         --github|--github-user)
             [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
-            OPTION_GITHUB="$1"
+            OPTION_GITHUB_USER="$1"
          ;;
 
          --mirror-dir)
@@ -446,7 +446,7 @@ fetch_common_main()
    local url
    local cmd
 
-   if [ ! -z "${OPTION_GITHUB}" ]
+   if [ ! -z "${OPTION_GITHUB_USER}" ]
    then
       case "${OPTION_SCM}" in
          git)
@@ -455,17 +455,17 @@ fetch_common_main()
                ;;
 
                *)
-                  url="https://github.com/${OPTION_GITHUB}/${url}.git"
+                  url="https://github.com/${OPTION_GITHUB_USER}/${url}.git"
                ;;
             esac
          ;;
 
          tar)
-            url="https://github.com/${OPTION_GITHUB}/${url}/archive/${OPTION_TAG:-latest}.tar.gz"
+            url="https://github.com/${OPTION_GITHUB_USER}/${url}/archive/${OPTION_TAG:-latest}.tar.gz"
          ;;
 
          zip)
-            url="https://github.com/${OPTION_GITHUB}/${url}/archive/${OPTION_TAG:-latest}.zip"
+            url="https://github.com/${OPTION_GITHUB_USER}/${url}/archive/${OPTION_TAG:-latest}.zip"
          ;;
       esac
       log_fluff "Modified URL \"${url}\""
