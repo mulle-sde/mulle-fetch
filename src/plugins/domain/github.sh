@@ -90,6 +90,7 @@ r_domain_github_compose()
    [ -z "${user}" ] && fail "User is required for github URL"
    [ -z "${repo}" ] && fail "Repo is required for github URL"
 
+   repo="${repo%.git}"
    # could use API to get the URL, but laziness...
    case "${scm}" in
       git)
