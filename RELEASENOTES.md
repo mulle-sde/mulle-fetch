@@ -1,3 +1,7 @@
+### 1.8.1
+
+* installer verbose toggle
+
 ## 1.7.0
 
 * changed to mulle-bashfunctions 2 call convention

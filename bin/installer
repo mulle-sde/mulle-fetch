@@ -180,21 +180,21 @@ main()
    for i in src/mulle*.sh
    do
       mkdir -p "${libexec}" 2> /dev/null
-      install -v -m "${mode}" "${i}" "${libexec}" || exit 1
+      install ${VERBOSE} -m "${mode}" "${i}" "${libexec}" || exit 1
    done
 
    SCM_PLUGIN_DIR="${libexec}/plugins/scm"
    for i in src/plugins/scm/*.sh
    do
       mkdir -p "${SCM_PLUGIN_DIR}" 2> /dev/null
-      install -v -m "${mode}" "${i}" "${SCM_PLUGIN_DIR}" || exit 1
+      install ${VERBOSE} -m "${mode}" "${i}" "${SCM_PLUGIN_DIR}" || exit 1
    done
 
    DOMAIN_PLUGIN_DIR="${libexec}/plugins/domain"
    for i in src/plugins/domain/*.sh
    do
       mkdir -p "${DOMAIN_PLUGIN_DIR}" 2> /dev/null
-      install -v -m "${mode}" "${i}" "${DOMAIN_PLUGIN_DIR}" || exit 1
+      install ${VERBOSE} -m "${mode}" "${i}" "${DOMAIN_PLUGIN_DIR}" || exit 1
    done
 }
 
