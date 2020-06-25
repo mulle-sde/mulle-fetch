@@ -244,7 +244,7 @@ _fetch_operation()
                   if can_symlink_it "${url}"
                   then
                      sourcetype="symlink"
-                     log_verbose "Using symlink to local item \"${found}\""
+                     log_fluff "Using symlink to local item \"${found}\""
                      url="`symlink_relpath "${url}" "${ROOT_DIR}"`"
                   fi
                ;;

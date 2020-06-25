@@ -216,8 +216,9 @@ Since one is not actually cloning anything the found project directory, does
 not need to be under version control.
 
 
-## GitHub and Mulle kybernetiK
+## Author
 
-The development is done on [Mulle kybernetiK](https://www.mulle-kybernetik.com/software/git/mulle-fetch/master). Releases and bug-tracking are on [GitHub](https://github.com/{{PUBLISHER}}/mulle-fetch).
-
+[Nat!](//www.mulle-kybernetik.com/weblog) for
+[Mulle kybernetiK](//www.mulle-kybernetik.com) and
+[Codeon GmbH](//www.codeon.de)
 
