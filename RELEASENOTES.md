@@ -1,3 +1,7 @@
+### 1.8.2
+
+* improved tar info output a little bit
+
 ### 1.8.1
 
 * installer verbose toggle

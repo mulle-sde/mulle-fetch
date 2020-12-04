@@ -188,7 +188,7 @@ archive_cache_grab()
 
          if [ ! -z "${_cached_archive}" ]
          then
-            log_info "Using cached \"${_cached_archive}\" for ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+            log_info "Using cached \"${_cached_archive/#${HOME}/~}\" for ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
             # we are in a tmp dir
             _cachable_path=""
 
