@@ -220,6 +220,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
             fi
          fi
 
+         # TODO: could use --shallow here probably
          exekutor git fetch ${GIT_QUIET} --no-tags "origin" "${branch}" &&
          exekutor git checkout ${GIT_QUIET} -b "${branch}" "origin/${branch}"
       ) >&2

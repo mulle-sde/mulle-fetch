@@ -52,9 +52,9 @@ github_url_get_user_repo()
 #
 # list all tags
 #
-github_get_tags()
+r_github_get_tags()
 {
-   log_entry "github_get_tags" "$@"
+   log_entry "r_github_get_tags" "$@"
 
    local user="$1"
    local repo="$2"
@@ -66,11 +66,35 @@ github_get_tags()
          fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-curl.sh"
    fi
 
-   local url
+   # the result is paginated, means we only get 30 tags and then have to
+   # parse the next url from the response header. We can raise this to 100.
+   #
+   # https://docs.github.com/en/free-pro-team@latest/rest/guides/traversing-with-pagination
+   #
+   # Instead of parsing ther response header we run through the pages, until
+   # we get nothing back. Costs us one extra curl call though
+   #
+   page=1
+   maxpage=${GITHUB_MAX_PAGES:-16}  # last 1600 tags should be ok or ?
 
-   url="https://api.github.com/repos/${user}/${repo}/tags"
+   RVAL=""
+   while [ ${page} -le ${maxpage} ]
+   do
+      local url
+      local page_tags
 
-   exekutor curl_download "${url}" | sed -n -e 's/^.*"name": "\(.*\)".*$/\1/p'
+      # say 1000, it don't matter
+      url="https://api.github.com/repos/${user}/${repo}/tags?per_page=100&page=${page}"
+
+      page_tags="`exekutor curl_download "${url}" | sed -n -e 's/^.*"name": "\(.*\)".*$/\1/p'`" || exit 1
+      if [ -z "${page_tags}" ]
+      then
+         break
+      fi
+      r_add_line "${RVAL}" "${page_tags}"
+
+      page=$((page + 1))
+   done
 }
 
 
@@ -142,7 +166,8 @@ r_domain_github_filter()
 
    if is_tags_filter "${filter}"
    then
-      tags="`github_get_tags "${_user}" "${_repo}" `" || exit 1
+      r_github_get_tags "${_user}" "${_repo}"
+      tags="${RVAL}"
       tag="`tags_filter "${tags}" "${filter}" `" || exit 1
    else
       tag="${filter}"

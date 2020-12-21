@@ -1,3 +1,7 @@
+### 1.8.3
+
+* up to 3000 github tags can be fetched now, instead of 30 as before
+
 ### 1.8.2
 
 * improved tar info output a little bit
