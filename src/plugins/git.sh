@@ -135,7 +135,10 @@ __git_clone()
    local mirroroptions
 
    dstdir="${dstdir}"
-   options="`get_sourceoption "${sourceoptions}" "fetch"`"
+   if [ ! -z "${sourceoptions}" ]
+   then
+      options="`get_sourceoption "${sourceoptions}" "fetch"`"
+   fi
    mirroroptions="${options}"
 
    if [ ! -z "${branch}" ]
@@ -360,7 +363,10 @@ git_checkout_project()
 
    local options
 
-   options="`get_sourceoption "${sourceoptions}" "checkout"`"
+   if [ ! -z "${sourceoptions}" ]
+   then
+      options="`get_sourceoption "${sourceoptions}" "checkout"`"
+   fi
 
 #   local branch
    local curr_branch
@@ -438,7 +444,10 @@ git_update_project()
    local options
    local remote
 
-   options="`get_sourceoption "${sourceoptions}" "update"`"
+   if [ ! -z "${sourceoptions}" ]
+   then
+      options="`get_sourceoption "${sourceoptions}" "update" `"
+   fi
    remote="`_get_fetch_remote "${url}"`" || internal_fail "can't figure out remote"
 
    log_info "Fetching ${C_MAGENTA}${C_BOLD}${dstdir#${PWD}/}${C_INFO} ..."
@@ -469,7 +478,10 @@ git_upgrade_project()
    local options
    local remote
 
-   options="`get_sourceoption "${sourceoptions}" "upgrade"`"
+   if [ ! -z "${sourceoptions}" ]
+   then
+      options="`get_sourceoption "${sourceoptions}" "upgrade"`"
+   fi
    remote="`_get_fetch_remote "${url}"`" || internal_fail "can't figure out remote"
 
    log_info "Pulling ${C_MAGENTA}${C_BOLD}${dstdir}${C_INFO} ..."
@@ -506,8 +518,10 @@ git_status_project()
 
    local options
 
-   options="`get_sourceoption "${sourceoptions}" "status"`"
-
+   if [ ! -z "${sourceoptions}" ]
+   then
+      options="`get_sourceoption "${sourceoptions}" "status"`"
+   fi
    (
       exekutor cd "${dstdir}" &&
       exekutor git ${OPTION_TOOL_FLAGS} status "$@" ${options} ${OPTION_TOOL_OPTIONS} >&2
@@ -610,18 +624,9 @@ git_guess_project()
       . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
    fi
 
-   local urlpath
-   local archivename
-   local name
-
-   urlpath="`url_get_path "${url}"`"
-
-   r_basename "${urlpath}"
-   name="${RVAL}"
-   r_extensionless_basename "${name}"
-   name="${RVAL}"
-
-   printf "%s\n" "${name}"
+   r_url_get_path "${url}"
+   r_extensionless_basename "${RVAL}"
+   printf "%s\n" "${RVAL}"
 }
 
 
@@ -635,11 +640,13 @@ git_plugin_initialize()
       . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-git.sh" || exit 1
    fi
 
-   if [ -z "${MULLE_FETCH_PLUGIN_SYMLINK_SH}" ]
+   if [ -z "${MULLE_FETCH_PLUGIN_SH}" ]
    then
-      # shellcheck source=src/plugins/symlink.sh
-      . "${MULLE_FETCH_LIBEXEC_DIR}/plugins/scm/symlink.sh" || exit 1
+      # shellcheck source=src/mulle-fetch-plugin.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || exit 1
    fi
+
+   fetch_plugin_load_if_needed "symlink"
 }
 
 

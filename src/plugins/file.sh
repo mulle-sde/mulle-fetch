@@ -112,11 +112,9 @@ file_guess_project()
       . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
    fi
 
-   local urlpath
-
-   urlpath="`url_get_path "${url}"`"
-
-   basename -- "${urlpath}"
+   r_url_get_path "${url}"
+   r_basename "${RVAL}"
+   printf "%s\n" "${RVAL}"
 }
 
 :

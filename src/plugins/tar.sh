@@ -114,7 +114,10 @@ _tar_unpack()
 
    local options
 
-   options="`get_sourceoption "${sourceoptions}" "tar"`"
+   if [ ! -z "${sourceoptions}" ]
+   then
+      options="`get_sourceoption "${sourceoptions}" "tar"`"
+   fi
 
    exekutor tar ${OPTION_TOOL_FLAGS} ${tarcommand} ${OPTION_TOOL_OPTIONS} ${options} "${archive}" || return 1
 }

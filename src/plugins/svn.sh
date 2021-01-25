@@ -59,7 +59,10 @@ ${C_RESET_BOLD}${url}${C_INFO}."
 
    local options
 
-   options="`get_sourceoption "${sourceoptions}" "clone"`"
+   if [ ! -z "${sourceoptions}" ]
+   then
+      options="`get_sourceoption "${sourceoptions}" "clone"`"
+   fi
 
    if [ ! -z "${tag}" ]
    then
@@ -94,7 +97,10 @@ svn_update_project()
 
    local options
 
-   options="`get_sourceoption "${sourceoptions}" "update"`"
+   if [ ! -z "${sourceoptions}" ]
+   then
+      options="`get_sourceoption "${sourceoptions}" "update"`"
+   fi
 
    [ ! -z "${dstdir}" ] || internal_fail "dstdir is empty"
 
@@ -134,7 +140,10 @@ svn_status_project()
 
    local options
 
-   options="`get_sourceoption "${sourceoptions}" "status"`"
+   if [ ! -z "${sourceoptions}" ]
+   then
+      options="`get_sourceoption "${sourceoptions}" "status"`"
+   fi
 
    [ ! -z "${dstdir}" ] || internal_fail "dstdir is empty"
 
@@ -182,15 +191,8 @@ svn_guess_project()
       . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
    fi
 
-   local urlpath
-   local archivename
-   local name
-
-   urlpath="`url_get_path "${url}"`"
-
-   name="`basename -- "${urlpath}"`"
-   name="`extensionless_basename "${name}"`"
-
-   printf "%s\n" "${name}"
+   r_url_get_path "${url}"
+   r_extensionless_basename "${RVAL}"
+   printf "%s\n" "${RVAL}"
 }
 

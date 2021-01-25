@@ -88,19 +88,21 @@ main()
    setup_demo_repo "${repo}" || exit 1
 
    run_mulle_fetch fetch "${repo}" "${dstdir}" || exit 1
+   log_verbose "----- #1 PASSED -----"
+
    if run_mulle_fetch checkout -t "2.0.0" "${dstdir}"
    then
       exekutor fail "unexpected checking out 2.0.0"
    fi
-   log_verbose "----- #1 PASSED -----"
+   log_verbose "----- #2 PASSED -----"
 
    update_demo_repo "${repo:-/tmp/exekutor}" || exit 1
    expect_version "${dstdir}" "1.0.0"
-   log_verbose "----- #2 PASSED -----"
+   log_verbose "----- #3 PASSED -----"
 
    run_mulle_fetch checkout -t "2.0.0" "${dstdir}" || exit 1
    expect_version "${dstdir}" "2.0.0"
-   log_verbose "----- #3 PASSED -----"
+   log_verbose "----- #4 PASSED -----"
 
    log_info "----- ALL PASSED -----"
 

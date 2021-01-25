@@ -39,11 +39,8 @@ fetch_plugin_usage()
 Usage:
    ${MULLE_USAGE_NAME} plugin [options] <command>
 
-   Currently the only command is "list".
-
-Options:
-   --scm    : list SCM plugins (default)
-   --domain : list domain plugins
+   Currently the only command is "list", which lists the installed plugins for
+   various source code management (scm) types (e.g. git or tar).
 
 EOF
 
@@ -55,8 +52,6 @@ fetch_plugin_all_names()
 {
    log_entry "fetch_plugin_all_names" "$@"
 
-   local type="${1:-scm}"
-
    local upcase
    local plugindefine
    local pluginpath
@@ -65,8 +60,9 @@ fetch_plugin_all_names()
    [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
    [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
 
-   IFS=$'\n'
-   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${type}"/*.sh`
+   shopt -s nullglob
+   IFS=$'\n'; set +f #sic
+   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}"/plugins/*.sh`
    do
       IFS="${DEFAULT_IFS}"
 
@@ -88,8 +84,34 @@ fetch_plugin_all_names()
 
       printf "%s\n" "${name}"
    done
+   shopt -u nullglob
 
    IFS="${DEFAULT_IFS}"
+}
+
+
+fetch_plugin_load_if_needed()
+{
+   log_entry "fetch_plugin_load_if_needed" "$@"
+
+   local name="$1"
+
+   local variable
+
+   r_uppercase "${name}"
+   variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
+
+   if [ "${!variable}" = 'YES' ]
+   then
+      return 0
+   fi
+
+   # shellcheck source=plugins/scm/symlink.sh
+   . "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${name}.sh" || exit 1
+
+   eval "${variable}='YES'"
+
+   return 0
 }
 
 
@@ -98,16 +120,28 @@ fetch_plugin_load_if_present()
    log_entry "fetch_plugin_load_if_present" "$@"
 
    local name="$1"
-   local type="${2:-scm}"
 
-   if [ ! -f "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${type}/${name}.sh" ]
+   local variable
+
+   r_uppercase "${name}"
+   variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
+
+   if [ "${!variable}" = 'YES' ]
    then
-      log_verbose "${type} \"${name}\" is not supported (no plugin found)"
+      return 0
+   fi
+
+   if [ ! -f "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${name}.sh" ]
+   then
+      log_verbose "\"${name}\" is not supported (no plugin found)"
       return 1
    fi
 
-   # shellcheck source=plugins/symlink.sh
-   . "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${type}/${name}.sh"
+   # shellcheck source=plugins/scm/symlink.sh
+   . "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${name}.sh"
+
+   eval "${variable}='YES'"
+
    return 0
 }
 
@@ -118,11 +152,10 @@ fetch_plugin_load()
    log_entry "fetch_plugin_load" "$@"
 
    local name="$1"
-   local type="${2:-scm}"
 
-   if ! fetch_plugin_load_if_present "${name}" "${type}"
+   if ! fetch_plugin_load_if_present "${name}"
    then
-      fail "${type} \"${name}\" is not supported (no plugin found)"
+      fail "\"${name}\" is not supported (no plugin found)"
    fi
 }
 
@@ -131,12 +164,7 @@ fetch_plugin_list()
 {
    log_entry "fetch_plugin_list"
 
-   local type="${1:-scm}"
-
-   local upcase
-   local plugindefine
    local pluginpath
-   local name
 
    [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
    [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
@@ -144,11 +172,10 @@ fetch_plugin_list()
    log_info "Plugins"
 
    IFS=$'\n'
-   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${type}"/*.sh`
+   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}"/plugins/*.sh`
    do
       basename -- "${pluginpath}" .sh
    done
-
    IFS="${DEFAULT_IFS}"
 }
 
@@ -157,47 +184,26 @@ fetch_plugin_load_all()
 {
    log_entry "fetch_plugin_load_all"
 
-   local type="${1:-scm}"
-
-   local upcase
-   local plugindefine
-   local pluginpath
    local name
 
    [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
    [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
 
-   log_fluff "Loading ${type} plugins..."
+   log_fluff "Loading plugins..."
 
-   IFS=$'\n'
-   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${type}"/*.sh`
+   local names
+
+   names="`fetch_plugin_all_names`"
+
+   IFS=$'\n'; set -f
+   for name in ${names}
    do
-      IFS="${DEFAULT_IFS}"
+      IFS="${DEFAULT_IFS}"; set +f
 
-      name="`basename -- "${pluginpath}" .sh`"
-
-      r_identifier "${type}_${name}"
-      r_uppercase "${RVAL}"
-      plugindefine="MULLE_FETCH_PLUGIN_${RVAL}_SH"
-
-      if [ -z "${!plugindefine}" ]
-      then
-         # shellcheck source=plugins/symlink.sh
-         . "${pluginpath}"
-
-         case "${type}" in
-            'scm')
-               if [ "`type -t "${name}_fetch_project"`" != "function" ]
-               then
-                  fail "${type} plugin \"${pluginpath}\" has no \"${name}_fetch_project\" function"
-               fi
-            ;;
-         esac
-         log_fluff "${type} plugin \"${name}\" loaded"
-      fi
+      fetch_plugin_load_if_present "${name}"
    done
 
-   IFS="${DEFAULT_IFS}"
+   IFS="${DEFAULT_IFS}"; set +f
 }
 
 
@@ -205,22 +211,11 @@ fetch_plugin_main()
 {
    log_entry "fetch_plugin_main" "$@"
 
-   local type=""
-
-
    while [ $# -ne 0 ]
    do
       case "$1" in
          -h*|--help|help)
             fetch_plugin_usage
-         ;;
-
-         --scm)
-            type="scm"
-         ;;
-
-         --domain)
-            type="domain"
          ;;
 
          -*)
@@ -235,15 +230,13 @@ fetch_plugin_main()
       shift
    done
 
-   [ $# -eq 0 ] && fetch_plugin_usage
+   [ $# -ne 1 ] && fetch_plugin_usage
 
    local cmd="$1"
-   shift
 
    case "${cmd}" in
       list)
-         [ $# -ne 0 ] && fetch_plugin_usage "superflous parameters"
-         fetch_plugin_list "${type}"
+         fetch_plugin_list
       ;;
 
       "")

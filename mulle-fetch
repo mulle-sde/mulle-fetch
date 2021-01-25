@@ -49,23 +49,19 @@ print_commands()
    local  show_all="${1:-NO}"
 
    SHOWN_COMMANDS="\
-   fetch       : fetch archive or repository [default]
-   filter      : evaluate a tag filter (e.g. >= 1.0.5) for known domains
+   domain      : special commands to query remote tags
+   fetch       : fetch archive or repository default]
    update      : update repository (-> git fetch)
    upgrade     : upgrade repository (-> git pull)"
 
 
    HIDDEN_COMMANDS="\
    allow       : allow this directory being symlinked by projects (default)
-   compose-url : create an URL for a given domain
    exists      : check if url is accessible (returns 0=YES)
-   nameguess   : guess final filename from url, (hint: specify -s <scm>)
    libexec-dir : print path to mulle-fetch libexec
    operation   : list operations available (for mulle-sourcetree)
-   plugin      : list plugins available
+   list        : list plugins available
    prevent     : prevent this directory from being symlinked by other projects
-   tag         : tag repository
-   typeguess   : guess plugin name suitable for url
    uname       : mulle-fetchs simplified uname(1)
    version     : print mulle-fetch version"
 
@@ -99,7 +95,7 @@ Usage:
    fetches use the shortcut without any command:
 
    Example:
-      mulle-fetch https://github.com/openssl/openssl/archive/OpenSSL_1_0_2u.tar.gz.
+      mulle-fetch https://github.com/mulle-core/mulle-mmap/archive/0.0.1.zip
 
 Flags:
 EOF
@@ -244,13 +240,6 @@ main()
          fetch_checkout_main "$@"
       ;;
 
-      compose-url)
-         # shellcheck source=src/mulle-fetch-filter.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-filter.sh"
-
-         fetch_compose_url_main "$@"
-      ;;
-
       exists)
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
@@ -265,15 +254,15 @@ main()
          fetch_fetch_main "$@"
       ;;
 
-      nameguess|guess)
-         # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
-
-         fetch_guess_main "$@"
-      ;;
-
       "libexec-dir"|"library-path")
          printf "%s\n" "${MULLE_FETCH_LIBEXEC_DIR}"
+      ;;
+
+      list)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh"
+
+         fetch_plugin_main "$@" list
       ;;
 
       operation)
@@ -302,13 +291,6 @@ main()
          fi
       ;;
 
-      filter)
-         # shellcheck source=src/mulle-fetch-filter.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-filter.sh"
-
-         fetch_filter_main "$@"
-      ;;
-
       search-local)
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
@@ -330,13 +312,6 @@ main()
          fetch_status_main "$@"
       ;;
 
-      typeguess)
-         # shellcheck source=src/mulle-fetch-url.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh"
-
-         fetch_typeguess_main "$@"
-      ;;
-
       uname)
          printf "%s\n" "${MULLE_UNAME}"
       ;;
@@ -354,7 +329,6 @@ main()
 
          fetch_upgrade_main "$@"
       ;;
-
 
       version)
          printf "%s\n" "${MULLE_EXECUTABLE_VERSION}"
@@ -380,7 +354,6 @@ main()
 
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh"
 
          local scmtype
 
@@ -434,7 +407,8 @@ _init()
       # shellcheck source=../mulle-bashfunctions/src/mulle-string.sh
    . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-bashfunctions.sh" "minimal" &&
    . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-path.sh" &&
-   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-file.sh" ||
+   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-file.sh" &&
+   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-url.sh" ||
       fail "failed to load bashfunctions from ${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}"
 
    r_get_libexec_dir "$0" "mulle-fetch" "mulle-fetch-git.sh"

@@ -78,13 +78,16 @@ curl_validate_download()
    local checksum
    local expected
 
-   expected="`get_sourceoption "$sourceoptions" "shasum256"`"
-   if [ -z "${expected}" ]
+   if [ ! -z "${sourceoptions}" ]
    then
-      return
-   fi
+      expected="`get_sourceoption "${sourceoptions}" "shasum256"`"
+      if [ -z "${expected}" ]
+      then
+         return
+      fi
 
-   curl_validate_shasum256 "${filename}" "${expected}"
+      curl_validate_shasum256 "${filename}" "${expected}"
+   fi
 }
 
 
@@ -104,7 +107,10 @@ wget_download()
 
    local options
 
-   options="`get_sourceoption "${sourceoptions}" "wget"`"
+   if [ ! -z "${sourceoptions}" ]
+   then
+      options="`get_sourceoption "${sourceoptions}" "wget"`"
+   fi
 
    local defaultflags
 
@@ -146,7 +152,6 @@ wget_exists()
 }
 
 
-
 curl_download()
 {
    log_entry "curl_download" "$@"
@@ -160,13 +165,16 @@ curl_download()
    CURL="${CURL:-`command -v curl`}"
    if [ -z "${CURL}" ]
    then
-      wget_download "$@"
+      wget_download "$1" "$2" "$3"
       return $?
    fi
 
    local options
 
-   options="`get_sourceoption "${sourceoptions}" "curl"`"
+   if [ ! -z "${sourceoptions}" ]
+   then
+      options="`get_sourceoption "${sourceoptions}" "curl"`"
+   fi
 
    local defaultflags
 
@@ -190,6 +198,7 @@ curl_download()
                   "${url}" || fail "failed to download \"${url}\""
    fi
 }
+
 
 # https://stackoverflow.com/questions/12199059/how-to-check-if-an-url-exists-with-the-shell-and-probably-curl#
 curl_exists()

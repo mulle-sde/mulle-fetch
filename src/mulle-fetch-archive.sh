@@ -235,7 +235,7 @@ archive_search_local()
    set -f ; IFS=':'
    for directory in ${MULLE_FETCH_SEARCH_PATH}
    do
-      set +o noglob; IFS="${DEFAULT_IFS}"
+      set +f; IFS="${DEFAULT_IFS}"
 
       if [ -z "${directory}" ]
       then
@@ -253,7 +253,7 @@ archive_search_local()
       fi
    done
 
-   set +o noglob; IFS="${DEFAULT_IFS}"
+   set +f; IFS="${DEFAULT_IFS}"
 
    return 1
 }
@@ -265,12 +265,6 @@ archive_guess_name_from_url()
 
    local url="$1"             # URL of the clone
    local ext="$2"
-
-   if [ -z "${MULLE_FETCH_URL_SH}" ]
-   then
-      # shellcheck source=src/mulle-fetch-archive.sh
-      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
-   fi
 
    local urlpath
    local archivename

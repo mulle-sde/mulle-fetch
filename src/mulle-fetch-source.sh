@@ -267,7 +267,7 @@ r_source_search_local_path()
    set -f ; IFS=':'
    for directory in ${MULLE_FETCH_SEARCH_PATH}
    do
-      set +o noglob; IFS="${DEFAULT_IFS}"
+      set +f; IFS="${DEFAULT_IFS}"
 
       if [ -z "${directory}" ]
       then
@@ -294,12 +294,14 @@ the current directory"
       fi
    done
 
-   set +o noglob; IFS="${DEFAULT_IFS}"
+   set +f; IFS="${DEFAULT_IFS}"
 
    return 1
 }
 
-
+#
+# move actual operation to the proper scm plugin like maybe git.sh
+#
 source_operation()
 {
    log_entry "source_operation" "$@"
@@ -362,16 +364,9 @@ source_guess_project()
 
    local url="$3"             # URL of the clone
 
-   if [ -z "${MULLE_FETCH_URL_SH}" ]
-   then
-      # shellcheck source=src/mulle-fetch-archive.sh
-      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
-   fi
-
-   local urlpath
-
-   urlpath="`url_get_path "${url}"`"
-   basename -- "${urlpath}"
+   r_url_get_path "${url}"
+   r_basename "${RVAL}"
+   printf "%s\n" "${RVAL}"
 }
 
 

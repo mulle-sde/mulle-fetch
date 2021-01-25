@@ -127,27 +127,6 @@ EOF
    exit 1
 }
 
-fetch_guess_usage()
-{
-   cat <<EOF >&2
-Usage:
-   ${MULLE_EXECUTABLE_NAME} guess [options] <url>
-
-   Guess the resulting name of the project specified by the URL.
-
-      ${MULLE_EXECUTABLE_NAME} guess https://foo.com/bla.git?version=last
-
-   returns "bla"
-
-Options:
-   -s <scm> : source type, either a repository or archive format (git)
-EOF
-
-   show_plugins >&2
-
-   exit 1
-}
-
 
 fetch_set_url_usage()
 {
@@ -445,27 +424,30 @@ fetch_common_main()
    local name
    local url
    local cmd
+   local repo
 
    if [ ! -z "${OPTION_GITHUB_USER}" ]
    then
-      case "${OPTION_SCM}" in
-         git)
-            case "${url}" in
-               *://*)
+      case "${url}" in
+         *://*)
+         ;;
+
+         *)
+            repo="${url}"
+            url="https://github.com/${OPTION_GITHUB_USER}"
+            case "${OPTION_SCM}" in
+               git)
+                  url="${url}/${repo}.git"
                ;;
 
-               *)
-                  url="https://github.com/${OPTION_GITHUB_USER}/${url}.git"
+               tar)
+                  url="${url}/${repo}/archive/${OPTION_TAG:-latest}.tar.gz"
+               ;;
+
+               zip)
+                  url="${url}/${repo}/archive/${OPTION_TAG:-latest}.zip"
                ;;
             esac
-         ;;
-
-         tar)
-            url="https://github.com/${OPTION_GITHUB_USER}/${url}/archive/${OPTION_TAG:-latest}.tar.gz"
-         ;;
-
-         zip)
-            url="https://github.com/${OPTION_GITHUB_USER}/${url}/archive/${OPTION_TAG:-latest}.zip"
          ;;
       esac
       log_fluff "Modified URL \"${url}\""
@@ -477,7 +459,7 @@ fetch_common_main()
    if [ -z "${OPTION_URL}" ]
    then
       case "${COMMAND}" in
-         export|fetch|set-url)
+         fetch|set-url)
             [ $# -lt 2 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
             [ $# -gt 2 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
 
@@ -485,7 +467,7 @@ fetch_common_main()
             directory="$2"
          ;;
 
-         search-local|guess|exists)
+         search-local|exists)
             [ $# -eq 0 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
             [ $# -ne 1 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
             url="$1"
@@ -544,16 +526,6 @@ fetch_fetch_main()
 
    USAGE="fetch_fetch_usage"
    COMMAND="fetch"
-   fetch_common_main "$@"
-}
-
-
-fetch_guess_main()
-{
-   log_entry "fetch_guess_main" "$@"
-
-   USAGE="fetch_guess_usage"
-   COMMAND="guess"
    fetch_common_main "$@"
 }
 
