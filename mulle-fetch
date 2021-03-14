@@ -31,7 +31,7 @@
 #
 [ "${TRACE}" = 'YES' -o "${MULLE_FETCH_TRACE}" = 'YES' ] && set -x && : "$0" "$@"
 
-MULLE_EXECUTABLE_VERSION="1.8.3"
+MULLE_EXECUTABLE_VERSION="2.0.0"
 
 #
 # This is the main user interface to mulle-fetch
@@ -336,39 +336,7 @@ main()
       ;;
 
       *)
-         local dstdir
-
-         if [ "$#" -eq 1 ]
-         then
-            case "$1" in
-               ""|-*)
-                  usage
-               ;;
-            esac
-
-            dstdir="$1"
-            shift
-         fi
-
-         [ "$#" -eq 0 ] || usage
-
-         # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
-
-         local scmtype
-
-         scmtype="`fetch_typeguess_main "${cmd}"`"
-         scmtype="${scmtype:-git}"
-
-         if [ -z "${dstdir}" ]
-         then
-            if ! dstdir="`fetch_guess_main -s "${scmtype}" "${cmd}"`"
-            then
-               fail "Failed to guess project name from url \"${cmd}\""
-            fi
-         fi
-
-         fetch_fetch_main -s "${scmtype}" "${cmd}" "${dstdir}"
+         usage "Unknown command ${cmd}"
       ;;
    esac
 }

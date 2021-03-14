@@ -156,11 +156,12 @@ svn_status_project()
 
 svn_search_local_project()
 {
-   log_entry "git_search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
+   log_entry "svn_search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
-   local url="$1"
+#   local unused="$1"
    local name="$2"
-   local branch="$3"
+   local url="$3"
+   local branch="$4"
 
    if r_source_search_local_path "${name}" "${branch}" ".svn" 'YES' "${url}"
    then

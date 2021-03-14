@@ -65,11 +65,12 @@ ${C_RESET_BOLD}${url}${C_INFO}"
       branch="${tag}"
    fi
 
-   if [ "${branch}" != "master" -a "${branch}" != "latest" -a ! -z "${branch}" ]
+   if [ "${branch}" != "${GIT_DEFAULT_BRANCH:-master}" -a "${branch}" != "latest" -a ! -z "${branch}" ]
    then
-      log_warning "The intended ${branchlabel} ${C_RESET_BOLD}${branch}${C_WARNING} \
-will be ignored, because the repository is symlinked.
-If you want to checkout this ${branchlabel} do:
+      log_warning "warning: The intended ${branchlabel} ${C_RESET_BOLD}${branch}${C_WARNING} \
+may have been ignored, because the repository is symlinked."
+      # this can be often more confusing so just issue onv erbosr
+      log_verbose "If you want to checkout this ${branchlabel} you may want to:
    ${C_RESET}(cd ${dstdir}; git checkout ${OPTION_TOOL_OPTIONS} \"${branch}\" )${C_WARNING}"
    fi
 }

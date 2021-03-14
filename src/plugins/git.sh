@@ -213,13 +213,13 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
             local branches
 
             branches="`exekutor git ls-remote --heads origin | sed -e 's|.*/||'`" || exit 1
-            if grep -s -q -x 'master' <<< "${branches}"
+            if grep -s -q -x "${GIT_DEFAULT_BRANCH:-master}" <<< "${branches}"
             then
-               branch="master"
+               branch="${GIT_DEFAULT_BRANCH:-master}"
             else
                branch="`head -1 <<< "${branches}"`"
-               branch="${branch:-master}"
-               log_info "Checking out branch \"${branch}\" for \"${url}\" as \"master\" doesn't exist"
+               branch="${branch:-${GIT_DEFAULT_BRANCH:-master}}"
+               log_info "Checking out branch \"${branch}\" for \"${url}\" as \"${GIT_DEFAULT_BRANCH:-master}\" doesn't exist"
             fi
          fi
 
@@ -559,7 +559,7 @@ git_search_local_project()
    log_entry "git_search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
 #   local unused="$1"
-#   local name="$2"
+   local name="$2"
    local url="$3"
    local branch="$4"
 #   local tag="$5"
@@ -567,15 +567,7 @@ git_search_local_project()
 #   local sourceoptions="$7"
 #   local dstdir="$8"
 
-   local reponame
-
-   # there should be a generic method for this though
-   [ -z "${url}" ] && internal_fail "empty url"
-
-   r_extensionless_basename "${url}" ".git"
-   reponame="${RVAL}"
-
-   if r_source_search_local_path "${reponame}" "${branch}" ".git" 'NO' "${url}"
+   if r_source_search_local_path "${name}" "${branch}" ".git" 'NO' "${url}"
    then
       echo ${RVAL}
       return 0
