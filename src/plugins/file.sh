@@ -46,7 +46,15 @@ _file_download()
 
    source_download "${url}" "${download}" "${sourceoptions}"
 
-   [ -f "${download}" ] || internal_fail "expected file \"${download}\" is mising"
+   if [ ! -f "${download}" ] 
+   then
+      if [ ! -e "${download}" ] 
+      then
+         internal_fail "expected file \"${download}\" is missing"
+      else
+         internal_fail "expected file \"${download}\" is not a file"
+      fi
+   fi
 }
 
 

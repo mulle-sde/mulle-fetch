@@ -121,6 +121,8 @@ fetch_plugin_load_if_present()
 
    local name="$1"
 
+   [ -z "${name}" ] && return 127 # don't warn though, it's boring
+
    local variable
 
    r_uppercase "${name}"
@@ -133,7 +135,7 @@ fetch_plugin_load_if_present()
 
    if [ ! -f "${MULLE_FETCH_LIBEXEC_DIR}/plugins/${name}.sh" ]
    then
-      log_verbose "\"${name}\" is not supported (no plugin found)"
+      log_verbose "Type \"${name}\" is not supported (no plugin found)"
       return 1
    fi
 
@@ -153,9 +155,11 @@ fetch_plugin_load()
 
    local name="$1"
 
+   [ -z "${name}" ] && fail "Empty SCM name"
+
    if ! fetch_plugin_load_if_present "${name}"
    then
-      fail "\"${name}\" is not supported (no plugin found)"
+      fail "Type \"${name}\" is not supported (no plugin found)"
    fi
 }
 

@@ -73,14 +73,32 @@ show_plugins()
 }
 
 
+fetch_convenient_fetch_usage()
+{
+   cat <<EOF >&2
+Usage:
+   ${MULLE_EXECUTABLE_NAME} cfetch <url>
+
+   You only specify the url to fetch. mulle-fetch will try to figure out from
+   the URL what the name of the destination directory should be and what
+   kind of repository it is downloading.
+
+EOF
+
+   show_plugins >&2
+   exit 1
+}
+
+
 fetch_fetch_usage()
 {
    cat <<EOF >&2
 Usage:
    ${MULLE_EXECUTABLE_NAME} fetch [options] <url> <directory>
 
-   Specify the url to fetch and the directory to fetch into.
-   By default the url is assumed to reference a git repository.
+   Specify the url to fetch and the directory to fetch into. By default the
+   url is assumed to reference a git repository. If this is not the case use
+   the '-s' option.
 
       ${MULLE_EXECUTABLE_NAME} fetch -b release https://is.gd/3a8oq2 /tmp/my-c11
 
@@ -459,7 +477,21 @@ fetch_common_main()
    if [ -z "${OPTION_URL}" ]
    then
       case "${COMMAND}" in
-         fetch|set-url)
+         fetch)
+            [ $# -lt 1 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
+            [ $# -gt 2 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
+
+            url="$1"
+            directory="$2"
+
+            if [ -z "${directory}" ]
+            then
+               r_extensionless_basename "${url}"
+               directory="${RVAL}"
+            fi
+         ;;
+
+         set-url)
             [ $# -lt 2 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
             [ $# -gt 2 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
 
@@ -590,6 +622,103 @@ fetch_upgrade_main()
    COMMAND="upgrade"
    fetch_common_main "$@"
 }
+
+
+fetch_convenient_craftinfo_fetch()
+{
+   log_entry "fetch_convenient_craftinfo_fetch" "$@"
+
+   local name="$1"
+
+   local rval=1
+
+   local urls
+   local url
+
+   urls="${CRAFTINFO_REPOS:-https://github.com/craftinfo}"
+
+   IFS='|'; set -f
+   for url in ${urls}
+   do
+      r_basename "${url}"
+      user="${RVAL}"
+
+      # TODO: use mulle-fetch/github code for proper json fetch
+      # use mulle-domain to figure out how to get repo list
+      if rexekutor "${CURL:-curl}" -fsSL "https://raw.githubusercontent.com/${user}/${name}-craftinfo/master/url"
+      then
+         rval=0
+         break
+      fi
+   done
+   IFS="${DEFAULT_IFS}"; set +f
+
+   return $rval
+}
+
+
+fetch_convenient_fetch_main()
+{
+   log_entry "fetch_convenient_fetch_main" "$@"
+
+   local url="$1"
+
+   USAGE="fetch_convenient_fetch_usage"
+   COMMAND="fetch"
+
+   [ $# -ne 1 ] && fetch_convenient_fetch_usage
+
+   case "${url}" in
+      craftinfo:*)
+         url="`fetch_convenient_craftinfo_fetch "${url#craftinfo:}" `"
+         if [ $? -ne 0 ]
+         then
+            fail "No craftinfo found for \"${url#craftinfo:}\""
+         fi
+      ;;
+   esac
+
+   local guessed_scheme
+   local guessed_domain
+   local guessed_repo
+   local guessed_user
+   local guessed_branch
+   local guessed_scm
+   local guessed_tag
+
+   local text
+
+   text="`rexekutor "${MULLE_DOMAIN:-mulle-domain}" \
+         ${MULLE_TECHNICAL_FLAGS} \
+         ${MULLE_DOMAIN_FLAGS} \
+       parse-url \
+         --prefix "guessed_" \
+         "${url}" `" || exit 1
+
+   eval "${text}"
+
+   if [ -z "${guessed_scm}" ]
+   then
+      fail "Couldn't figure out what kind of repository \"${url}\" is."
+   fi
+
+   local dstdir
+
+   case "${guessed_tag}" in
+      main|master)
+         dstdir="${guessed_repo}"
+      ;;
+
+      *)
+         r_concat "${guessed_repo}" "${guessed_tag}" "-"
+         dstdir="${RVAL}"
+      ;;
+   esac
+
+   fetch_common_main --scm "${guessed_scm}" "${url}" "${dstdir}"
+   printf "%s\n" "${dstdir}"
+}
+
 
 
 fetch_commands_initialize()

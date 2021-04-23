@@ -247,7 +247,7 @@ _tar_download()
       source_download "${url}" "${download}" "${sourceoptions}"
    fi
 
-   [ -f "${download}" ] || internal_fail "expected file \"${download}\" is mising"
+   [ -e "${download}" ] || internal_fail "expected file \"${download}\" is missing"
 
    if [ -z "${_cached_archive}" -a ! -z "${_cachable_path}" ]
    then

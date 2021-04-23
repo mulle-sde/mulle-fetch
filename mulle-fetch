@@ -50,7 +50,8 @@ print_commands()
 
    SHOWN_COMMANDS="\
    domain      : special commands to query remote tags
-   fetch       : fetch archive or repository default]
+   cfetch      : conveniently fetch and unpack URL by guessing a lot (default)
+   fetch       : explicitly fetch archive or repository into a directory
    update      : update repository (-> git fetch)
    upgrade     : upgrade repository (-> git pull)"
 
@@ -74,6 +75,7 @@ print_commands()
    fi
 }
 
+
 print_flags()
 {
    echo "   -f          : force operation"
@@ -92,7 +94,7 @@ Usage:
 
    Retrieve and unpack tar archive, git repositories, svn repositories.
    For complete control use the explicit fetch command. For quick and dirty
-   fetches use the shortcut without any command:
+   fetches use the cfetch command or the shortcut without any command:
 
    Example:
       mulle-fetch https://github.com/mulle-core/mulle-mmap/archive/0.0.1.zip
@@ -246,6 +248,23 @@ main()
 
          fetch_exists_main "$@"
       ;;
+
+      # cheap shortcut to avoid typing fetch
+      *:*)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+
+         fetch_convenient_fetch_main "${cmd}"
+      ;;
+
+
+      cfetch|convenient-fetch)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+
+         fetch_convenient_fetch_main "$@"
+      ;;
+
 
       fetch)
          # shellcheck source=src/mulle-fetch-commands.sh
