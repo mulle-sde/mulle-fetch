@@ -201,25 +201,44 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       GIT_QUIET=""
    fi
 
-   if : # [ -z "${tag}" ]
-   then
+#   if : # [ -z "${tag}" ]
+#   then
       mkdir_if_missing "${dstdir}" &&
       (
          exekutor cd "${dstdir}"
          exekutor git init ${GIT_QUIET} &&
          exekutor git remote add origin "${url}" || exit 1
+
          if [ -z "${branch}" ]
          then
             local branches
 
             branches="`exekutor git ls-remote --heads origin | sed -e 's|.*/||'`" || exit 1
-            if grep -s -q -x "${GIT_DEFAULT_BRANCH:-master}" <<< "${branches}"
+            if [ ! -z "${branches}" ]
             then
-               branch="${GIT_DEFAULT_BRANCH:-master}"
+               local name
+
+               IFS=":"
+               for name in ${GIT_DEFAULT_BRANCH}:master:main
+               do
+                  if [ ! -z "${name}" ]
+                  then
+                     if grep -s -q -x "${name}" <<< "${branches}"
+                     then
+                        branch="${name}"
+                        break
+                     fi
+                  fi
+               done
+               IFS="${DEFAULT_IFS}"
+
+               if [ -z "${branch}" ]
+               then
+                  branch="`head -1 <<< "${branches}"`"
+                  log_info "Guessed branch \"${branch}\" as default branch for \"${url}\""
+               fi
             else
-               branch="`head -1 <<< "${branches}"`"
-               branch="${branch:-${GIT_DEFAULT_BRANCH:-master}}"
-               log_info "Checking out branch \"${branch}\" for \"${url}\" as \"${GIT_DEFAULT_BRANCH:-master}\" doesn't exist"
+               branch="${GIT_DEFAULT_BRANCH:-master}"
             fi
          fi
 
@@ -228,11 +247,11 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
          exekutor git checkout ${GIT_QUIET} -b "${branch}" "origin/${branch}"
       ) >&2
       rval="$?"
-   else
-      exekutor git ${OPTION_TOOL_FLAGS} "clone" ${options} ${OPTION_TOOL_OPTIONS} \
-                                       -- "${url}" "${dstdir}"  >&2
-      rval="$?"
-   fi
+#   else
+#      exekutor git ${OPTION_TOOL_FLAGS} "clone" ${options} ${OPTION_TOOL_OPTIONS} \
+#                                       -- "${url}" "${dstdir}"  >&2
+#      rval="$?"
+#   fi
 
    if [ "$rval" -ne 0 ]
    then
