@@ -189,25 +189,29 @@ r_source_search_local()
    local extension="$3"
    local need_extension="$4"
 
-   local found
+   RVAL=
+   if source_validate_file_url "${url}"
+   then
+      log_fluff "Local \"${url}\" matches"
+      RVAL="${url#*:/}"
+      return 0
+   fi
+
+   local repo
+
+   repo="`rexekutor "${MULLE_DOMAIN:-mulle-domain}" nameguess "${url}" `"
 
    if [ "${MULLE_FLAG_LOG_SETTINGS}" = 'YES' ]
    then
       log_trace2 "directory      : ${directory}"
       log_trace2 "url            : ${url}"
+      log_trace2 "repo           : ${repo}"
       log_trace2 "branch         : ${branch}"
       log_trace2 "name           : ${name}"
       log_trace2 "extension      : ${extension}"
       log_trace2 "need_extension : ${need_extension}"
    fi
 
-   RVAL=
-   if source_validate_file_url "${url}"
-   then
-      log_fluff "Local \"${url}\" matches"
-      RVAL="${url:7}"
-      return 0
-   fi
 
    local inhibit
 
@@ -220,26 +224,26 @@ r_source_search_local()
 
    if [ ! -z "${branch}" ]
    then
-      if r_source_search_local_test_directory "${directory}" "${name}.${branch}${extension}"
+      if r_source_search_local_test_directory "${directory}" "${repo}.${branch}${extension}"
       then
          return 0
       fi
    fi
 
-   if r_source_search_local_test_directory "${directory}" "${name}${extension}"
+   if r_source_search_local_test_directory "${directory}" "${repo}${extension}"
    then
       return 0
    fi
 
    if [ "${need_extension}" != 'YES' ]
    then
-      if r_source_search_local_test_directory "${directory}" "${name}"
+      if r_source_search_local_test_directory "${directory}" "${repo}"
       then
          return 0
       fi
    fi
 
-   log_debug "Found nothing locally for \"${name}\""
+   log_debug "Found nothing locally for \"${url}\""
    return 1
 }
 
@@ -259,7 +263,7 @@ r_source_search_local_path()
    local realdir
    local curdir
 
-   [ -z "${name}" ] && internal_fail "empty name"
+   [ -z "${url}" ] && internal_fail "empty url"
 
    log_debug "MULLE_FETCH_SEARCH_PATH is \"${MULLE_FETCH_SEARCH_PATH}\""
 
