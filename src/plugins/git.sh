@@ -38,18 +38,15 @@ r_git_get_mirror_url()
    local url="$1"; shift
    local options="$2" ; shift
 
-   local name
-   local fork
-   local result
+   local _name
+   local _fork
 
-   result="`fork_and_name_from_url "${url}"`"
-   fork="`head -1 <<< "${result}" `"
-   name="`tail -1 <<< "${result}" `"
+   __fork_and_name_from_url "${url}"
 
    local mirrordir
 
-   mkdir_if_missing "${MULLE_FETCH_MIRROR_DIR}/${fork}"
-   mirrordir="${MULLE_FETCH_MIRROR_DIR}/${fork}/${name}" # try to keep it global
+   mkdir_if_missing "${MULLE_FETCH_MIRROR_DIR}/${_fork}"
+   mirrordir="${MULLE_FETCH_MIRROR_DIR}/${_fork}/${_name}" # try to keep it global
 
    local match
 
@@ -59,6 +56,7 @@ r_git_get_mirror_url()
       if ! exekutor git ${OPTION_TOOL_FLAGS} clone --mirror ${options} ${OPTION_TOOL_OPTIONS} -- "${url}" "${mirrordir}" >&2
       then
          log_error "git clone of \"${url}\" into \"${mirrordir}\" failed"
+         RVAL=
          return 1
       fi
    else
@@ -76,11 +74,11 @@ r_git_get_mirror_url()
       esac
    fi
 
-   printf "%s\n" "${mirrordir}"
+   RVAL="${mirrordir}"
 }
 
 
-__git_check_file_url()
+_r_git_check_file_url()
 {
    local url="$1"
 
@@ -102,10 +100,12 @@ __git_check_file_url()
       else
          log_error "Repository \"${url}\" does not exist ($PWD)"
       fi
+      RVAL=
       return 1
    fi
 
-   printf "%s\n" "${url}"
+   RVAL="${url}"
+   return 0
 }
 
 
@@ -129,7 +129,6 @@ __git_clone()
 
    [ -e "${dstdir}" ]   && internal_fail "${dstdir} already exists"
 
-   local options
    local dstdir
    local options
    local mirroroptions
@@ -151,6 +150,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       log_info "Cloning ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    fi
 
+   # MEMO: options are unused currently!!
    r_concat "${options}" "--single-branch"
    options="${RVAL}"
 
@@ -162,8 +162,8 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    #
    case "${url}" in
       file:*)
-         url="`__git_check_file_url "${url}"`"
-         [ $? -eq 0 ] || return 1
+         _r_git_check_file_url "${url}" || return 1
+         url="${RVAL}"
       ;;
 
       *:*)
@@ -172,14 +172,15 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
             originalurl="${url}"
             r_git_get_mirror_url "${url}" "${mirroroptions}" || return 1
             url="${RVAL}"
+
             r_concat "--origin mirror" "${options}"
             options="${RVAL}"
          fi
       ;;
 
       *)
-         url="`__git_check_file_url "${url}"`"
-         [ $? -eq 0 ] || return 1
+         _r_git_check_file_url "${url}" || return 1
+         url="${RVAL}"
       ;;
    esac
 
@@ -190,7 +191,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    fi
 
    #
-   # to actually pull a minimal set clone --single-branch is not good
+   # To actually pull a minimal set, clone --single-branch is not good,
    # because it fetches the tags, which in turn pull in most of the refs
    # regardless
    #
@@ -210,6 +211,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
          exekutor cd "${dstdir}"
          exekutor git init ${GIT_QUIET} &&
          exekutor git remote add origin "${url}" || exit 1
+
          if [ -z "${branch}" ]
          then
             local branches

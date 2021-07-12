@@ -315,31 +315,35 @@ append_dir_to_gitignore_if_needed()
    redirect_append_exekutor .gitignore printf "%s\n" "${line}" || fail "Couldn\'t append to .gitignore"
 }
 
-
-fork_and_name_from_url()
+#
+# local _fork
+# local _name
+#
+__fork_and_name_from_url()
 {
    local url="$1"
 
-   local name
    local hack
-   local fork
 
    hack="`LC_ALL=C sed -e 's|^[^:]*:|:|' <<< "${url}"`"
-   name="`basename -- "${hack}"`"
-   fork="`dirname -- "${hack}"`"
-   fork="`basename -- "${fork}"`"
+
+   r_basename "${hack}"
+   _name="${RVAL}"
 
    case "${hack}" in
       /*/*|:[^/]*/*|://*/*/*)
+         r_dirname "${hack}"
+         _fork="${RVAL}"
+         r_basename "${_fork}"
+         _fork="${RVAL}"
       ;;
 
       *)
-         fork="__other__"
+         _fork="__other__"
       ;;
    esac
 
-   printf "%s\n" "${fork}" | LC_ALL=C sed -e 's|^:||'
-   printf "%s\n" "${name}"
+   _fork="${_fork#:}"
 }
 
 #
