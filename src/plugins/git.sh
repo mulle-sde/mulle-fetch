@@ -222,7 +222,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
                local name
                local names
 
-               names="${GIT_DEFAULT_BRANCH}:master:main"
+               names="${GIT_DEFAULT_BRANCH}:master:main:trunk:release"
 
                #
                # expansion into separated names by IFS only happens from
