@@ -31,9 +31,9 @@
 MULLE_FETCH_PLUGIN_SCM_GIT_SH="included"
 
 
-_git_get_mirror_url()
+r_git_get_mirror_url()
 {
-   log_entry "_git_get_mirror_url" "$@"
+   log_entry "r_git_get_mirror_url" "$@"
 
    local url="$1"; shift
    local options="$2" ; shift
@@ -43,8 +43,8 @@ _git_get_mirror_url()
    local result
 
    result="`fork_and_name_from_url "${url}"`"
-   fork="`printf "%s\n" "${result}" | head -1`"
-   name="`printf "%s\n" "${result}" | tail -1`"
+   fork="`head -1 <<< "${result}" `"
+   name="`tail -1 <<< "${result}" `"
 
    local mirrordir
 
@@ -66,7 +66,7 @@ _git_get_mirror_url()
          YES|DEFAULT)
          (
             log_verbose "Refreshing git-mirror \"${mirrordir}\""
-            cd "${mirrordir}";
+            rexekutor cd "${mirrordir}";
             if ! exekutor git ${OPTION_TOOL_FLAGS} fetch >&2
             then
                log_warning "git fetch from \"${url}\" failed, using old state"
@@ -170,8 +170,10 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
          if [ ! -z "${MULLE_FETCH_MIRROR_DIR}" ]
          then
             originalurl="${url}"
-            url="`_git_get_mirror_url "${url}" "${mirroroptions}"`" || return 1
-            options="`concat "--origin mirror" "${options}"`"
+            r_git_get_mirror_url "${url}" "${mirroroptions}" || return 1
+            url="${RVAL}"
+            r_concat "--origin mirror" "${options}"
+            options="${RVAL}"
          fi
       ;;
 
@@ -208,7 +210,6 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
          exekutor cd "${dstdir}"
          exekutor git init ${GIT_QUIET} &&
          exekutor git remote add origin "${url}" || exit 1
-
          if [ -z "${branch}" ]
          then
             local branches
@@ -217,9 +218,16 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
             if [ ! -z "${branches}" ]
             then
                local name
+               local names
 
-               IFS=":"
-               for name in ${GIT_DEFAULT_BRANCH}:master:main
+               names="${GIT_DEFAULT_BRANCH}:master:main"
+
+               #
+               # expansion into separated names by IFS only happens from
+               # a variable ? bash WTF
+               #
+               IFS=":"; set -f
+               for name in ${names}
                do
                   if [ ! -z "${name}" ]
                   then
@@ -230,7 +238,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
                      fi
                   fi
                done
-               IFS="${DEFAULT_IFS}"
+               IFS="${DEFAULT_IFS}"; set +f
 
                if [ -z "${branch}" ]
                then
@@ -323,7 +331,7 @@ _get_fetch_remote()
       *:*)
          if [ ! -z "${MULLE_FETCH_MIRROR_DIR}" ]
          then
-            _git_get_mirror_url "${url}" > /dev/null || return 1
+            r_git_get_mirror_url "${url}" || return 1
             remote="mirror"
          fi
       ;;
