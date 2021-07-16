@@ -1,10 +1,6 @@
 # 2.0.0
 
-* mulle-fetch finally has a convenience command `cfetch` which is the default, where you just give the URL and everything works out (often)
-* support differently named master branch default with `GIT_DEFAULT_BRANCH`
-* split off guessing and filter commands into mulle-domain
-* all URL handling is done in mulle-domain, basic URL code moved to mulle-bashfunctions
-* as mulle-fetch only has one type of plugins now (scm) the subfolder is not necessary anymore
+* Various small improvements
 
 
 ### 1.8.3

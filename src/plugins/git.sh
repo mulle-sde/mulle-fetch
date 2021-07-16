@@ -109,6 +109,57 @@ _r_git_check_file_url()
 }
 
 
+r_git_get_default_branch()
+{
+   local remote="$1"
+
+   RVAL=
+
+   local branches
+
+   branches="`exekutor git ls-remote --heads "${remote}" | sed -e 's|.*/||'`" || return 1
+   if [ ! -z "${branches}" ]
+   then
+      local name
+      local names
+
+      names="${GIT_DEFAULT_BRANCH}:master:main:trunk:release"
+
+      #
+      # expansion into separated names by IFS only happens from
+      # a variable ? bash WTF
+      #
+      IFS=":"; set -f
+      for name in ${names}
+      do
+         if [ ! -z "${name}" ]
+         then
+            if grep -s -q -x "${name}" <<< "${branches}"
+            then
+               RVAL="${name}"
+               break
+            fi
+         fi
+      done
+      IFS="${DEFAULT_IFS}"; set +f
+
+      if [ ! -z "${RVAL}" ]
+      then
+         RVAL="`head -1 <<< "${branches}"`"
+         log_info "Guessed branch \"${RVAL}\" as default branch for remote \"${remote}\""
+      fi
+   fi
+
+   if [ -z "${RVAL}" ]
+   then
+      RVAL="${GIT_DEFAULT_BRANCH:-master}"
+      log_info "Could not find branches for remote \"${remote}\", fallback to \"${RVAL}\""
+   fi
+
+   return 0
+}
+
+
 __git_clone()
 {
    log_entry "__git_clone" "$@"
@@ -214,42 +265,8 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
 
          if [ -z "${branch}" ]
          then
-            local branches
-
-            branches="`exekutor git ls-remote --heads origin | sed -e 's|.*/||'`" || exit 1
-            if [ ! -z "${branches}" ]
-            then
-               local name
-               local names
-
-               names="${GIT_DEFAULT_BRANCH}:master:main:trunk:release"
-
-               #
-               # expansion into separated names by IFS only happens from
-               # a variable ? bash WTF
-               #
-               IFS=":"; set -f
-               for name in ${names}
-               do
-                  if [ ! -z "${name}" ]
-                  then
-                     if grep -s -q -x "${name}" <<< "${branches}"
-                     then
-                        branch="${name}"
-                        break
-                     fi
-                  fi
-               done
-               IFS="${DEFAULT_IFS}"; set +f
-
-               if [ -z "${branch}" ]
-               then
-                  branch="`head -1 <<< "${branches}"`"
-                  log_info "Guessed branch \"${branch}\" as default branch for \"${url}\""
-               fi
-            else
-               branch="${GIT_DEFAULT_BRANCH:-master}"
-            fi
+            r_git_get_default_branch "origin"
+            branch="${RVAL}"
          fi
 
          # TODO: could use --shallow here probably

@@ -7,8 +7,8 @@ DESC="🏃🏿 Download and unpack source repositories or archives"
 LANGUAGE="bash"                # c,cpp, objc, bash ...
 # NAME="${PROJECT}"        # formula filename without .rb extension
 
-DEPENDENCIES='${MULLE_NAT_TAP}mulle-bashfunctions'
+DEPENDENCIES='${MULLE_SDE_TAP}mulle-domain'
 
 #
-DEBIAN_DEPENDENCIES="mulle-bashfunctions (>= 3.1.0)"
+DEBIAN_DEPENDENCIES="mulle-domain"
 DEBIAN_RECOMMENDATIONS="tar, unzip"
