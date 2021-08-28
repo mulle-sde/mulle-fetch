@@ -106,6 +106,8 @@ can_symlink_it()
 
    local directory="$1"
 
+   directory="${directory#file://}"
+
    #
    # DEFAULT is no
    #
@@ -125,13 +127,13 @@ this platform"
 
    if [ ! -d "${directory}" ]
    then
-      log_verbose "Is not a directory, can not symlink"
+      log_verbose "\"${directory#${MULLE_USER_PWD}/}\" is not a directory, can not symlink"
       return 1
    fi
 
    if [ -e "${directory}/.mulle/etc/fetch/no-symlink" ]
    then
-      log_verbose "Symlinking disabled by \"${directory}/.mulle/etc/fetch/no-symlink\""
+      log_verbose "Symlinking disabled by \"${directory#${MULLE_USER_PWD}/}/.mulle/etc/fetch/no-symlink\""
       return 1
    fi
 
@@ -149,14 +151,49 @@ this platform"
        # if bare repo, we can only clone anyway
       if git_is_bare_repository "${directory}"
       then
-         log_verbose "${directory} is a bare git repository. So no symlinking"
+         log_verbose "${directory#${MULLE_USER_PWD}/} is a bare git repository. So no symlinking"
          return 1
       fi
    else
-      log_info "${directory} is not a git repository. Can only symlink."
+      log_info "${directory#${MULLE_USER_PWD}/} is not a git repository. Can only symlink."
    fi
 
   return 0
+}
+
+
+fetch_type_of_local_item()
+{
+   log_entry "fetch_type_of_local_item" "$@"
+
+   local url="$1"
+
+   if [ -d "${url}/.git" ]
+   then
+      RVAL="git"
+      return
+   fi
+
+   if [ -d "${url}/.svn" ]
+   then
+      RVAL="svn"
+      return
+   fi
+
+   case "${url}" in
+      *.tar|*.tgz|*.tar.gz)
+         RVAL="tar"
+         return
+      ;;
+
+      *.zip)
+         RVAL="zip"
+         return
+      ;;
+   esac
+
+   RVAL=
+   return 1
 }
 
 
@@ -175,7 +212,8 @@ fetch_get_local_item()
 
    if [ -z "${MULLE_FETCH_SEARCH_PATH}" ]
    then
-      log_fluff "Not searching local filesystem because --local-search-path not specified"
+      log_fluff "Not searching local filesystem because --local-search-path is \
+not specified"
       return
    fi
 
@@ -188,7 +226,8 @@ fetch_get_local_item()
    then
       exekutor "${operation}" "$@"
    else
-      log_fluff "Not searching locals because source \"${sourcetype}\" does not support \"${operation}\""
+      log_fluff "Not searching locals because source \"${sourcetype}\" does \
+not support \"${operation}\""
    fi
 }
 
@@ -211,6 +250,7 @@ _fetch_operation()
 
    local found
    local rval
+   local localtype
 
    case "${url}" in
       #
@@ -223,7 +263,7 @@ _fetch_operation()
          fi
       ;;
 
-      '/'*)
+      '/'*|file:*)
          if can_symlink_it "${url}"
          then
             sourcetype="symlink"
@@ -232,19 +272,38 @@ _fetch_operation()
 
       *)
          found="`fetch_get_local_item "$@"`"
-
          if [ ! -z "${found}" ]
          then
-            log_fluff "Using local item \"${found}\""
-            url="${found}"
+            fetch_type_of_local_item "${found}"
+            localtype="${RVAL}"
 
-            case "${sourcetype}" in
-               git|svn|tar|zip)
+            case "${localtype}" in
+               "")
+                  if can_symlink_it "${found}"
+                  then
+                     url="${found}"
+                     sourcetype="symlink"
+                  fi
+               ;;
+
+               git|svn)
+                  log_fluff "Found local ${localtype} item \"${found}\""
+                  url="${found}"
+                  sourcetype="${localtype}"
                   if can_symlink_it "${url}"
                   then
                      sourcetype="symlink"
                      log_fluff "Using symlink to local item \"${found}\""
-                     url="`symlink_relpath "${url}" "${ROOT_DIR}"`"
+                     r_symlink_relpath "${found}" "${ROOT_DIR}"
+                     url="${RVAL}"
+                  fi
+               ;;
+
+               tar|zip)
+                  log_fluff "Found local ${localtype} item \"${found}\""
+                  if [ "${sourcetype}" = "${localtype}" ]
+                  then
+                     url="${found}"
                   fi
                ;;
             esac
@@ -359,18 +418,18 @@ _fetch_operation_list()
    local operation
    local funcname
 
-   set -o noglob
+   shell_disable_glob
    for opname in ${operations}
    do
-      set +o noglob
+      shell_enable_glob
       funcname="${opname//-/_}"
       operation="${sourcetype}_${funcname}_project"
-      if [ "`type -t "${operation}"`" = "function" ]
+      if shell_is_function "${operation}"
       then
          printf "%s\n" "${opname}"
       fi
    done
-   set +o noglob
+   shell_enable_glob
 }
 
 

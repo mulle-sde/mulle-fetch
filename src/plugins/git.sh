@@ -98,7 +98,7 @@ _r_git_check_file_url()
             log_warning "Hint: You may want to symlink it."
          fi
       else
-         log_error "Repository \"${url}\" does not exist ($PWD)"
+         log_error "Repository \"${url}\" does not exist (${PWD#${MULLE_USER_PWD}/})"
       fi
       RVAL=
       return 1
@@ -129,7 +129,7 @@ r_git_get_default_branch()
       # expansion into separated names by IFS only happens from
       # a variable ? bash WTF
       #
-      IFS=":"; set -f
+      IFS=":"; shell_disable_glob
       for name in ${names}
       do
          if [ ! -z "${name}" ]
@@ -141,9 +141,9 @@ r_git_get_default_branch()
             fi
          fi
       done
-      IFS="${DEFAULT_IFS}"; set +f
+      IFS="${DEFAULT_IFS}"; shell_enable_glob
 
-      if [ ! -z "${RVAL}" ]
+      if [ -z "${RVAL}" ]
       then
          RVAL="`head -1 <<< "${branches}"`"
          log_info "Guessed branch \"${RVAL}\" as default branch for remote \"${remote}\""
@@ -613,7 +613,7 @@ git_search_local_project()
 #   local sourceoptions="$7"
 #   local dstdir="$8"
 
-   if r_source_search_local_path "${name}" "${branch}" ".git" 'NO' "${url}"
+   if r_source_search_local_in_searchpath "${name}" "${branch}" ".git" 'NO' "${url}"
    then
       echo ${RVAL}
       return 0

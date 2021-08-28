@@ -224,7 +224,6 @@ git_branch_contains_tag()
       rexekutor cd "$1" &&
       rexekutor "${GIT}" branch --contains "$3"| cut -c3- | fgrep -s -x -e "$2" > /dev/null
    )
-
 }
 
 
@@ -358,12 +357,21 @@ git_is_repository()
 }
 
 
-# https://stackoverflow.com/questions/9610131/how-to-check-the-validity-of-a-remote-git-repository-url
 git_is_valid_remote_url()
 {
    [ -z "$1" ] && internal_fail "empty parameter"
 
-   GIT_ASKPASS=/bin/true git ls-remote "$1" > /dev/null 2>&1
+   #
+   # memo -q --exit-code are basically useless, stuff still gets printed
+   # e.g. GIT_ASKPASS=true git ls-remote -q --exit-code 'https://github.com/craftinfo/zlib-crafthelp.git'
+   #
+   if [ "${MULLE_FLAG_LOG_VERBOSE}" = 'YES' ]
+   then
+      GIT_ASKPASS=true rexekutor git ls-remote -q --exit-code "$1" > /dev/null
+      return $?
+   fi
+
+   GIT_ASKPASS=true rexekutor git ls-remote -q --exit-code "$1" > /dev/null 2>&1
 }
 
 

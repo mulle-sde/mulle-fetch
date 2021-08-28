@@ -57,7 +57,6 @@ curl_validate_shasum256()
 
    local checksum
 
-   set -o pipefail
    checksum="`${shasum} -a 256 "${filename}" | awk '{ print $1 }'`" || exit 1
    if [ "${expected}" != "${checksum}" ]
    then

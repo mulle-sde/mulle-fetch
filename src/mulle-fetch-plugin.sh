@@ -60,8 +60,8 @@ fetch_plugin_all_names()
    [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
    [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
 
-   shopt -s nullglob
-   IFS=$'\n'; set +f #sic
+   shell_enable_nullglob
+   IFS=$'\n'; shell_enable_glob #sic
    for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}"/plugins/*.sh`
    do
       IFS="${DEFAULT_IFS}"
@@ -84,7 +84,7 @@ fetch_plugin_all_names()
 
       printf "%s\n" "${name}"
    done
-   shopt -u nullglob
+   shell_disable_nullglob
 
    IFS="${DEFAULT_IFS}"
 }
@@ -101,7 +101,13 @@ fetch_plugin_load_if_needed()
    r_uppercase "${name}"
    variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
 
-   if [ "${!variable}" = 'YES' ]
+   if [ ! -z "${ZSH_VERSION}" ]
+   then
+      value="${(P)variable}"
+   else
+      value="${!variable}"
+   fi
+   if [ "${value}" = 'YES' ]
    then
       return 0
    fi
@@ -127,8 +133,13 @@ fetch_plugin_load_if_present()
 
    r_uppercase "${name}"
    variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
-
-   if [ "${!variable}" = 'YES' ]
+   if [ ! -z "${ZSH_VERSION}" ]
+   then
+      value="${(P)variable}"
+   else
+      value="${!variable}"
+   fi
+   if [ "${value}" = 'YES' ]
    then
       return 0
    fi
@@ -199,15 +210,15 @@ fetch_plugin_load_all()
 
    names="`fetch_plugin_all_names`"
 
-   IFS=$'\n'; set -f
+   IFS=$'\n'; shell_disable_glob
    for name in ${names}
    do
-      IFS="${DEFAULT_IFS}"; set +f
+      IFS="${DEFAULT_IFS}"; shell_enable_glob
 
       fetch_plugin_load_if_present "${name}"
    done
 
-   IFS="${DEFAULT_IFS}"; set +f
+   IFS="${DEFAULT_IFS}"; shell_enable_glob
 }
 
 

@@ -48,6 +48,7 @@ symlink_fetch_project()
 
    source_prepare_filesystem_for_fetch "${dstdir}"
 
+   url="${url#file://}"
    if ! exekutor create_symlink "${url}" "${dstdir}" "${OPTION_ABSOLUTE_SYMLINK:-NO}"
    then
       return 1
@@ -112,7 +113,7 @@ symlink_search_local_project()
       ;;
    esac
 
-   if r_source_search_local_path "${name}" "${branch}" "" 'YES' "${url}"
+   if r_source_search_local_in_searchpath "${name}" "${branch}" "" 'YES' "${url}"
    then
       printf "%s\n" "${RVAL}"
    fi

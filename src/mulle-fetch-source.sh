@@ -35,14 +35,16 @@ MULLE_FETCH_SOURCE_SH="included"
 # prints each key=value on a line so that its greppable
 # TODO: Doesn't do escaping yet
 #
-parse_sourceoptions()
+r_parse_sourceoptions()
 {
-   log_entry "parse_sourceoptions" "$@"
+   log_entry "r_parse_sourceoptions" "$@"
 
    local sourceoptions="$1"
 
    local key
    local value
+
+   local lines
 
    while [ ! -z "${sourceoptions}" ]
    do
@@ -71,8 +73,11 @@ parse_sourceoptions()
          sourceoptions="${sourceoptions#${value},}"
       fi
 
-      printf "%s\n" "${key}=${value}"
+      r_add_line "${lines}" "${key}=${value}"
+      lines="${RVAL}"
    done
+
+   RVAL="${lines}"
 }
 
 
@@ -98,8 +103,11 @@ r_get_source_function()
    local funcname
 
    funcname="${opname//-/_}"
+
+   fetch_plugin_load "${sourcetype}"
+
    operation="${sourcetype}_${funcname}_project"
-   if [ "`type -t "${operation}"`" != "function" ]
+   if ! shell_is_function "${operation}"
    then
       log_verbose "Operation \"${opname}\" is not provided by \"${sourcetype}\" \
 (function \"$operation\" is missing)"
@@ -143,7 +151,7 @@ source_check_file_url()
 
    if ! source_validate_file_url "${url}"
    then
-      log_error "\"${url}\" does not exist ($PWD)"
+      log_error "\"${url}\" does not exist (${PWD#${MULLE_USER_PWD}/})"
       return 1
    fi
 
@@ -151,9 +159,9 @@ source_check_file_url()
 }
 
 
-r_source_search_local_test_directory()
+r_source_search_local_exists_directory()
 {
-   log_entry "r_source_search_local_test_directory" "$@"
+   log_entry "r_source_search_local_exists_directory" "$@"
 
    local directory="$1"
    local name="$2"
@@ -212,7 +220,6 @@ r_source_search_local()
       log_trace2 "need_extension : ${need_extension}"
    fi
 
-
    local inhibit
 
    inhibit="${directory}/.mulle/etc/fetch/no-search"
@@ -224,20 +231,22 @@ r_source_search_local()
 
    if [ ! -z "${branch}" ]
    then
-      if r_source_search_local_test_directory "${directory}" "${repo}.${branch}${extension}"
+      if r_source_search_local_exists_directory "${directory}" \
+                                                "${repo}.${branch}${extension}"
       then
          return 0
       fi
    fi
 
-   if r_source_search_local_test_directory "${directory}" "${repo}${extension}"
+   if r_source_search_local_exists_directory "${directory}" \
+                                             "${repo}${extension}"
    then
       return 0
    fi
 
    if [ "${need_extension}" != 'YES' ]
    then
-      if r_source_search_local_test_directory "${directory}" "${repo}"
+      if r_source_search_local_exists_directory "${directory}" "${repo}"
       then
          return 0
       fi
@@ -248,9 +257,9 @@ r_source_search_local()
 }
 
 
-r_source_search_local_path()
+r_source_search_local_in_searchpath()
 {
-   log_entry "r_source_search_local_path [${MULLE_FETCH_SEARCH_PATH}]" "$@"
+   log_entry "r_source_search_local_in_searchpath [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
    local name="$1"
    local branch="$2"
@@ -267,11 +276,10 @@ r_source_search_local_path()
 
    log_debug "MULLE_FETCH_SEARCH_PATH is \"${MULLE_FETCH_SEARCH_PATH}\""
 
-   curdir="`pwd -P`"
-   set -f ; IFS=':'
+   shell_disable_glob ; IFS=':'
    for directory in ${MULLE_FETCH_SEARCH_PATH}
    do
-      set +f; IFS="${DEFAULT_IFS}"
+      shell_enable_glob; IFS="${DEFAULT_IFS}"
 
       if [ -z "${directory}" ]
       then
@@ -284,13 +292,15 @@ r_source_search_local_path()
          continue
       fi
 
-      realdir="`realpath "${directory}"`"
+      r_realpath "${directory}"
+      realdir="${RVAL}"
+      curdir="${curdir:-`pwd -P`}"
+
       if [ "${realdir}" = "${curdir}" ]
       then
          fail "Search path mistakenly contains \"${directory}\", which is \
 the current directory"
       fi
-
 
       if r_source_search_local "${realdir}" "${url}" "$@"
       then
@@ -298,7 +308,7 @@ the current directory"
       fi
    done
 
-   set +f; IFS="${DEFAULT_IFS}"
+   shell_enable_glob; IFS="${DEFAULT_IFS}"
 
    return 1
 }
@@ -332,7 +342,8 @@ source_operation()
 
    local parsed_sourceoptions
 
-   parsed_sourceoptions="`parse_sourceoptions "${sourceoptions}" `" || exit 1
+   r_parse_sourceoptions "${sourceoptions}"
+   parsed_sourceoptions="${RVAL}"
 
    "${operation}" "${unused}" \
                   "${name}" \
@@ -438,7 +449,6 @@ source_download()
       fail "Can't download archive from \"${url}\""
    fi
 }
-
 
 
 source_url_exists()

@@ -232,10 +232,10 @@ archive_search_local()
    local found
    local directory
 
-   set -f ; IFS=':'
+   shell_disable_glob ; IFS=':'
    for directory in ${MULLE_FETCH_SEARCH_PATH}
    do
-      set +f; IFS="${DEFAULT_IFS}"
+      shell_enable_glob; IFS="${DEFAULT_IFS}"
 
       if [ -z "${directory}" ]
       then
@@ -253,7 +253,7 @@ archive_search_local()
       fi
    done
 
-   set +f; IFS="${DEFAULT_IFS}"
+   shell_enable_glob; IFS="${DEFAULT_IFS}"
 
    return 1
 }
@@ -270,7 +270,8 @@ archive_guess_name_from_url()
    local archivename
    local tmp
 
-   urlpath="`url_get_path "${url}"`"
+   r_url_get_path "${url}"
+   urlpath="${RVAL}"
 
    case "${urlpath}" in
       */tarball/*|*/zipball/*)
@@ -304,7 +305,8 @@ archive_guess_name_from_url()
    esac
 
    # remove .tar (or .zip et friends)
-   archivename="`extensionless_basename "${urlpath}"`"
+   r_extensionless_basename "${urlpath}"
+   archivename="${RVAL}"
    case "${archivename}" in
       *${ext})
          r_extensionless_basename "${archivename}"

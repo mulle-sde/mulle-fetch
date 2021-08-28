@@ -306,7 +306,8 @@ ${C_RESET_BOLD}${url}${C_INFO}."
       ;;
    esac
 
-   tmpdir="`make_tmp_directory`" || exit 1
+   r_make_tmp_directory || exit 1
+   tmpdir="${RVAL}"
    (
       exekutor cd "${tmpdir}" || return 1
 
@@ -334,7 +335,7 @@ tar_search_local_project()
 #   local dstdir="$8"
 
    #  look for a git repo of same name (or a local project)
-   if r_source_search_local_path "${name}" "${branch}" ".git" 'NO' "${url}"
+   if r_source_search_local_in_searchpath "${name}" "${branch}" ".git" 'NO' "${url}"
    then
       printf "%s\n" "${RVAL}"
       return

@@ -637,7 +637,7 @@ fetch_convenient_craftinfo_fetch()
 
    urls="${CRAFTINFO_REPOS:-https://github.com/craftinfo}"
 
-   IFS='|'; set -f
+   IFS='|'; shell_disable_glob
    for url in ${urls}
    do
       r_basename "${url}"
@@ -651,7 +651,7 @@ fetch_convenient_craftinfo_fetch()
          break
       fi
    done
-   IFS="${DEFAULT_IFS}"; set +f
+   IFS="${DEFAULT_IFS}"; shell_enable_glob
 
    return $rval
 }
@@ -705,7 +705,7 @@ fetch_convenient_fetch_main()
    local dstdir
 
    case "${guessed_tag}" in
-      main|master)
+      ${GIT_DEFAULT_BRANCH:-master}|master|main|trunk|release)
          dstdir="${guessed_repo}"
       ;;
 

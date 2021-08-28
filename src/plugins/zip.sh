@@ -56,9 +56,11 @@ ${C_RESET_BOLD}${url}${C_INFO}."
    local archivename
 
    download="`basename --  "${url}"`"
-   archivename="`extensionless_basename "${download}"`"
+   r_extensionless_basename "${download}"
+   archivename="${RVAL}"
 
-   tmpdir="`make_tmp_directory`" || exit 1
+   r_make_tmp_directory || exit 1
+   tmpdir="${RVAL}"
    (
       exekutor cd "${tmpdir}" || return 1
 

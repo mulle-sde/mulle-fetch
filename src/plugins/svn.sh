@@ -163,7 +163,7 @@ svn_search_local_project()
    local url="$3"
    local branch="$4"
 
-   if r_source_search_local_path "${name}" "${branch}" ".svn" 'YES' "${url}"
+   if r_source_search_local_in_searchpath "${name}" "${branch}" ".svn" 'YES' "${url}"
    then
       printf "%s\n" "${RVAL}"
    fi
