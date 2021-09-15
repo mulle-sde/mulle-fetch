@@ -207,7 +207,11 @@ r_source_search_local()
 
    local repo
 
-   repo="`rexekutor "${MULLE_DOMAIN:-mulle-domain}" nameguess "${url}" `"
+   repo="`rexekutor "${MULLE_DOMAIN:-mulle-domain}" nameguess "${url}" `" 
+   if [ -z "${repo}" ]
+   then
+      return 1
+   fi
 
    if [ "${MULLE_FLAG_LOG_SETTINGS}" = 'YES' ]
    then
@@ -288,7 +292,7 @@ r_source_search_local_in_searchpath()
 
       if [ ! -d "${directory}" ]
       then
-         log_debug "Local path \"${directory}\" does not exist, continuing"
+         log_debug "Local path \"${directory}\" does not exist: skipping"
          continue
       fi
 
@@ -298,8 +302,9 @@ r_source_search_local_in_searchpath()
 
       if [ "${realdir}" = "${curdir}" ]
       then
-         fail "Search path mistakenly contains \"${directory}\", which is \
-the current directory"
+         log_warning "Search path mistakenly contains \"${directory}\", which is \
+the current directory: skipping"
+         continue
       fi
 
       if r_source_search_local "${realdir}" "${url}" "$@"
