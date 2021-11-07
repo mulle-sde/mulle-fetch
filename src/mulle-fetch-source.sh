@@ -437,7 +437,7 @@ source_download()
          case "${MULLE_UNAME}" in
             mingw)
                log_fluff "Copying local archive \"${download}\" to \"${url}\""
-               exekutor cp -rA "${url}" "${download}" || exit 1
+               exekutor cp -Ra "${url}" "${download}" || exit 1
             ;;
 
             *)
