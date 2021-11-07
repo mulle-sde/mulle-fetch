@@ -112,6 +112,7 @@ Options:
    --absolute-symlinks    : create absolute symlinks instead of relative ones
    --cache-dir <dir>      : directory to cache archives
    --mirror-dir <dir>     : directory to mirror repositories (git)
+   --recursive            : fetch git recursively (does nothing for other scms)
    --refresh              : refresh mirrored repositories and cached archives
    --symlink-returns-4    : if a repository was symlinked return with code 4
    --symlink              : allow symlinks to be create
@@ -293,6 +294,10 @@ fetch_common_main()
       case "$1" in
          -h*|--help|help)
             ${USAGE}
+         ;;
+
+         --recursive)
+            GIT_FETCH_FLAGS=--recursive
          ;;
 
          --refresh)

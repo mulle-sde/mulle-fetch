@@ -163,7 +163,7 @@ git_set_default_remote()
 
    (
       rexekutor cd "${repository}" &&
-      exekutor "${GIT}" fetch "${remote}" &&
+      exekutor "${GIT}" fetch ${GIT_FETCH_FLAGS} "${remote}" &&
       exekutor "${GIT}" branch --set-upstream-to "${remote}/${branch}"
    )
 }
@@ -253,23 +253,8 @@ append_dir_to_gitignore_if_needed()
    esac
 
    # strip slashes
-   case "${directory}" in
-      /*/)
-         directory="`printf "%s\n" "$1" | sed 's/.$//' | sed 's/^.//'`"
-      ;;
-
-      /*)
-         directory="`printf "%s\n" "$1" | sed 's/^.//'`"
-      ;;
-
-      */)
-         directory="`echo "/$1" | sed 's/.$//'`"
-      ;;
-
-      *)
-         directory="$1"
-      ;;
-   esac
+   directory="${directory##/}"
+   directory="${directory%%/}"
 
    #
    # prepend \n because it is safer, in case .gitignore has no trailing
@@ -282,8 +267,7 @@ append_dir_to_gitignore_if_needed()
       local pattern2
       local pattern3
 
-
-      # variations with leadinf and trailing slashes
+      # variations with leading and trailing slashes
       pattern0="${directory}"
       pattern1="${pattern0}/"
       pattern2="/${pattern0}"
