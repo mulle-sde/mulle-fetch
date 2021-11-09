@@ -38,21 +38,43 @@ MULLE_FETCH_PLUGIN_SCM_SYMLINK_SH="included"
 symlink_fetch_project()
 {
 #   local unused="$1"
-   local name="$2"         # name of the clone
-   local url="$3"           # URL of the clone
-   local branch="$4"        # branch of the clone
-   local tag="$5"           # tag to checkout of the clone
-#   local sourcetype="$6"          # source to use for this clone
-#   local sourceoptions="$7"   # options to use on source
-   local dstdir="$8"      # dstdir of this clone (absolute or relative to $PWD)
+   local name="$2"           # name of the clone
+   local url="$3"            # URL of the clone
+   local branch="$4"         # branch of the clone
+   local tag="$5"            # tag to checkout of the clone
+#   local sourcetype="$6"    # source to use for this clone
+#   local sourceoptions="$7" # options to use on source
+   local dstdir="$8"         # dstdir of this clone (absolute or relative to $PWD)
 
    source_prepare_filesystem_for_fetch "${dstdir}"
 
    url="${url#file://}"
-   if ! exekutor create_symlink "${url}" "${dstdir}" "${OPTION_ABSOLUTE_SYMLINK:-NO}"
-   then
-      return 1
-   fi
+
+   case "${MULLE_UNAME}" in 
+      mingw)
+         mkdir_if_missing "${dstdir}"
+
+         # mingw can't symlink but we want the local repository and not the remote
+         # so... copy it. Tricky though, if we are a subdirectory of url (like test)
+         if ! (cd "${url}" ; exekutor tar cf - \
+                                          --exclude='./stash' \
+                                          --exclude='./kitchen' \
+                                          --exclude='./[Bb]uild' \
+                                          --exclude='./addiction' \
+                                          --exclude='./test*' \
+                                          --exclude='./mulle/var' \
+                                          . ) | ( cd "${dstdir}" ; tar xf - )
+         then
+            return 1
+         fi
+      ;;
+      *)
+         if ! exekutor create_symlink "${url}" "${dstdir}" "${OPTION_ABSOLUTE_SYMLINK:-NO}"
+         then
+            return 1
+         fi
+      ;;
+   esac
 
    log_info "Symlinked ${C_MAGENTA}${C_BOLD}${name}${C_INFO} to \
 ${C_RESET_BOLD}${url}${C_INFO}"
