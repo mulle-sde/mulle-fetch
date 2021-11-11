@@ -212,8 +212,8 @@ fetch_get_local_item()
 
    if [ -z "${MULLE_FETCH_SEARCH_PATH}" ]
    then
-      log_fluff "Not searching local filesystem because --local-search-path is \
-not specified"
+      log_fluff "Not searching local filesystem because MULLE_FETCH_SEARCH_PATH \
+is empty (use --local-search-path to set)"
       return
    fi
 
