@@ -189,8 +189,9 @@ r_source_search_local()
 {
    log_entry "r_source_search_local" "$@"
 
-   local directory="$1"; shift
-   local url="$1"; shift
+   local directory="$1"
+   local repo="$2"
+   shift 2
 
    local name="$1"
    local branch="$2"
@@ -198,32 +199,15 @@ r_source_search_local()
    local need_extension="$4"
 
    RVAL=
-   if source_validate_file_url "${url}"
-   then
-      log_fluff "Local \"${url}\" matches"
-      RVAL="${url#*:/}"
-      return 0
-   fi
 
-   local repo
-
-   repo="`rexekutor "${MULLE_DOMAIN:-mulle-domain}" nameguess "${url}" `" 
-   if [ -z "${repo}" ]
-   then
-      return 1
-   fi
 
    if [ "${MULLE_FLAG_LOG_SETTINGS}" = 'YES' ]
    then
       log_trace2 "directory      : ${directory}"
-      log_trace2 "url            : ${url}"
       log_trace2 "repo           : ${repo}"
-      log_trace2 "branch         : ${branch}"
-      log_trace2 "name           : ${name}"
-      log_trace2 "extension      : ${extension}"
-      log_trace2 "need_extension : ${need_extension}"
    fi
 
+   log_verbose "Looking for local repo \"${repo}\""
    local inhibit
 
    inhibit="${directory}/.mulle/etc/fetch/no-search"
@@ -242,10 +226,15 @@ r_source_search_local()
       fi
    fi
 
-   if r_source_search_local_exists_directory "${directory}" \
-                                             "${repo}${extension}"
+   # this search part can often be avoided if repo is foo.git and extension
+   # is also .git
+   if [ "${repo%.*}${extension}" != "${repo}" ]
    then
-      return 0
+      if r_source_search_local_exists_directory "${directory}" \
+                                                "${repo}${extension}"
+      then
+         return 0
+      fi
    fi
 
    if [ "${need_extension}" != 'YES' ]
@@ -256,7 +245,6 @@ r_source_search_local()
       fi
    fi
 
-   log_debug "Found nothing locally for \"${url}\""
    return 1
 }
 
@@ -276,9 +264,26 @@ r_source_search_local_in_searchpath()
    local realdir
    local curdir
 
+   curdir="${curdir:-`pwd -P`}"
+
    [ -z "${url}" ] && internal_fail "empty url"
 
    log_debug "MULLE_FETCH_SEARCH_PATH is \"${MULLE_FETCH_SEARCH_PATH}\""
+
+   if source_validate_file_url "${url}"
+   then
+      log_fluff "Local \"${url}\" matches"
+      RVAL="${url#*:/}"
+      return 0
+   fi
+
+   local repo
+
+   repo="`rexekutor "${MULLE_DOMAIN:-mulle-domain}" nameguess "${url}" `"
+   if [ -z "${repo}" ]
+   then
+      return 1
+   fi
 
    shell_disable_glob ; IFS=':'
    for directory in ${MULLE_FETCH_SEARCH_PATH}
@@ -298,7 +303,6 @@ r_source_search_local_in_searchpath()
 
       r_realpath "${directory}"
       realdir="${RVAL}"
-      curdir="${curdir:-`pwd -P`}"
 
       if [ "${realdir}" = "${curdir}" ]
       then
@@ -307,7 +311,7 @@ the current directory: skipping"
          continue
       fi
 
-      if r_source_search_local "${realdir}" "${url}" "$@"
+      if r_source_search_local "${realdir}" "${repo}" "$@"
       then
          return 0
       fi

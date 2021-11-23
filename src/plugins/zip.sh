@@ -99,7 +99,7 @@ zip_guess_project()
 
    local url="$3"             # URL of the clone
 
-   archive_guess_name_from_url "${url}" ".zip"
+   rexekutor "${MULLE_DOMAIN:-mulle-domain}" nameguess "${url}"
 }
 
 

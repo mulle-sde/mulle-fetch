@@ -95,7 +95,9 @@ _r_git_check_file_url()
          log_error "\"${url}\" is not a git repository ($PWD)."
          if [ -d "${url}" ]
          then
-            log_warning "Hint: You may want to symlink it."
+            log_info "Hint: You may want to symlink it.
+If you are fetching by hand, use \`fetch --symlink\`. If mulle-sde is
+involved, check that environment \`MULLE_SOURCETREE_SYMLINK\` is set to YES"
          fi
       else
          log_error "Repository \"${url}\" does not exist (${PWD#${MULLE_USER_PWD}/})"
@@ -385,6 +387,7 @@ ${C_RESET_BOLD}${url}${C_INFO}."
    if [ ! -z "${tag}" ]
    then
       git_checkout_project "$@"
+      return $?
    fi
 }
 

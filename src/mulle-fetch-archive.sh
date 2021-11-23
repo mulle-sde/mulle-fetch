@@ -226,6 +226,7 @@ archive_search_local()
 #   local branch="$3"
 
    local filename
+
    r_basename "${url}"
    filename="${RVAL}"
 
@@ -244,6 +245,7 @@ archive_search_local()
 
       r_archive_search_local "${directory}" "${name}" "${filename}" || exit 1
       found="${RVAL}"
+
       if [ ! -z "${found}" ]
       then
          r_absolutepath "${found}"
@@ -257,68 +259,5 @@ archive_search_local()
 
    return 1
 }
-
-
-archive_guess_name_from_url()
-{
-   log_entry "archive_guess_name_from_url" "$@"
-
-   local url="$1"             # URL of the clone
-   local ext="$2"
-
-   local urlpath
-   local archivename
-   local tmp
-
-   r_url_get_path "${url}"
-   urlpath="${RVAL}"
-
-   case "${urlpath}" in
-      */tarball/*|*/zipball/*)
-         r_dirname "${urlpath}"
-         r_dirname "${RVAL}"
-         r_basename "${RVAL}"
-         printf "%s\n" "${RVAL}"
-         return
-      ;;
-   esac
-
-   #
-   # remove version info or such
-   # these "hacks" should move into some kind of plugin scheme
-   #
-   case "${url}" in
-      *github.com/*)
-         r_dirname "${urlpath}"
-         r_dirname "${RVAL}"
-         r_basename "${RVAL}"
-         printf "%s\n" "${RVAL}"
-         return
-      ;;
-
-      *gitlab.com/*)
-         tmp="${urlpath#*gitlab.com/}" # remove scheme and host
-         tmp="${tmp#*/}" # remove org or user
-         printf "%s\n" "${tmp%%/*}" # grab that entry
-         return
-      ;;
-   esac
-
-   # remove .tar (or .zip et friends)
-   r_extensionless_basename "${urlpath}"
-   archivename="${RVAL}"
-   case "${archivename}" in
-      *${ext})
-         r_extensionless_basename "${archivename}"
-         archivename="${RVAL}"
-      ;;
-   esac
-
-   local name
-
-   # remove version info if present
-   sed 's/[-]*[0-9]*\.[0-9]*\.[0-9]*[-]*//' <<< "${archivename}"
-}
-
 
 :

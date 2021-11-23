@@ -93,6 +93,7 @@ git_has_remote()
 
    (
       local remotes
+   
       rexekutor cd "${repository}" &&
       rexekutor fgrep -q -x -e "${remote}" <<< "`rexekutor git remote`"
    )

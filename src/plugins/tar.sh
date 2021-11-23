@@ -152,23 +152,16 @@ archive_cache_grab()
    fi
 
    local filename
-   local directory
+   local reponame
 
-   # fix for github
-   case "${url}" in
-      *github.com*/archive/*)
-         r_dirname "${url}"  # remove 3.9.2
-         r_dirname "${RVAL}" # remove archives
-         directory="${RVAL}"
+   reponame="`rexekutor "${MULLE_DOMAIN:-mulle-domain}" nameguess "${url}" `"
+   if [ -z "${reponame}" ]
+   then
+      log_fluff "Could not figure out repository name of \"${url}\", so won't cache"
+      return 4
+   fi
 
-         r_basename "${directory}"
-         filename="${RVAL}-${download}"
-      ;;
-
-      *)
-         filename="${download}"
-      ;;
-   esac
+   filename="${reponame}-${download}"
 
    # tar and zip can share a cache due to file extension
    _archive_cache="${MULLE_FETCH_ARCHIVE_DIR}"
@@ -191,7 +184,8 @@ archive_cache_grab()
 
          if [ ! -z "${_cached_archive}" ]
          then
-            log_info "Using cached \"${_cached_archive/#${HOME}/~}\" for ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
+            log_info "Using cached \"${_cached_archive/#${HOME}/~}\" for \
+${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
             # we are in a tmp dir
             _cachable_path=""
 
@@ -207,7 +201,8 @@ archive_cache_grab()
                remove_file_if_present "${_cached_archive}"
                _cached_archive=""
             else
-               exekutor ln -s "${_cached_archive}" "${download}" || fail "failed to symlink \"${_cached_archive}\""
+               exekutor ln -s "${_cached_archive}" "${download}" \
+                  || fail "failed to symlink \"${_cached_archive}\""
                return 0
             fi
          fi
@@ -361,7 +356,7 @@ tar_guess_project()
 
    local url="$3"             # URL of the clone
 
-   archive_guess_name_from_url "${url}" ".tar"
+   rexekutor "${MULLE_DOMAIN:-mulle-domain}" nameguess "${url}"
 }
 
 

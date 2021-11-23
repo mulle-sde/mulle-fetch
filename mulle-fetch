@@ -310,22 +310,12 @@ main()
          fetch_exists_main "$@"
       ;;
 
-      # cheap shortcut to avoid typing fetch
-      *:*)
-         # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
-
-         fetch_convenient_fetch_main "${cmd}"
-      ;;
-
-
       cfetch|convenient-fetch)
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
          fetch_convenient_fetch_main "$@"
       ;;
-
 
       fetch)
          # shellcheck source=src/mulle-fetch-commands.sh
@@ -415,7 +405,24 @@ main()
          return 0
       ;;
 
+      # cheap shortcut to avoid typing fetch
+      *:*)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+
+         fetch_convenient_fetch_main "${cmd}"
+      ;;
+
       *)
+         # shellcheck source=src/mulle-fetch-commands.sh
+         if [ -e "${cmd}" ]
+         then
+            . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+
+            fetch_fetch_main --symlink "${cmd}"
+            return $?
+         fi
+
          usage "Unknown command ${cmd}"
       ;;
    esac
@@ -426,6 +433,12 @@ main()
 ###
 ### INIT
 ###
+_fatal()
+{
+   echo "$0 fatal error: $*" >&2
+   exit 1
+}
+
 _init()
 {
    #
@@ -445,20 +458,14 @@ _init()
       then
          if [ -z "`command -v "${executablepath}"`" ]
          then
-            echo "Fatal Error: Could not find mulle-bashfunctions-env in PATH ($PATH) - mulle-bashfunctions not installed ?" >&2
-         else
-            echo "Fatal Error: Could not find libexec of mulle-bashfunctions-env (${PWD}})" >&2
+            _fatal "mulle-bashfunctions-env not installed"
          fi
-         exit 1
+         _fatal "Could not find libexec of mulle-bashfunctions-env"
       fi
    fi
 
       # shellcheck source=../mulle-bashfunctions/src/mulle-string.sh
-   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-bashfunctions.sh" "minimal" &&
-   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-path.sh" &&
-   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-file.sh" &&
-   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-url.sh" ||
-      fail "failed to load bashfunctions from ${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}"
+   . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-bashfunctions.sh" &&
 
    if [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ]
    then
