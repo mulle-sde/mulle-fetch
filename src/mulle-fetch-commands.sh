@@ -721,6 +721,8 @@ fetch_convenient_fetch_main()
    esac
 
    fetch_common_main --scm "${guessed_scm}" "${url}" "${dstdir}"
+
+   # print where something has been unpacked so that a script can run with it
    printf "%s\n" "${dstdir}"
 }
 

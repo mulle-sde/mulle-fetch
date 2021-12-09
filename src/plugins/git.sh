@@ -195,12 +195,12 @@ __git_clone()
 
    if [ ! -z "${branch}" ]
    then
-      log_info "Cloning branch ${C_RESET_BOLD}$branch${C_INFO} of \
+      log_verbose "Cloning branch ${C_RESET_BOLD}$branch${C_INFO} of \
 ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       r_concat "${options}" "-b ${branch}"
       options="${RVAL}"
    else
-      log_info "Cloning ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
+      log_verbose "Cloning ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    fi
 
    # MEMO: options are unused currently!!
