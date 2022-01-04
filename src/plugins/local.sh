@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SCM_LOCAL_SH="included"
+MULLE_FETCH_PLUGIN_LOCAL_SH="included"
 
 
 ###
@@ -39,18 +39,20 @@ MULLE_FETCH_PLUGIN_SCM_LOCAL_SH="included"
 # this is useful in mulle-sourcetree to add existing subprojects that
 # need to be compiled separately
 #
-local_fetch_project()
+fetch::plugin::local::fetch_project()
 {
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local unused="$1" ; shift
-   local name="$1"; shift
-   local url="$1"; shift
-   local branch="$1"; shift
-   local tag="$1"; shift
-   local sourcetype="$1"; shift
-   local sourceoptions="$1"; shift
-   local dstdir="$1"; shift
+   local unused="$1"
+   local name="$2"
+   local url="$3"
+   local branch="$4"
+   local tag="$5"
+   local sourcetype="$6"
+   local sourceoptions="$7"
+   local dstdir="$8"
+
+   shift 8
 
    #
    # Could copy url which is a local directory now wholesale, which
@@ -62,20 +64,20 @@ local_fetch_project()
    :
 }
 
-local_exists_project()
+fetch::plugin::local::exists_project()
 {
-   log_entry "local_exists_project" "$@"
+   log_entry "fetch::plugin::local::exists_project" "$@"
 
    local url="$3"             # URL of the clone
 
-   source_validate_file_url "${url}"
+   fetch::source::validate_file_url "${url}"
 }
 
 
-local_guess_project()
+fetch::plugin::local::guess_project()
 {
-   log_entry "local_guess_project" "$@"
+   log_entry "fetch::plugin::local::guess_project" "$@"
 
-   source_guess_project "$@"
+   fetch::source::guess_project "$@"
 }
 

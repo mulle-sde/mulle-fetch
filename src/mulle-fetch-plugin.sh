@@ -31,7 +31,7 @@
 MULLE_FETCH_PLUGIN_SH="included"
 
 
-fetch_plugin_usage()
+fetch::plugin::usage()
 {
    [ "$#" -ne 0 ] && log_error "$1"
 
@@ -48,9 +48,9 @@ EOF
 }
 
 
-fetch_plugin_all_names()
+fetch::plugin::all_names()
 {
-   log_entry "fetch_plugin_all_names" "$@"
+   log_entry "fetch::plugin::all_names" "$@"
 
    local upcase
    local plugindefine
@@ -90,9 +90,9 @@ fetch_plugin_all_names()
 }
 
 
-fetch_plugin_load_if_needed()
+fetch::plugin::load_if_needed()
 {
-   log_entry "fetch_plugin_load_if_needed" "$@"
+   log_entry "fetch::plugin::load_if_needed" "$@"
 
    local name="$1"
 
@@ -121,9 +121,9 @@ fetch_plugin_load_if_needed()
 }
 
 
-fetch_plugin_load_if_present()
+fetch::plugin::load_if_present()
 {
-   log_entry "fetch_plugin_load_if_present" "$@"
+   log_entry "fetch::plugin::load_if_present" "$@"
 
    local name="$1"
 
@@ -160,24 +160,24 @@ fetch_plugin_load_if_present()
 
 
 
-fetch_plugin_load()
+fetch::plugin::load()
 {
-   log_entry "fetch_plugin_load" "$@"
+   log_entry "fetch::plugin::load" "$@"
 
    local name="$1"
 
    [ -z "${name}" ] && fail "Empty SCM name"
 
-   if ! fetch_plugin_load_if_present "${name}"
+   if ! fetch::plugin::load_if_present "${name}"
    then
       fail "Type \"${name}\" is not supported (no plugin found)"
    fi
 }
 
 
-fetch_plugin_list()
+fetch::plugin::list()
 {
-   log_entry "fetch_plugin_list"
+   log_entry "fetch::plugin::list"
 
    local pluginpath
 
@@ -195,9 +195,9 @@ fetch_plugin_list()
 }
 
 
-fetch_plugin_load_all()
+fetch::plugin::load_all()
 {
-   log_entry "fetch_plugin_load_all"
+   log_entry "fetch::plugin::load_all"
 
    local name
 
@@ -208,33 +208,33 @@ fetch_plugin_load_all()
 
    local names
 
-   names="`fetch_plugin_all_names`"
+   names="`fetch::plugin::all_names`"
 
    IFS=$'\n'; shell_disable_glob
    for name in ${names}
    do
       IFS="${DEFAULT_IFS}"; shell_enable_glob
 
-      fetch_plugin_load_if_present "${name}"
+      fetch::plugin::load_if_present "${name}"
    done
 
    IFS="${DEFAULT_IFS}"; shell_enable_glob
 }
 
 
-fetch_plugin_main()
+fetch::plugin::main()
 {
-   log_entry "fetch_plugin_main" "$@"
+   log_entry "fetch::plugin::main" "$@"
 
    while [ $# -ne 0 ]
    do
       case "$1" in
          -h*|--help|help)
-            fetch_plugin_usage
+            fetch::plugin::usage
          ;;
 
          -*)
-            fetch_plugin_usage "Unknown option \"$1\""
+            fetch::plugin::usage "Unknown option \"$1\""
          ;;
 
          *)
@@ -245,21 +245,21 @@ fetch_plugin_main()
       shift
    done
 
-   [ $# -ne 1 ] && fetch_plugin_usage
+   [ $# -ne 1 ] && fetch::plugin::usage
 
    local cmd="$1"
 
    case "${cmd}" in
       list)
-         fetch_plugin_list
+         fetch::plugin::list
       ;;
 
       "")
-         fetch_plugin_usage
+         fetch::plugin::usage
       ;;
 
       *)
-         fetch_plugin_usage "Unknown command \"$1\""
+         fetch::plugin::usage "Unknown command \"$1\""
       ;;
    esac
 }

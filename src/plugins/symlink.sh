@@ -28,14 +28,14 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SCM_SYMLINK_SH="included"
+MULLE_FETCH_PLUGIN_SYMLINK_SH="included"
 
 
 ###
 ### PLUGIN API
 ###
 
-symlink_fetch_project()
+fetch::plugin::symlink::fetch_project()
 {
 #   local unused="$1"
    local name="$2"           # name of the clone
@@ -46,7 +46,7 @@ symlink_fetch_project()
 #   local sourceoptions="$7" # options to use on source
    local dstdir="$8"         # dstdir of this clone (absolute or relative to $PWD)
 
-   source_prepare_filesystem_for_fetch "${dstdir}"
+   fetch::source::prepare_filesystem_for_fetch "${dstdir}"
 
    url="${url#file://}"
 
@@ -99,9 +99,9 @@ may have been ignored, because the repository is symlinked."
 }
 
 
-symlink_search_local_project()
+fetch::plugin::symlink::search_local_project()
 {
-   log_entry "symlink_search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
+   log_entry "fetch::plugin::symlink::search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
 #   local unused="$1"
    local name="$2"            # name of the clone
@@ -125,7 +125,7 @@ symlink_search_local_project()
          r_dirname "${RVAL}"  # remove name from url
          filename="${RVAL}"
 
-         if r_source_search_local "${filename}" "${name}" "${branch}" "" "NO"
+         if fetch::source::r_search_local "${filename}" "${name}" "${branch}" "" "NO"
          then
             log_fluff "Found via URL \"${url}\""
             printf "%s\n" "${RVAL}"
@@ -135,27 +135,27 @@ symlink_search_local_project()
       ;;
    esac
 
-   if r_source_search_local_in_searchpath "${name}" "${branch}" "" 'YES' "${url}"
+   if fetch::source::r_search_local_in_searchpath "${name}" "${branch}" "" 'YES' "${url}"
    then
       printf "%s\n" "${RVAL}"
    fi
 }
 
 
-symlink_exists_project()
+fetch::plugin::symlink::exists_project()
 {
-   log_entry "symlink_exists_project" "$@"
+   log_entry "fetch::plugin::symlink::exists_project" "$@"
 
    local url="$3"             # URL of the clone
 
-   source_validate_file_url "${url}"
+   fetch::source::validate_file_url "${url}"
 }
 
 
-symlink_guess_project()
+fetch::plugin::symlink::guess_project()
 {
-   log_entry "symlink_guess_project" "$@"
+   log_entry "fetch::plugin::symlink::guess_project" "$@"
 
-   source_guess_project "$@"
+   fetch::source::guess_project "$@"
 }
 

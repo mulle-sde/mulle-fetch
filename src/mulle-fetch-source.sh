@@ -35,9 +35,9 @@ MULLE_FETCH_SOURCE_SH="included"
 # prints each key=value on a line so that its greppable
 # TODO: Doesn't do escaping yet
 #
-r_parse_sourceoptions()
+fetch::source::r_parse_options()
 {
-   log_entry "r_parse_sourceoptions" "$@"
+   log_entry "fetch::source::r_parse_options" "$@"
 
    local sourceoptions="$1"
 
@@ -81,7 +81,7 @@ r_parse_sourceoptions()
 }
 
 
-get_sourceoption()
+fetch::source::get_option()
 {
    local sourceoptions="$1"
    local key="$2"
@@ -90,9 +90,9 @@ get_sourceoption()
 }
 
 
-r_get_source_function()
+fetch::source::r_get_plugin_function()
 {
-   log_entry "r_get_source_function" "$@"
+   log_entry "fetch::source::r_get_plugin_function" "$@"
 
    local sourcetype="$1"
    local opname="$2"
@@ -104,9 +104,9 @@ r_get_source_function()
 
    funcname="${opname//-/_}"
 
-   fetch_plugin_load "${sourcetype}"
+   fetch::plugin::load "${sourcetype}"
 
-   operation="${sourcetype}_${funcname}_project"
+   operation="fetch::plugin::${sourcetype}::${funcname}_project"
    if ! shell_is_function "${operation}"
    then
       log_verbose "Operation \"${opname}\" is not provided by \"${sourcetype}\" \
@@ -118,9 +118,9 @@ r_get_source_function()
 }
 
 
-source_validate_file_url()
+fetch::source::validate_file_url()
 {
-   log_entry "source_validate_file_url" "$@"
+   log_entry "fetch::source::validate_file_url" "$@"
 
    local url="$1"
 
@@ -143,13 +143,13 @@ source_validate_file_url()
 }
 
 
-source_check_file_url()
+fetch::source::check_file_url()
 {
-   log_entry "source_check_file_url" "$@"
+   log_entry "fetch::source::check_file_url" "$@"
 
    local url="$1"
 
-   if ! source_validate_file_url "${url}"
+   if ! fetch::source::validate_file_url "${url}"
    then
       log_error "\"${url}\" does not exist (${PWD#${MULLE_USER_PWD}/})"
       return 1
@@ -159,9 +159,9 @@ source_check_file_url()
 }
 
 
-r_source_search_local_exists_directory()
+fetch::source::r_search_local_exists_directory()
 {
-   log_entry "r_source_search_local_exists_directory" "$@"
+   log_entry "fetch::source::r_search_local_exists_directory" "$@"
 
    local directory="$1"
    local name="$2"
@@ -185,9 +185,9 @@ r_source_search_local_exists_directory()
 }
 
 
-r_source_search_local()
+fetch::source::r_search_local()
 {
-   log_entry "r_source_search_local" "$@"
+   log_entry "fetch::source::r_search_local" "$@"
 
    local directory="$1"
    local repo="$2"
@@ -207,7 +207,7 @@ r_source_search_local()
       log_trace2 "repo           : ${repo}"
    fi
 
-   log_verbose "Looking for local repo \"${repo}\""
+   log_verbose "Looking for local repo \"${repo}\" in \"${directory#${MULLE_USER_PWD}/}\""
    local inhibit
 
    inhibit="${directory}/.mulle/etc/fetch/no-search"
@@ -219,7 +219,7 @@ r_source_search_local()
 
    if [ ! -z "${branch}" ]
    then
-      if r_source_search_local_exists_directory "${directory}" \
+      if fetch::source::r_search_local_exists_directory "${directory}" \
                                                 "${repo}.${branch}${extension}"
       then
          return 0
@@ -230,7 +230,7 @@ r_source_search_local()
    # is also .git
    if [ "${repo%.*}${extension}" != "${repo}" ]
    then
-      if r_source_search_local_exists_directory "${directory}" \
+      if fetch::source::r_search_local_exists_directory "${directory}" \
                                                 "${repo}${extension}"
       then
          return 0
@@ -239,7 +239,7 @@ r_source_search_local()
 
    if [ "${need_extension}" != 'YES' ]
    then
-      if r_source_search_local_exists_directory "${directory}" "${repo}"
+      if fetch::source::r_search_local_exists_directory "${directory}" "${repo}"
       then
          return 0
       fi
@@ -249,9 +249,9 @@ r_source_search_local()
 }
 
 
-r_source_search_local_in_searchpath()
+fetch::source::r_search_local_in_searchpath()
 {
-   log_entry "r_source_search_local_in_searchpath [${MULLE_FETCH_SEARCH_PATH}]" "$@"
+   log_entry "fetch::source::r_search_local_in_searchpath [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
    local name="$1"
    local branch="$2"
@@ -270,7 +270,7 @@ r_source_search_local_in_searchpath()
 
    log_debug "MULLE_FETCH_SEARCH_PATH is \"${MULLE_FETCH_SEARCH_PATH}\""
 
-   if source_validate_file_url "${url}"
+   if fetch::source::validate_file_url "${url}"
    then
       log_fluff "Local \"${url}\" matches"
       RVAL="${url#*:/}"
@@ -311,7 +311,7 @@ the current directory: skipping"
          continue
       fi
 
-      if r_source_search_local "${realdir}" "${repo}" "$@"
+      if fetch::source::r_search_local "${realdir}" "${repo}" "$@"
       then
          return 0
       fi
@@ -325,9 +325,9 @@ the current directory: skipping"
 #
 # move actual operation to the proper scm plugin like maybe git.sh
 #
-source_operation()
+fetch::source::operation()
 {
-   log_entry "source_operation" "$@"
+   log_entry "fetch::source::operation" "$@"
 
    local opname="$1" ; shift
 
@@ -342,7 +342,7 @@ source_operation()
 
    local operation
 
-   r_get_source_function "${sourcetype}" "${opname}"
+   fetch::source::r_get_plugin_function "${sourcetype}" "${opname}"
    operation="${RVAL}"
    if [ -z "${operation}" ]
    then
@@ -351,7 +351,7 @@ source_operation()
 
    local parsed_sourceoptions
 
-   r_parse_sourceoptions "${sourceoptions}"
+   fetch::source::r_parse_options "${sourceoptions}"
    parsed_sourceoptions="${RVAL}"
 
    "${operation}" "${unused}" \
@@ -365,7 +365,7 @@ source_operation()
 }
 
 
-source_prepare_filesystem_for_fetch()
+fetch::source::prepare_filesystem_for_fetch()
 {
    log_entry "source_prepare_for_fetch" "$@"
 
@@ -382,9 +382,9 @@ source_prepare_filesystem_for_fetch()
 }
 
 
-source_guess_project()
+fetch::source::guess_project()
 {
-   log_entry "source_guess_project" "$@"
+   log_entry "fetch::source::guess_project" "$@"
 
    local url="$3"             # URL of the clone
 
@@ -394,9 +394,9 @@ source_guess_project()
 }
 
 
-source_download()
+fetch::source::download()
 {
-   log_entry "source_download" "$@"
+   log_entry "fetch::source::download" "$@"
 
    local url="$1"
    local download="$2"
@@ -415,7 +415,7 @@ source_download()
    curlit='YES'
    case "${url}" in
       file://*)
-         source_check_file_url "${url}"  || return 1
+         fetch::source::check_file_url "${url}"  || return 1
          url="${url:7}"
          curlit='NO'
       ;;
@@ -424,7 +424,7 @@ source_download()
       ;;
 
       *)
-         if source_check_file_url "${url}"
+         if fetch::source::check_file_url "${url}"
          then
             curlit='NO'
          fi
@@ -433,7 +433,7 @@ source_download()
 
    if [ "${curlit}" = 'YES' ]
    then
-      curl_download "${url}" "${download}" "${sourceoptions}" \
+      fetch::curl::download "${url}" "${download}" "${sourceoptions}" \
          || fail "failed to download \"${url}\""
    else
       if [ "${url}" != "${download}" ]
@@ -452,7 +452,7 @@ source_download()
       fi
    fi
 
-   if ! curl_validate_download "${download}" "${sourceoptions}"
+   if ! fetch::curl::validate_download "${download}" "${sourceoptions}"
    then
       remove_file_if_present "${download}"
       fail "Can't download archive from \"${url}\""
@@ -460,9 +460,9 @@ source_download()
 }
 
 
-source_url_exists()
+fetch::source::url_exists()
 {
-   log_entry "source_url_exists" "$@"
+   log_entry "fetch::source::url_exists" "$@"
 
    local url="$1"
 
@@ -471,7 +471,7 @@ source_url_exists()
    #
    case "${url}" in
       file://*)
-         source_validate_file_url "${url}"
+         fetch::source::validate_file_url "${url}"
          return $?
       ;;
 
@@ -479,7 +479,7 @@ source_url_exists()
       ;;
 
       *)
-         if source_validate_file_url "${url}"
+         if fetch::source::validate_file_url "${url}"
          then
             return 0
          fi
@@ -489,7 +489,7 @@ source_url_exists()
    [ -z "${MULLE_FETCH_CURL_SH}" ] && \
       . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-curl.sh"
 
-   curl_exists "${url}"
+   fetch::curl::curl_exists "${url}"
 }
 
 

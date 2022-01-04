@@ -28,12 +28,12 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SCM_ZIP_SH="included"
+MULLE_FETCH_PLUGIN_ZIP_SH="included"
 
 
-zip_fetch_project()
+fetch::plugin::zip::fetch_project()
 {
-   log_entry "zip_fetch_project" "$@"
+   log_entry "fetch::plugin::zip::fetch_project" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
@@ -49,7 +49,7 @@ zip_fetch_project()
    log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
 ${C_RESET_BOLD}${url}${C_INFO}."
 
-   source_prepare_filesystem_for_fetch "${dstdir}"
+   fetch::source::prepare_filesystem_for_fetch "${dstdir}"
 
    local tmpdir
    local download
@@ -64,38 +64,38 @@ ${C_RESET_BOLD}${url}${C_INFO}."
    (
       exekutor cd "${tmpdir}" || return 1
 
-      source_download "${url}" "${download}" "${sourceoptions}" "${curlit}"
+      fetch::source::download "${url}" "${download}" "${sourceoptions}" "${curlit}"
       log_verbose "Extracting ${C_MAGENTA}${C_BOLD}${download}${C_INFO} ..."
 
       exekutor unzip -q ${OPTION_TOOL_FLAGS} "${download}" || return 1
       exekutor rm "${download}"
    ) || return 1
 
-   archive_move_stuff "${tmpdir}" "${dstdir}" "${archivename}" "${name}"
+   fetch::archive::move_stuff "${tmpdir}" "${dstdir}" "${archivename}" "${name}"
 }
 
 
-zip_search_local_project()
+fetch::plugin::zip::search_local_project()
 {
-   log_entry "zip_search_local_project" "$@"
+   log_entry "fetch::plugin::zip::search_local_project" "$@"
 
-   archive_search_local "$@"
+   fetch::archive::search_local "$@"
 }
 
 
-zip_exists_project()
+fetch::plugin::zip::exists_project()
 {
-   log_entry "zip_exists_project" "$@"
+   log_entry "fetch::plugin::zip::exists_project" "$@"
 
    local url="$3"             # URL of the clone
 
-   source_url_exists "${url}"
+   fetch::source::url_exists "${url}"
 }
 
 
-zip_guess_project()
+fetch::plugin::zip::guess_project()
 {
-   log_entry "zip_guess_project" "$@"
+   log_entry "fetch::plugin::zip::guess_project" "$@"
 
    local url="$3"             # URL of the clone
 
@@ -103,9 +103,9 @@ zip_guess_project()
 }
 
 
-zip_plugin_initialize()
+fetch::plugin::zip::initialize()
 {
-   log_entry "zip_plugin_initialize"
+   log_entry "fetch::plugin::zip::initialize"
 
    if [ -z "${MULLE_FETCH_ARCHIVE_SH}" ]
    then
@@ -115,6 +115,6 @@ zip_plugin_initialize()
 }
 
 
-zip_plugin_initialize
+fetch::plugin::zip::initialize
 
 :

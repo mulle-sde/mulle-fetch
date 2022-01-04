@@ -28,12 +28,12 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SCM_GIT_SH="included"
+MULLE_FETCH_PLUGIN_GIT_SH="included"
 
 
-r_git_get_mirror_url()
+fetch::plugin::git::r_get_mirror_url()
 {
-   log_entry "r_git_get_mirror_url" "$@"
+   log_entry "fetch::plugin::git::r_get_mirror_url" "$@"
 
    local url="$1"; shift
    local options="$2" ; shift
@@ -41,7 +41,7 @@ r_git_get_mirror_url()
    local _name
    local _fork
 
-   __fork_and_name_from_url "${url}"
+   fetch::git::__fork_and_name_from_url "${url}"
 
    local mirrordir
 
@@ -78,7 +78,7 @@ r_git_get_mirror_url()
 }
 
 
-_r_git_check_file_url()
+fetch::plugin::git::r_check_file_url()
 {
    local url="$1"
 
@@ -88,7 +88,7 @@ _r_git_check_file_url()
       ;;
    esac
 
-   if ! git_is_repository "${url}"
+   if ! fetch::git::is_repository "${url}"
    then
       if [ -e "${url}" ]
       then
@@ -111,7 +111,7 @@ involved, check that environment \`MULLE_SOURCETREE_SYMLINK\` is set to YES"
 }
 
 
-r_git_get_default_branch()
+fetch::plugin::git::r_get_default_branch()
 {
    local remote="$1"
 
@@ -162,9 +162,9 @@ r_git_get_default_branch()
 }
 
 
-__git_clone()
+fetch::plugin::git::clone()
 {
-   log_entry "__git_clone" "$@"
+   log_entry "fetch::plugin::git::clone" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
@@ -189,7 +189,7 @@ __git_clone()
    dstdir="${dstdir}"
    if [ ! -z "${sourceoptions}" ]
    then
-      options="`get_sourceoption "${sourceoptions}" "fetch"`"
+      options="`fetch::source::get_option "${sourceoptions}" "fetch"`"
    fi
    mirroroptions="${options}"
 
@@ -215,7 +215,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    #
    case "${url}" in
       file:*)
-         _r_git_check_file_url "${url}" || return 1
+         fetch::plugin::git::r_check_file_url "${url}" || return 1
          url="${RVAL}"
       ;;
 
@@ -223,7 +223,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
          if [ ! -z "${MULLE_FETCH_MIRROR_DIR}" ]
          then
             originalurl="${url}"
-            r_git_get_mirror_url "${url}" "${mirroroptions}" || return 1
+            fetch::plugin::git::r_get_mirror_url "${url}" "${mirroroptions}" || return 1
             url="${RVAL}"
 
             r_concat "--origin mirror" "${options}"
@@ -232,7 +232,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       ;;
 
       *)
-         _r_git_check_file_url "${url}" || return 1
+         fetch::plugin::git::r_check_file_url "${url}" || return 1
          url="${RVAL}"
       ;;
    esac
@@ -267,7 +267,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
 
          if [ -z "${branch}" ]
          then
-            r_git_get_default_branch "origin"
+            fetch::plugin::git::r_get_default_branch "origin"
             branch="${RVAL}"
          fi
 
@@ -291,12 +291,12 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
 
    if [ ! -z "${originalurl}" ]
    then
-      git_unset_default_remote "${dstdir}"
-      if git_has_remote "${dstdir}" "origin"
+      fetch::git::unset_default_remote "${dstdir}"
+      if fetch::git::has_remote "${dstdir}" "origin"
       then
-         git_remove_remote "${dstdir}" "origin"
+         fetch::git::remove_remote "${dstdir}" "origin"
       fi
-      git_add_remote "${dstdir}" "origin" "${originalurl}"
+      fetch::git::add_remote "${dstdir}" "origin" "${originalurl}"
 
       #
       # too expensive for me, because it must fetch now to
@@ -305,39 +305,39 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       #
       if [ "${MULLE_FETCH_SET_GIT_DEFAULT_REMOTE}" = 'YES' ]
       then
-         git_set_default_remote "${dstdir}" "origin" "${branch}"
+         fetch::git::set_default_remote "${dstdir}" "origin" "${branch}"
       fi
    fi
 }
 
 
-_git_clone()
-{
-   local url="$1"
-   local dstdir="$2"
-   local branch="$3"
+# fetch::plugin::git::_clone()
+# {
+#    local url="$1"
+#    local dstdir="$2"
+#    local branch="$3"
+#
+# ##   local unused="$1"
+# ##   local name="$2"
+# #   local url="$3"
+# #   local branch="$4"
+# ##   local tag="$5"
+# ##   local sourcetype="$6"
+# #   local sourceoptions="$7"
+# #   local dstdir="$8"
+#
+#    fetch::plugin::git::clone "n/a" \
+#                                "n/a" \
+#                                "${url}" \
+#                                "${branch}" \
+#                                "n/a" \
+#                                "git" \
+#                                "" \
+#                                "${dstdir}"
+# }
 
-##   local unused="$1"
-##   local name="$2"
-#   local url="$3"
-#   local branch="$4"
-##   local tag="$5"
-##   local sourcetype="$6"
-#   local sourceoptions="$7"
-#   local dstdir="$8"
 
-   __git_clone "n/a" \
-               "n/a" \
-               "${url}" \
-               "${branch}" \
-               "n/a" \
-               "git" \
-               "" \
-               "${dstdir}"
-}
-
-
-_get_fetch_remote()
+fetch::plugin::git::fetch_remote()
 {
    local url="$1"
    local remote
@@ -352,7 +352,7 @@ _get_fetch_remote()
       *:*)
          if [ ! -z "${MULLE_FETCH_MIRROR_DIR}" ]
          then
-            r_git_get_mirror_url "${url}" || return 1
+            fetch::plugin::git::r_get_mirror_url "${url}" || return 1
             remote="mirror"
          fi
       ;;
@@ -366,9 +366,9 @@ _get_fetch_remote()
 ### Plugin API
 ###
 
-git_fetch_project()
+fetch::plugin::git::fetch_project()
 {
-   log_entry "git_fetch_project" "$@"
+   log_entry "fetch::plugin::git::fetch_project" "$@"
 
 #   local unused="$1"
    local name="$2"
@@ -377,44 +377,46 @@ git_fetch_project()
    log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
 ${C_RESET_BOLD}${url}${C_INFO}."
 
-   source_prepare_filesystem_for_fetch "${dstdir}"
+   fetch::source::prepare_filesystem_for_fetch "${dstdir}"
 
-   if ! __git_clone "$@"
+   if ! fetch::plugin::git::clone "$@"
    then
       return 1
    fi
 
    if [ ! -z "${tag}" ]
    then
-      git_checkout_project "$@"
+      fetch::plugin::git::checkout_project "$@"
       return $?
    fi
 }
 
 
-git_checkout_project()
+fetch::plugin::git::checkout_project()
 {
-   log_entry "git_checkout_project" "$@"
+   log_entry "fetch::plugin::git::checkout_project" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local unused="$1" ; shift
-   local name="$1"; shift
-   local url="$1"; shift
-   local branch="$1"; shift
-   local tag="$1"; shift
-   local sourcetype="$1"; shift
-   local sourceoptions="$1"; shift
-   local dstdir="$1"; shift
+   local unused="$1"
+   local name="$2"
+   local url="$3"
+   local branch="$4"
+   local tag="$5"
+   local sourcetype="$6"
+   local sourceoptions="$7"
+   local dstdir="$8"
 
-   [ -z "${dstdir}" ]                    && internal_fail "dstdir is empty"
-   [ -z "${tag}" -a -z "${branch}" ]     && internal_fail "tag and branch are empty"
+   shift 8
+
+   [ -z "${dstdir}" ]                && internal_fail "dstdir is empty"
+   [ -z "${tag}" -a -z "${branch}" ] && internal_fail "tag and branch are empty"
 
    local options
 
    if [ ! -z "${sourceoptions}" ]
    then
-      options="`get_sourceoption "${sourceoptions}" "checkout"`"
+      options="`fetch::source::get_option "${sourceoptions}" "checkout"`"
    fi
 
 #   local branch
@@ -422,7 +424,7 @@ git_checkout_project()
    local need_fetch
 
    need_fetch='NO'
-   curr_branch="`git_get_branch "${dstdir}"`"
+   curr_branch="`fetch::git::get_branch "${dstdir}"`"
 
    if [ -z "${tag}" ]
    then
@@ -440,7 +442,7 @@ ${C_MAGENTA}${C_BOLD}${name}${C_WARNING} ignored as tag \
 ${C_RESET_BOLD}${tag}${C_WARNING} is set"
       fi
 
-      if ! git_has_tag "${dstdir}" "${tag}"
+      if ! fetch::git::has_tag "${dstdir}" "${tag}"
       then
          need_fetch='YES'
       fi
@@ -475,29 +477,31 @@ to ${C_CYAN}${C_BOLD}${dstdir}.failed${C_ERROR}"
 
 
 #  aka fetch
-git_update_project()
+fetch::plugin::git::update_project()
 {
-   log_entry "git_update_project" "$@"
+   log_entry "fetch::plugin::git::update_project" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local unused="$1" ; shift
-   local name="$1"; shift
-   local url="$1"; shift
-   local branch="$1"; shift
-   local tag="$1"; shift
-   local sourcetype="$1"; shift
-   local sourceoptions="$1"; shift
-   local dstdir="$1"; shift
+   local unused="$1"
+   local name="$2"
+   local url="$3"
+   local branch="$4"
+   local tag="$5"
+   local sourcetype="$6"
+   local sourceoptions="$7"
+   local dstdir="$8"
+
+   shift 8
 
    local options
    local remote
 
    if [ ! -z "${sourceoptions}" ]
    then
-      options="`get_sourceoption "${sourceoptions}" "update" `"
+      options="`fetch::source::get_option "${sourceoptions}" "update" `"
    fi
-   remote="`_get_fetch_remote "${url}"`" || internal_fail "can't figure out remote"
+   remote="`fetch::plugin::git::fetch_remote "${url}"`" || internal_fail "can't figure out remote"
 
    log_info "Fetching ${C_MAGENTA}${C_BOLD}${dstdir#${PWD}/}${C_INFO} ..."
 
@@ -509,29 +513,31 @@ git_update_project()
 
 
 #  aka pull
-git_upgrade_project()
+fetch::plugin::git::upgrade_project()
 {
-   log_entry "git_upgrade_project" "$@"
+   log_entry "fetch::plugin::git::upgrade_project" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local unused="$1" ; shift
-   local name="$1"; shift
-   local url="$1"; shift
-   local branch="$1"; shift
-   local tag="$1"; shift
-   local sourcetype="$1"; shift
-   local sourceoptions="$1"; shift
-   local dstdir="$1"; shift
+   local unused="$1"
+   local name="$2"
+   local url="$3"
+   local branch="$4"
+   local tag="$5"
+   local sourcetype="$6"
+   local sourceoptions="$7"
+   local dstdir="$8"
+
+   shift 8
 
    local options
    local remote
 
    if [ ! -z "${sourceoptions}" ]
    then
-      options="`get_sourceoption "${sourceoptions}" "upgrade"`"
+      options="`fetch::source::get_option "${sourceoptions}" "upgrade"`"
    fi
-   remote="`_get_fetch_remote "${url}"`" || internal_fail "can't figure out remote"
+   remote="`fetch::plugin::git::fetch_remote "${url}"`" || internal_fail "can't figure out remote"
 
    log_info "Pulling ${C_MAGENTA}${C_BOLD}${dstdir}${C_INFO} ..."
 
@@ -548,20 +554,22 @@ git_upgrade_project()
 }
 
 
-git_status_project()
+fetch::plugin::git::status_project()
 {
-   log_entry "git_status_project" "$@"
+   log_entry "fetch::plugin::git::status_project" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local unused="$1" ; shift
-   local name="$1"; shift
-   local url="$1"; shift
-   local branch="$1"; shift
-   local tag="$1"; shift
-   local sourcetype="$1"; shift
-   local sourceoptions="$1"; shift
-   local dstdir="$1"; shift
+   local unused="$1"
+   local name="$2"
+   local url="$3"
+   local branch="$4"
+   local tag="$5"
+   local sourcetype="$6"
+   local sourceoptions="$7"
+   local dstdir="$8"
+
+   shift 8
 
    log_info "Status ${C_MAGENTA}${C_BOLD}${dstdir}${C_INFO} ..."
 
@@ -569,7 +577,7 @@ git_status_project()
 
    if [ ! -z "${sourceoptions}" ]
    then
-      options="`get_sourceoption "${sourceoptions}" "status"`"
+      options="`fetch::source::get_option "${sourceoptions}" "status"`"
    fi
    (
       exekutor cd "${dstdir}" &&
@@ -578,9 +586,9 @@ git_status_project()
 }
 
 
-git_set_url_project()
+fetch::plugin::git::set_url_project()
 {
-   log_entry "git_set_url_project" "$@"
+   log_entry "fetch::plugin::git::set_url_project" "$@"
 
 #   local unused="$1"
    local name="$2"
@@ -593,7 +601,7 @@ git_set_url_project()
 
    local remote
 
-   remote="`git_get_default_remote "${dstdir}"`" || exit 1
+   remote="`fetch::git::get_default_remote "${dstdir}"`" || exit 1
 
    (
       cd "${dstdir}" &&
@@ -603,9 +611,9 @@ git_set_url_project()
 }
 
 
-git_search_local_project()
+fetch::plugin::git::search_local_project()
 {
-   log_entry "git_search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
+   log_entry "fetch::plugin::git::search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
 #   local unused="$1"
    local name="$2"
@@ -616,7 +624,7 @@ git_search_local_project()
 #   local sourceoptions="$7"
 #   local dstdir="$8"
 
-   if r_source_search_local_in_searchpath "${name}" "${branch}" ".git" 'NO' "${url}"
+   if fetch::source::r_search_local_in_searchpath "${name}" "${branch}" ".git" 'NO' "${url}"
    then
       echo ${RVAL}
       return 0
@@ -626,15 +634,15 @@ git_search_local_project()
 }
 
 
-git_exists_project()
+fetch::plugin::git::exists_project()
 {
-   log_entry "git_exists_project" "$@"
+   log_entry "fetch::plugin::git::exists_project" "$@"
 
    local url="$3"             # URL of the clone
 
    case "${url}" in
       file://*)
-         source_validate_file_url "${url}"
+         fetch::source::validate_file_url "${url}"
          return $?
       ;;
 
@@ -642,20 +650,20 @@ git_exists_project()
       ;;
 
       *)
-         if source_validate_file_url "${url}"
+         if fetch::source::validate_file_url "${url}"
          then
             return 0
          fi
       ;;
    esac
 
-   git_is_valid_remote_url "${url}"
+   fetch::git::is_valid_remote_url "${url}"
 }
 
 
-git_guess_project()
+fetch::plugin::git::guess_project()
 {
-   log_entry "git_guess_project" "$@"
+   log_entry "fetch::plugin::git::guess_project" "$@"
 
    local url="$3"      # URL of the clone
 
@@ -671,9 +679,9 @@ git_guess_project()
 }
 
 
-git_plugin_initialize()
+fetch::plugin::git::initialize()
 {
-   log_entry "git_plugin_initialize"
+   log_entry "fetch::plugin::git::initialize"
 
    if [ -z "${MULLE_FETCH_GIT_SH}" ]
    then
@@ -687,10 +695,10 @@ git_plugin_initialize()
       . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || exit 1
    fi
 
-   fetch_plugin_load_if_needed "symlink"
+   fetch::plugin::load_if_needed "symlink"
 }
 
 
-git_plugin_initialize
+fetch::plugin::git::initialize
 
 :

@@ -28,12 +28,12 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SCM_TAR_SH="included"
+MULLE_FETCH_PLUGIN_TAR_SH="included"
 
 
-_archive_test()
+fetch::plugin::tar::archive_test()
 {
-   log_entry "_archive_test" "$@"
+   log_entry "fetch::plugin::tar::archive_test" "$@"
 
    local archive="$1"
 
@@ -77,9 +77,9 @@ _archive_test()
 }
 
 
-_tar_unpack()
+fetch::plugin::tar::tar_unpack()
 {
-   log_entry "_tar_unpack" "$@"
+   log_entry "fetch::plugin::tar::tar_unpack" "$@"
 
    local archive="$1"
    local sourceoptions="$2"
@@ -116,7 +116,7 @@ _tar_unpack()
 
    if [ ! -z "${sourceoptions}" ]
    then
-      options="`get_sourceoption "${sourceoptions}" "tar"`"
+      options="`fetch::source::get_option "${sourceoptions}" "tar"`"
    fi
 
    exekutor tar ${OPTION_TOOL_FLAGS} ${tarcommand} ${OPTION_TOOL_OPTIONS} ${options} "${archive}" || return 1
@@ -130,9 +130,9 @@ _tar_unpack()
 #  _cachable_path
 #  _archive_cache
 #
-archive_cache_grab()
+fetch::plugin::tar::archive_cache_grab()
 {
-   log_entry "archive_cache_grab" "$@"
+   log_entry "fetch::plugin::tar::archive_cache_grab" "$@"
 
    local url="$1"
    local download="$2"
@@ -195,8 +195,8 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
                . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-curl.sh" || exit 1
             fi
 
-            if ! _archive_test "${_cached_archive}" || \
-               ! curl_validate_download "${_cached_archive}" "${sourceoptions}"
+            if ! fetch::plugin::tar::archive_test "${_cached_archive}" || \
+               ! fetch::curl::validate_download "${_cached_archive}" "${sourceoptions}"
             then
                remove_file_if_present "${_cached_archive}"
                _cached_archive=""
@@ -220,9 +220,9 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
 # c) create a temporary directory, extract into it
 # d) move it into place
 #
-_tar_download()
+fetch::plugin::tar::download()
 {
-   log_entry "_tar_download" "$@"
+   log_entry "fetch::plugin::tar::download" "$@"
 
    local url="$1"
    local download="$2"  # where we expect the file to be
@@ -232,14 +232,14 @@ _tar_download()
    local _cached_archive
    local _archive_cache
 
-   if archive_cache_grab  "${url}" "${download}" "${sourceoptions}"
+   if fetch::plugin::tar::archive_cache_grab  "${url}" "${download}" "${sourceoptions}"
    then
       return 0
    fi
 
    if [ -z "${_cached_archive}" ]
    then
-      source_download "${url}" "${download}" "${sourceoptions}"
+      fetch::source::download "${url}" "${download}" "${sourceoptions}"
    fi
 
    [ -e "${download}" ] || internal_fail "expected file \"${download}\" is missing"
@@ -259,9 +259,9 @@ _tar_download()
 ### PLUGIN API
 ###
 
-tar_fetch_project()
+fetch::plugin::tar::fetch_project()
 {
-   log_entry "tar_fetch_project" "$@"
+   log_entry "fetch::plugin::tar::fetch_project" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
@@ -277,7 +277,7 @@ tar_fetch_project()
    log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
 ${C_RESET_BOLD}${url}${C_INFO}."
 
-   source_prepare_filesystem_for_fetch "${dstdir}"
+   fetch::source::prepare_filesystem_for_fetch "${dstdir}"
 
    local tmpdir
    local archive
@@ -306,19 +306,19 @@ ${C_RESET_BOLD}${url}${C_INFO}."
    (
       exekutor cd "${tmpdir}" || return 1
 
-      _tar_download "${url}" "${download}" "${sourceoptions}" || return 1
+      fetch::plugin::tar::download "${url}" "${download}" "${sourceoptions}" || return 1
 
-      _tar_unpack "${download}" "${sourceoptions}" || return 1
+      fetch::plugin::tar::tar_unpack "${download}" "${sourceoptions}" || return 1
       exekutor rm "${download}" || return 1
    ) || return 1
 
-   archive_move_stuff "${tmpdir}" "${dstdir}" "${archivename}" "${name}"
+   fetch::archive::move_stuff "${tmpdir}" "${dstdir}" "${archivename}" "${name}"
 }
 
 
-tar_search_local_project()
+fetch::plugin::tar::search_local_project()
 {
-   log_entry "tar_search_local_project" "$@"
+   log_entry "fetch::plugin::tar::search_local_project" "$@"
 
 #   local unused="$1"
    local name="$2"
@@ -330,29 +330,29 @@ tar_search_local_project()
 #   local dstdir="$8"
 
    #  look for a git repo of same name (or a local project)
-   if r_source_search_local_in_searchpath "${name}" "${branch}" ".git" 'NO' "${url}"
+   if fetch::source::r_search_local_in_searchpath "${name}" "${branch}" ".git" 'NO' "${url}"
    then
       printf "%s\n" "${RVAL}"
       return
    fi
 
-   archive_search_local "$@"
+   fetch::archive::search_local "$@"
 }
 
 
-tar_exists_project()
+fetch::plugin::tar::exists_project()
 {
-   log_entry "tar_exists_project" "$@"
+   log_entry "fetch::plugin::tar::exists_project" "$@"
 
    local url="$3"             # URL of the clone
 
-   source_url_exists "${url}"
+   fetch::source::url_exists "${url}"
 }
 
 
-tar_guess_project()
+fetch::plugin::tar::guess_project()
 {
-   log_entry "tar_guess_project" "$@"
+   log_entry "fetch::plugin::tar::guess_project" "$@"
 
    local url="$3"             # URL of the clone
 
@@ -360,9 +360,9 @@ tar_guess_project()
 }
 
 
-tar_plugin_initialize()
+fetch::plugin::tar::initialize()
 {
-   log_entry "tar_plugin_initialize"
+   log_entry "fetch::plugin::tar::initialize"
 
    if [ -z "${MULLE_FETCH_ARCHIVE_SH}" ]
    then
@@ -371,6 +371,6 @@ tar_plugin_initialize()
    fi
 }
 
-tar_plugin_initialize
+fetch::plugin::tar::initialize
 
 :

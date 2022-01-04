@@ -31,9 +31,9 @@
 MULLE_FETCH_CURL_SH="included"
 
 
-curl_validate_shasum256()
+fetch::curl::validate_shasum256()
 {
-   log_entry "curl_validate_shasum256" "$@"
+   log_entry "fetch::curl::validate_shasum256" "$@"
 
    local filename="$1"
    local expected="$2"
@@ -67,9 +67,9 @@ curl_validate_shasum256()
 }
 
 
-curl_validate_download()
+fetch::curl::validate_download()
 {
-   log_entry "curl_validate_download" "$@"
+   log_entry "fetch::curl::validate_download" "$@"
 
    local filename="$1"
    local sourceoptions="$2"
@@ -79,20 +79,20 @@ curl_validate_download()
 
    if [ ! -z "${sourceoptions}" ]
    then
-      expected="`get_sourceoption "${sourceoptions}" "shasum256"`"
+      expected="`fetch::source::get_option "${sourceoptions}" "shasum256"`"
       if [ -z "${expected}" ]
       then
          return
       fi
 
-      curl_validate_shasum256 "${filename}" "${expected}"
+      fetch::curl::validate_shasum256 "${filename}" "${expected}"
    fi
 }
 
 
-wget_download()
+fetch::curl::wget_download()
 {
-   log_entry "wget_download" "$@"
+   log_entry "fetch::curl::wget_download" "$@"
 
    local url="$1"
    local download="$2"
@@ -108,7 +108,7 @@ wget_download()
 
    if [ ! -z "${sourceoptions}" ]
    then
-      options="`get_sourceoption "${sourceoptions}" "wget"`"
+      options="`fetch::source::get_option "${sourceoptions}" "wget"`"
    fi
 
    local defaultflags
@@ -126,9 +126,9 @@ wget_download()
 }
 
 
-wget_exists()
+fetch::curl::wget_exists()
 {
-   log_entry "wget_exists" "$@"
+   log_entry "fetch::curl::wget_exists" "$@"
 
    local url="$1"
    local download="$2"
@@ -151,9 +151,9 @@ wget_exists()
 }
 
 
-curl_download()
+fetch::curl::download()
 {
-   log_entry "curl_download" "$@"
+   log_entry "fetch::curl::download" "$@"
 
    local url="$1"
    local download="$2"
@@ -164,7 +164,7 @@ curl_download()
    CURL="${CURL:-`command -v curl`}"
    if [ -z "${CURL}" ]
    then
-      wget_download "$1" "$2" "$3"
+      fetch::curl::wget_download "$1" "$2" "$3"
       return $?
    fi
 
@@ -172,7 +172,7 @@ curl_download()
 
    if [ ! -z "${sourceoptions}" ]
    then
-      options="`get_sourceoption "${sourceoptions}" "curl"`"
+      options="`fetch::source::get_option "${sourceoptions}" "curl"`"
    fi
 
    local defaultflags
@@ -200,9 +200,9 @@ curl_download()
 
 
 # https://stackoverflow.com/questions/12199059/how-to-check-if-an-url-exists-with-the-shell-and-probably-curl#
-curl_exists()
+fetch::curl::curl_exists()
 {
-   log_entry "curl_exists" "$@"
+   log_entry "fetch::curl::curl_exists" "$@"
 
    local url="$1"
 
@@ -211,7 +211,7 @@ curl_exists()
    CURL="${CURL:-`command -v curl`}"
    if [ -z "${CURL}" ]
    then
-      wget_exists "$@"
+      fetch::curl::wget_exists "$@"
       return $?
    fi
 

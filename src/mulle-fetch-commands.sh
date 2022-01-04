@@ -30,7 +30,7 @@
 #   POSSIBILITY OF SUCH DAMAGE.
 #
 
-MULLE_FETCH_FETCH_SH="included"
+MULLE_FETCH_COMMANDS_SH="included"
 
 #
 # ## NOTE ##
@@ -48,7 +48,7 @@ MULLE_FETCH_FETCH_SH="included"
 # dstdir="$8"        # dstdir of this clone (absolute or relative to $PWD)
 #
 
-show_plugins()
+fetch::commands::show_plugins()
 {
    local type="${1:-scm}"
 
@@ -61,7 +61,7 @@ show_plugins()
 
    local  plugins
 
-   plugins="`fetch_plugin_all_names "${type}" `"
+   plugins="`fetch::plugin::all_names "${type}" `"
    if [ ! -z "${plugins}" ]
    then
       (
@@ -73,7 +73,7 @@ show_plugins()
 }
 
 
-fetch_convenient_fetch_usage()
+fetch::commands::convenient_fetch_usage()
 {
    cat <<EOF >&2
 Usage:
@@ -85,12 +85,12 @@ Usage:
 
 EOF
 
-   show_plugins >&2
+   fetch::commands::show_plugins >&2
    exit 1
 }
 
 
-fetch_fetch_usage()
+fetch::commands::fetch_usage()
 {
    cat <<EOF >&2
 Usage:
@@ -118,12 +118,12 @@ Options:
    --symlink              : allow symlinks to be create
 EOF
 
-   show_plugins >&2
+   fetch::commands::show_plugins >&2
    exit 1
 }
 
 
-fetch_exists_usage()
+fetch::commands::exists_usage()
 {
    cat <<EOF >&2
 Usage:
@@ -141,13 +141,13 @@ Options:
    -s <scm> : source type, either a repository or archive format (git)
 EOF
 
-   show_plugins >&2
+   fetch::commands::show_plugins >&2
 
    exit 1
 }
 
 
-fetch_set_url_usage()
+fetch::commands::set_url_usage()
 {
    cat <<EOF >&2
 Usage:
@@ -162,13 +162,13 @@ Options:
    -o <options>     : specify options for the scm (see documentation)
 EOF
 
-   show_plugins >&2
+   fetch::commands::show_plugins >&2
 
    exit 1
 }
 
 
-fetch_other_usage()
+fetch::commands::other_usage()
 {
    cat <<EOF >&2
 Usage:
@@ -184,13 +184,13 @@ Options:
    -t <tag>         : tag to checkout
 EOF
 
-   show_plugins >&2
+   fetch::commands::show_plugins >&2
 
    exit 1
 }
 
 
-fetch_operation_usage()
+fetch::commands::operation_usage()
 {
    cat <<EOF >&2
 Usage:
@@ -203,13 +203,13 @@ Options:
    -s <scm>   : repository or archive format (default git)
 EOF
 
-   show_plugins >&2
+   fetch::commands::show_plugins >&2
 
    exit 1
 }
 
 
-fetch_search_local_usage()
+fetch::commands::search_local_usage()
 {
    cat <<EOF >&2
 Usage:
@@ -225,13 +225,13 @@ Options:
    -o <options>     : specify options for the scm (see documentation)
 EOF
 
-   show_plugins >&2
+   fetch::commands::show_plugins >&2
 
    exit 1
 }
 
 
-fetch_status_usage()
+fetch::commands::status_usage()
 {
    cat <<EOF >&2
 Usage:
@@ -244,7 +244,7 @@ Options:
    -o <options>     : specify options for the scm (see documentation)
 EOF
 
-   show_plugins >&2
+   fetch::commands::show_plugins >&2
 
    exit 1
 }
@@ -255,9 +255,9 @@ EOF
 # There are only a few environment variables, which are assumed to be
 # fairly constant and supply optional caching information
 #
-fetch_common_main()
+fetch::commands::common()
 {
-   log_entry "fetch_common_main" "$@"
+   log_entry "fetch::commands::common" "$@"
 
    local ROOT_DIR
 
@@ -438,8 +438,8 @@ fetch_common_main()
    # shellcheck source=mulle-fetch-plugin.sh
    . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh"
 
-   fetch_plugin_load "symlink" "scm" # brauchen wir immer
-   fetch_plugin_load "${OPTION_SCM}" "scm"
+   fetch::plugin::load "symlink" "scm" # brauchen wir immer
+   fetch::plugin::load "${OPTION_SCM}" "scm"
 
    [ -z "${DEFAULT_IFS}" ] && internal_fail "IFS fail"
 
@@ -527,7 +527,7 @@ fetch_common_main()
    r_basename "${directory}"
    name="${RVAL}"
 
-   fetch_do_operation "${COMMAND}" "unused" \
+   fetch::operation::do "${COMMAND}" "unused" \
                                    "${name}" \
                                    "${url}" \
                                    "${OPTION_BRANCH}" \
@@ -538,100 +538,100 @@ fetch_common_main()
 }
 
 
-fetch_checkout_main()
+fetch::commands::checkout_main()
 {
-   log_entry "fetch_checkout_main" "$@"
+   log_entry "fetch::commands::checkout_main" "$@"
 
    USAGE="fetch_checkout_usage"
    COMMAND="checkout"
-   fetch_common_main "$@"
+   fetch::commands::common "$@"
 }
 
-fetch_exists_main()
+fetch::commands::exists_main()
 {
-   log_entry "fetch_exists_main" "$@"
+   log_entry "fetch::commands::exists_main" "$@"
 
-   USAGE="fetch_exists_usage"
+   USAGE="fetch::commands::exists_usage"
    COMMAND="exists"
-   fetch_common_main "$@"
+   fetch::commands::common "$@"
 }
 
 
-fetch_fetch_main()
+fetch::commands::fetch_main()
 {
-   log_entry "fetch_fetch_main" "$@"
+   log_entry "fetch::commands::fetch_main" "$@"
 
-   USAGE="fetch_fetch_usage"
+   USAGE="fetch::commands::fetch_usage"
    COMMAND="fetch"
-   fetch_common_main "$@"
+   fetch::commands::common "$@"
 }
 
 
-fetch_operation_main()
+fetch::commands::operation_main()
 {
-   log_entry "fetch_operation_main" "$@"
+   log_entry "fetch::commands::operation_main" "$@"
 
-   USAGE="fetch_operation_usage"
+   USAGE="fetch::commands::operation_usage"
    COMMAND="operation"
-   fetch_common_main "$@"
+   fetch::commands::common "$@"
 }
 
 
-fetch_search_local_main()
+fetch::commands::search_local_main()
 {
-   log_entry "fetch_search_local_main" "$@"
+   log_entry "fetch::commands::search_local_main" "$@"
 
-   USAGE="fetch_search_local_usage"
+   USAGE="fetch::commands::search_local_usage"
    COMMAND="search-local"
 
    log_fluff "MULLE_FETCH_SEARCH_PATH: ${MULLE_FETCH_SEARCH_PATH}"
-   fetch_common_main "$@"
+   fetch::commands::common "$@"
 }
 
 
-fetch_set_url_main()
+fetch::commands::set_url_main()
 {
-   log_entry "fetch_set_url_main" "$@"
+   log_entry "fetch::commands::set_url_main" "$@"
 
-   USAGE="fetch_set_url_usage"
+   USAGE="fetch::commands::set_url_usage"
    COMMAND="set-url"
-   fetch_common_main "$@"
+   fetch::commands::common "$@"
 }
 
 
-fetch_status_main()
+fetch::commands::status_main()
 {
-   log_entry "fetch_status_main" "$@"
+   log_entry "fetch::commands::status_main" "$@"
 
    USAGE="status_usage"
    COMMAND="status"
-   fetch_common_main "$@"
+   fetch::commands::common "$@"
 }
 
 
-fetch_update_main()
+fetch::commands::update_main()
 {
-   log_entry "fetch_update_main" "$@"
+   log_entry "fetch::commands::update_main" "$@"
 
-   USAGE="fetch_other_usage"
+   USAGE="fetch::commands::other_usage"
    COMMAND="update"
-   fetch_common_main "$@"
+   fetch::commands::common "$@"
 }
 
 
-fetch_upgrade_main()
+fetch::commands::upgrade_main()
 {
    log_entry "upgrade_main" "$@"
 
-   USAGE="fetch_other_usage"
+   USAGE="fetch::commands::other_usage"
    COMMAND="upgrade"
-   fetch_common_main "$@"
+   fetch::commands::common "$@"
 }
 
 
-fetch_convenient_craftinfo_fetch()
+fetch::commands::convenient_craftinfo_fetch()
 {
-   log_entry "fetch_convenient_craftinfo_fetch" "$@"
+   log_entry "fetch::commands::convenient_craftinfo_fetch" "$@"
 
    local name="$1"
 
@@ -662,20 +662,20 @@ fetch_convenient_craftinfo_fetch()
 }
 
 
-fetch_convenient_fetch_main()
+fetch::commands::convenient_fetch_main()
 {
-   log_entry "fetch_convenient_fetch_main" "$@"
+   log_entry "fetch::commands::convenient_fetch_main" "$@"
 
    local url="$1"
 
-   USAGE="fetch_convenient_fetch_usage"
+   USAGE="fetch::commands::convenient_fetch_usage"
    COMMAND="fetch"
 
-   [ $# -ne 1 ] && fetch_convenient_fetch_usage
+   [ $# -ne 1 ] && fetch::commands::convenient_fetch_usage
 
    case "${url}" in
       craftinfo:*)
-         url="`fetch_convenient_craftinfo_fetch "${url#craftinfo:}" `"
+         url="`fetch::commands::convenient_craftinfo_fetch "${url#craftinfo:}" `"
          if [ $? -ne 0 ]
          then
             fail "No craftinfo found for \"${url#craftinfo:}\""
@@ -720,7 +720,7 @@ fetch_convenient_fetch_main()
       ;;
    esac
 
-   fetch_common_main --scm "${guessed_scm}" "${url}" "${dstdir}"
+   fetch::commands::common --scm "${guessed_scm}" "${url}" "${dstdir}"
 
    # print where something has been unpacked so that a script can run with it
    printf "%s\n" "${dstdir}"
@@ -728,9 +728,9 @@ fetch_convenient_fetch_main()
 
 
 
-fetch_commands_initialize()
+fetch::commands::initialize()
 {
-   log_entry "fetch_commands_initialize"
+   log_entry "fetch::commands::initialize"
 
    if [ -z "${MULLE_FETCH_OPERATION_SH}" ]
    then
@@ -748,6 +748,6 @@ fetch_commands_initialize()
 }
 
 
-fetch_commands_initialize
+fetch::commands::initialize
 
 :

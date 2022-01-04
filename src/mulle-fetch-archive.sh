@@ -30,7 +30,7 @@
 #
 MULLE_FETCH_ARCHIVE_SH="included"
 
-r_find_best_directory()
+fetch::archive::r_find_best_directory()
 {
    local directory="$1"
 
@@ -60,7 +60,7 @@ r_find_best_directory()
    next="${directory}/${filenames}"
    if [ -d "${next}" ]
    then
-      r_find_best_directory "${next}"
+      fetch::archive::r_find_best_directory "${next}"
       next="${RVAL}"
    fi
 
@@ -68,7 +68,7 @@ r_find_best_directory()
 }
 
 
-tar_remove_extension()
+fetch::archive::tar_remove_extension()
 {
    local ext="$1"
 
@@ -97,7 +97,7 @@ tar_remove_extension()
 # ext can be empty
 # noclobber can be empty=NO,NO or YES
 #
-_archive_files()
+fetch::archive::archive_files()
 {
    local srcdir="$1"
    local ext="$2"
@@ -117,7 +117,7 @@ _archive_files()
 
 
 
-_unarchive_files()
+fetch::archive::unarchive_files()
 {
    local dstdir="$1"
    local noclobber="$2"
@@ -137,9 +137,9 @@ _unarchive_files()
 }
 
 
-archive_move_stuff()
+fetch::archive::move_stuff()
 {
-   log_entry "archive_move_stuff" "$@"
+   log_entry "fetch::archive::move_stuff" "$@"
 
    local tmpdir="$1"
    local dstdir="$2"
@@ -158,7 +158,7 @@ archive_move_stuff()
       src="${tmpdir}/${name}"
       if [ ! -d "${src}" ]
       then
-         r_find_best_directory "${tmpdir}"
+         fetch::archive::r_find_best_directory "${tmpdir}"
          src="${RVAL}"
          if [ "${src}" = "${tmpdir}" ]
          then
@@ -179,9 +179,9 @@ archive_move_stuff()
 }
 
 
-r_archive_search_local()
+fetch::archive::r_search_local()
 {
-   log_entry "r_archive_search_local" "$@"
+   log_entry "fetch::archive::r_search_local" "$@"
 
    local directory="$1"
    local name="$2"
@@ -216,9 +216,9 @@ r_archive_search_local()
 }
 
 
-archive_search_local()
+fetch::archive::search_local()
 {
-   log_entry "archive_search_local" "$@"
+   log_entry "fetch::archive::search_local" "$@"
 
 #   local unused="$1"
    local name="$2"
@@ -243,7 +243,7 @@ archive_search_local()
          continue
       fi
 
-      r_archive_search_local "${directory}" "${name}" "${filename}" || exit 1
+      fetch::archive::r_search_local "${directory}" "${name}" "${filename}" || exit 1
       found="${RVAL}"
 
       if [ ! -z "${found}" ]

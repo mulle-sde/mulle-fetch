@@ -31,7 +31,7 @@
 MULLE_FETCH_OPERATION_SH="included"
 
 
-fetch_operation_usage()
+fetch::operation::usage()
 {
    [ "$#" -ne 0 ] && log_error "$1"
 
@@ -50,7 +50,7 @@ EOF
 }
 
 
-fetch_log_action()
+fetch::operation::log_action()
 {
    local action="$1" ; shift
 
@@ -100,9 +100,9 @@ fetch_log_action()
 #
 ###
 #
-can_symlink_it()
+fetch::operation::can_symlink_it()
 {
-   log_entry "can_symlink_it" "$@"
+   log_entry "fetch::operation::can_symlink_it" "$@"
 
    local directory="$1"
 
@@ -113,7 +113,10 @@ can_symlink_it()
    #
    if [ "${OPTION_SYMLINK}" != 'YES' ]
    then
-      log_verbose "Not allowed to symlink it. (Use --symlink to allow)"
+      log_verbose "Not allowed to symlink it. (Use --symlink to allow).
+Within mulle-sde:
+${C_RESET_BOLD}  mulle-sde env set MULLE_SOURCETREE_SYMLINK YES
+"
       return 1
    fi
 
@@ -146,10 +149,10 @@ this platform"
       . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-git.sh" || exit 1
    fi
 
-   if git_is_repository "${directory}"
+   if fetch::git::is_repository "${directory}"
    then
        # if bare repo, we can only clone anyway
-      if git_is_bare_repository "${directory}"
+      if fetch::git::is_bare_repository "${directory}"
       then
          log_verbose "${directory#${MULLE_USER_PWD}/} is a bare git repository. So no symlinking"
          return 1
@@ -162,9 +165,9 @@ this platform"
 }
 
 
-fetch_type_of_local_item()
+fetch::operation::type_of_local_item()
 {
-   log_entry "fetch_type_of_local_item" "$@"
+   log_entry "fetch::operation::type_of_local_item" "$@"
 
    local url="$1"
 
@@ -197,9 +200,9 @@ fetch_type_of_local_item()
 }
 
 
-fetch_get_local_item()
+fetch::operation::get_local_item()
 {
-   log_entry "fetch_get_local_item" "$@"
+   log_entry "fetch::operation::get_local_item" "$@"
 
    local unused="$1"
    local name="$2"            # name of the clone
@@ -219,7 +222,7 @@ is empty (use --local-search-path to set)"
 
    local operation
 
-   r_get_source_function "${sourcetype}" "search-local"
+   fetch::source::r_get_plugin_function "${sourcetype}" "search-local"
    operation="${RVAL}"
 
    if [ ! -z "${operation}" ]
@@ -233,9 +236,9 @@ not support \"${operation}\""
 
 
 # MEMO: github cannot do "git archive"
-_fetch_operation()
+fetch::operation::_operation()
 {
-   log_entry "_fetch_operation" "$@"
+   log_entry "fetch::operation::_operation" "$@"
 
    local unused="$1"
    local name="$2"            # name of the clone
@@ -264,22 +267,22 @@ _fetch_operation()
       ;;
 
       '/'*|file:*)
-         if can_symlink_it "${url}"
+         if fetch::operation::can_symlink_it "${url}"
          then
             sourcetype="symlink"
          fi
       ;;
 
       *)
-         found="`fetch_get_local_item "$@"`"
+         found="`fetch::operation::get_local_item "$@"`"
          if [ ! -z "${found}" ]
          then
-            fetch_type_of_local_item "${found}"
+            fetch::operation::type_of_local_item "${found}"
             localtype="${RVAL}"
 
             case "${localtype}" in
                "")
-                  if can_symlink_it "${found}"
+                  if fetch::operation::can_symlink_it "${found}"
                   then
                      url="${found}"
                      sourcetype="symlink"
@@ -290,7 +293,7 @@ _fetch_operation()
                   log_fluff "Found local ${localtype} item \"${found}\""
                   url="${found}"
                   sourcetype="${localtype}"
-                  if can_symlink_it "${url}"
+                  if fetch::operation::can_symlink_it "${url}"
                   then
                      sourcetype="symlink"
                      log_fluff "Using symlink to local item \"${found}\""
@@ -311,15 +314,15 @@ _fetch_operation()
       ;;
    esac
 
-   source_operation "fetch" \
-                    "${unused}" \
-                    "${name}" \
-                    "${url}" \
-                    "${branch}" \
-                    "${tag}" \
-                    "${sourcetype}" \
-                    "${sourceoptions}" \
-                    "${dstdir}"
+   fetch::source::operation "fetch" \
+                            "${unused}" \
+                            "${name}" \
+                            "${url}" \
+                            "${branch}" \
+                            "${tag}" \
+                            "${sourcetype}" \
+                            "${sourceoptions}" \
+                            "${dstdir}"
 
    rval="$?"
    case $rval in
@@ -345,15 +348,15 @@ _fetch_operation()
 }
 
 
-fetch_do_operation()
+fetch::operation::do()
 {
-   log_entry "fetch_do_operation" "$@"
+   log_entry "fetch::operation::do" "$@"
 
    local opname="$1" ; shift
 
    [ -z "${opname}" ] && internal_fail "operation is empty"
 
-   fetch_log_action "${opname}" "$@"
+   fetch::operation::log_action "${opname}" "$@"
 
 #   local unused="$1"
    local name="$2"             # name of the clone
@@ -370,17 +373,17 @@ fetch_do_operation()
 
    case "${opname}" in
       'fetch')
-         _fetch_operation "$@"
+         fetch::operation::_operation "$@"
          rval=$?
 
-         log_debug "fetch_do_operation \"${opname}\": \"${sourcetype}\" \
+         log_debug "fetch::operation::do \"${opname}\": \"${sourcetype}\" \
 returns with ${rval}"
 
          return "${rval}"
       ;;
    esac
 
-   source_operation "${opname}" "$@"
+   fetch::source::operation "${opname}" "$@"
    rval=$?
 
    case $rval in
@@ -404,13 +407,15 @@ returns with ${rval}"
       ;;
    esac
 
-   log_debug "fetch_do_operation \"${opname}\": \"${sourcetype}\" returns with ${rval}"
+   log_debug "fetch::operation::do \"${opname}\": \"${sourcetype}\" returns with ${rval}"
    return "${rval}"
 }
 
 
-_fetch_operation_list()
+fetch::operation::_list()
 {
+   log_entry "fetch::operation::_list" "$@"
+
    local sourcetype="$1"
    local operations="$2"
 
@@ -418,28 +423,25 @@ _fetch_operation_list()
    local operation
    local funcname
 
-   shell_disable_glob
-   for opname in ${operations}
-   do
-      shell_enable_glob
+   .foreachline opname in ${operations}
+   .do
       funcname="${opname//-/_}"
-      operation="${sourcetype}_${funcname}_project"
+      operation="fetch::plugin::${sourcetype}::${funcname}_project"
       if shell_is_function "${operation}"
       then
          printf "%s\n" "${opname}"
       fi
-   done
-   shell_enable_glob
+   .done
 }
 
 
-fetch_operation_list()
+fetch::operation::list()
 {
-   log_entry "fetch_operation_list" "$@"
+   log_entry "fetch::operation::list" "$@"
 
    log_info "Operations"
 
-   _fetch_operation_list "$1" "\
+   fetch::operation::_list "$1" "\
 checkout
 fetch
 search-local
@@ -451,9 +453,9 @@ upgrade"
 
 
 
-fetch_operation_main()
+fetch::commands::operation_main()
 {
-   log_entry "fetch_operation_main" "$@"
+   log_entry "fetch::commands::operation_main" "$@"
 
    local OPTION_SCM="git"
 
@@ -461,7 +463,7 @@ fetch_operation_main()
    do
       case "$1" in
          -h*|--help|help)
-            fetch_operation_usage
+            fetch::operation::usage
          ;;
 
          -s|--source|--scm)
@@ -472,7 +474,7 @@ fetch_operation_main()
          ;;
 
          -*)
-            fetch_operation_usage "Unknown option \"$1\""
+            fetch::operation::usage "Unknown option \"$1\""
          ;;
 
          *)
@@ -483,29 +485,29 @@ fetch_operation_main()
       shift
    done
 
-   [ $# -eq 0 ] && fetch_operation_usage
+   [ $# -eq 0 ] && fetch::operation::usage
 
    local cmd="$1"
    shift
 
    case "${cmd}" in
       list)
-         [ $# -ne 0 ] && fetch_operation_usage "superflous parameters"
+         [ $# -ne 0 ] && fetch::operation::usage "superflous parameters"
 
          # shellcheck source=mulle-fetch-plugin.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || \
             fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh"
 
-         fetch_plugin_load_all "scm"
-         fetch_operation_list "${OPTION_SCM}" "scm"
+         fetch::plugin::load_all "scm"
+         fetch::operation::list "${OPTION_SCM}" "scm"
       ;;
 
       "")
-         fetch_operation_usage
+         fetch::operation::usage
       ;;
 
       *)
-         fetch_operation_usage "Unknown command \"$1\""
+         fetch::operation::usage "Unknown command \"$1\""
       ;;
    esac
 }

@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SCM_SVN_SH="included"
+MULLE_FETCH_PLUGIN_SVN_SH="included"
 
 
 ###
@@ -39,29 +39,31 @@ MULLE_FETCH_PLUGIN_SCM_SVN_SH="included"
 # if svn wants to use MULLE_FETCH_MIRROR_DIR, it should
 # make a svn subdirectory
 #
-svn_fetch_project()
+fetch::plugin::svn::fetch_project()
 {
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local unused="$1" ; shift
-   local name="$1"; shift
-   local url="$1"; shift
-   local branch="$1"; shift
-   local tag="$1"; shift
-   local sourcetype="$1"; shift
-   local sourceoptions="$1"; shift
-   local dstdir="$1"; shift
+   local unused="$1"
+   local name="$2"
+   local url="$3"
+   local branch="$4"
+   local tag="$5"
+   local sourcetype="$6"
+   local sourceoptions="$7"
+   local dstdir="$8"
+
+   shift 8
 
    log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
 ${C_RESET_BOLD}${url}${C_INFO}."
 
-   source_prepare_filesystem_for_fetch "${dstdir}"
+   fetch::source::prepare_filesystem_for_fetch "${dstdir}"
 
    local options
 
    if [ ! -z "${sourceoptions}" ]
    then
-      options="`get_sourceoption "${sourceoptions}" "clone"`"
+      options="`fetch::source::get_option "${sourceoptions}" "clone"`"
    fi
 
    if [ ! -z "${tag}" ]
@@ -82,24 +84,26 @@ ${C_RESET_BOLD}${url}${C_INFO}."
 }
 
 
-svn_update_project()
+fetch::plugin::svn::update_project()
 {
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local unused="$1" ; shift
-   local name="$1"; shift
-   local url="$1"; shift
-   local branch="$1"; shift
-   local tag="$1"; shift
-   local sourcetype="$1"; shift
-   local sourceoptions="$1"; shift
-   local dstdir="$1"; shift
+   local unused="$1"
+   local name="$2"
+   local url="$3"
+   local branch="$4"
+   local tag="$5"
+   local sourcetype="$6"
+   local sourceoptions="$7"
+   local dstdir="$8"
+
+   shift 8
 
    local options
 
    if [ ! -z "${sourceoptions}" ]
    then
-      options="`get_sourceoption "${sourceoptions}" "update"`"
+      options="`fetch::source::get_option "${sourceoptions}" "update"`"
    fi
 
    [ ! -z "${dstdir}" ] || internal_fail "dstdir is empty"
@@ -125,24 +129,26 @@ svn_update_project()
 }
 
 
-svn_status_project()
+fetch::plugin::svn::status_project()
 {
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
-   local unused="$1" ; shift
-   local name="$1"; shift
-   local url="$1"; shift
-   local branch="$1"; shift
-   local tag="$1"; shift
-   local sourcetype="$1"; shift
-   local sourceoptions="$1"; shift
-   local dstdir="$1"; shift
+   local unused="$1"
+   local name="$2"
+   local url="$3"
+   local branch="$4"
+   local tag="$5"
+   local sourcetype="$6"
+   local sourceoptions="$7"
+   local dstdir="$8"
+
+   shift 8
 
    local options
 
    if [ ! -z "${sourceoptions}" ]
    then
-      options="`get_sourceoption "${sourceoptions}" "status"`"
+      options="`fetch::source::get_option "${sourceoptions}" "status"`"
    fi
 
    [ ! -z "${dstdir}" ] || internal_fail "dstdir is empty"
@@ -154,35 +160,35 @@ svn_status_project()
 }
 
 
-svn_search_local_project()
+fetch::plugin::svn::search_local_project()
 {
-   log_entry "svn_search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
+   log_entry "fetch::plugin::svn::search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
 #   local unused="$1"
    local name="$2"
    local url="$3"
    local branch="$4"
 
-   if r_source_search_local_in_searchpath "${name}" "${branch}" ".svn" 'YES' "${url}"
+   if fetch::source::r_search_local_in_searchpath "${name}" "${branch}" ".svn" 'YES' "${url}"
    then
       printf "%s\n" "${RVAL}"
    fi
 }
 
 
-svn_exists_project()
+fetch::plugin::svn::exists_project()
 {
-   log_entry "svn_exists_project" "$@"
+   log_entry "fetch::plugin::svn::exists_project" "$@"
 
    local url="$3"             # URL of the clone
 
-   source_url_exists "${url}"
+   fetch::source::url_exists "${url}"
 }
 
 
-svn_guess_project()
+fetch::plugin::svn::guess_project()
 {
-   log_entry "svn_guess_project" "$@"
+   log_entry "fetch::plugin::svn::guess_project" "$@"
 
    local url="$3"             # URL of the clone
 

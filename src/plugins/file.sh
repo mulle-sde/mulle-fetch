@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SCM_FILE_SH="included"
+MULLE_FETCH_PLUGIN_FILE_SH="included"
 
 
 #
@@ -36,15 +36,15 @@ MULLE_FETCH_PLUGIN_SCM_FILE_SH="included"
 # a) download the file using curl
 # b) move it into place
 #
-_file_download()
+fetch::plugin::file::download()
 {
-   log_entry "_file_download" "$@"
+   log_entry "fetch::plugin::file::download" "$@"
 
    local download="$1"  # where we expect the file to be
    local url="$2"
    local sourceoptions="$3"
 
-   source_download "${url}" "${download}" "${sourceoptions}"
+   fetch::source::download "${url}" "${download}" "${sourceoptions}"
 
    if [ ! -f "${download}" ] 
    then
@@ -62,9 +62,9 @@ _file_download()
 ### PLUGIN API
 ###
 
-file_fetch_project()
+fetch::plugin::file::fetch_project()
 {
-   log_entry "file_fetch_project" "$@"
+   log_entry "fetch::plugin::file::fetch_project" "$@"
 
    [ $# -lt 8 ] && internal_fail "parameters missing"
 
@@ -93,24 +93,24 @@ ${C_RESET_BOLD}${url}${C_INFO}."
    download="${RVAL}"
    (
       exekutor cd "${dstdir}" &&
-      source_download "${url}" "${download}" "${sourceoptions}"
+      fetch::source::download "${url}" "${download}" "${sourceoptions}"
    ) || return 1
 }
 
 
-file_exists_project()
+fetch::plugin::file::exists_project()
 {
-   log_entry "file_exists_project" "$@"
+   log_entry "fetch::plugin::file::exists_project" "$@"
 
    local url="$3"             # URL of the clone
 
-   source_validate_file_url "${url}"
+   fetch::source::validate_file_url "${url}"
 }
 
 
-file_guess_project()
+fetch::plugin::file::guess_project()
 {
-   log_entry "file_guess_project" "$@"
+   log_entry "fetch::plugin::file::guess_project" "$@"
 
    local url="$3"             # URL of the clone
 

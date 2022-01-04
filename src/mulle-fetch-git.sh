@@ -35,7 +35,7 @@ MULLE_FETCH_GIT_SH="included"
 # by passing in the desired branch and figuring more
 # stuff out
 #
-git_get_default_remote()
+fetch::git::get_default_remote()
 {
    local i
    local match
@@ -65,7 +65,7 @@ git_get_default_remote()
 }
 
 
-git_add_remote()
+fetch::git::add_remote()
 {
    local repository="$1"
    local remote="$2"
@@ -82,7 +82,7 @@ git_add_remote()
 }
 
 
-git_has_remote()
+fetch::git::has_remote()
 {
    local repository="$1"
    local remote="$2"
@@ -100,7 +100,7 @@ git_has_remote()
 }
 
 
-git_remove_remote()
+fetch::git::remove_remote()
 {
    local repository="$1"
    local remote="$2"
@@ -116,7 +116,7 @@ git_remove_remote()
 }
 
 
-git_set_url()
+fetch::git::set_url()
 {
    local repository="$1"
    local remote="$2"
@@ -133,7 +133,7 @@ git_set_url()
 }
 
 
-git_unset_default_remote()
+fetch::git::unset_default_remote()
 {
    local repository="$1"
 
@@ -148,7 +148,7 @@ git_unset_default_remote()
 }
 
 
-git_set_default_remote()
+fetch::git::set_default_remote()
 {
    local repository="$1"
    local remote="$2"
@@ -170,7 +170,7 @@ git_set_default_remote()
 }
 
 
-git_has_branch()
+fetch::git::has_branch()
 {
    local repository="$1"
    local branch="$2"
@@ -186,7 +186,7 @@ git_has_branch()
 }
 
 
-git_has_fetched_tags()
+fetch::git::has_fetched_tags()
 {
    [ -z "$1" ] && internal_fail "empty parameter"
    [ ! -d "$1" ] && internal_fail "directory does not exist"
@@ -202,7 +202,7 @@ git_has_fetched_tags()
 }
 
 
-git_has_tag()
+fetch::git::has_tag()
 {
    [ -z "$1" -o -z "$2" ] && internal_fail "empty parameter"
    [ ! -d "$1" ] && internal_fail "directory does not exist"
@@ -215,7 +215,7 @@ git_has_tag()
 }
 
 
-git_branch_contains_tag()
+fetch::git::branch_contains_tag()
 {
    [ -z "$1" -o -z "$2" -o -z "$3" ] && internal_fail "empty parameter"
    [ ! -d "$1" ] && internal_fail "directory does not exist"
@@ -228,7 +228,7 @@ git_branch_contains_tag()
 }
 
 
-git_get_branch()
+fetch::git::get_branch()
 {
    [ -z "$1" ] && internal_fail "empty parameter"
    [ ! -d "$1" ] && internal_fail "directory does not exist"
@@ -241,7 +241,7 @@ git_get_branch()
 }
 
 
-append_dir_to_gitignore_if_needed()
+fetch::git::append_dir_to_gitignore_if_needed()
 {
    local directory=$1
 
@@ -303,7 +303,7 @@ append_dir_to_gitignore_if_needed()
 # local _fork
 # local _name
 #
-__fork_and_name_from_url()
+fetch::git::__fork_and_name_from_url()
 {
    local url="$1"
 
@@ -331,10 +331,10 @@ __fork_and_name_from_url()
 }
 
 #
-# its important for mulle-sourcetree that git_is_repository and
-# git_is_bare_repository do not actually need a git installed
+# its important for mulle-sourcetree that fetch::git::is_repository and
+# fetch::git::is_bare_repository do not actually need a git installed
 #
-git_is_repository()
+fetch::git::is_repository()
 {
    [ -z "$1" ] && internal_fail "empty parameter"
 
@@ -342,7 +342,7 @@ git_is_repository()
 }
 
 
-git_is_valid_remote_url()
+fetch::git::is_valid_remote_url()
 {
    [ -z "$1" ] && internal_fail "empty parameter"
 
@@ -360,7 +360,7 @@ git_is_valid_remote_url()
 }
 
 
-git_is_bare_repository()
+fetch::git::is_bare_repository()
 {
    local is_bare
 
@@ -387,9 +387,9 @@ git_is_bare_repository()
 }
 
 
-git_initialize()
+fetch::git::initialize()
 {
-   log_entry "git_initialize"
+   log_entry "fetch::git::initialize"
 
    GIT="${GIT:-`command -v "git"`}"
 
@@ -408,6 +408,6 @@ git_initialize()
 }
 
 
-git_initialize
+fetch::git::initialize
 
 :
