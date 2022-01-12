@@ -340,6 +340,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
 fetch::plugin::git::fetch_remote()
 {
    local url="$1"
+
    local remote
 
    remote="origin"
@@ -371,8 +372,13 @@ fetch::plugin::git::fetch_project()
    log_entry "fetch::plugin::git::fetch_project" "$@"
 
 #   local unused="$1"
-   local name="$2"
-   local url="$3"
+   local name="$2"             # name of the clone
+   local url="$3"              # URL of the clone
+#   local branch="$4"          # branch of the clone
+   local tag="$5"              # tag to checkout of the clone
+#   local sourcetype="$6"      # source to use for this clone
+#   local sourceoptions="$7"   # options to use on source
+   local dstdir="$8"           # destination of file (absolute or relative to $PWD)
 
    log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
 ${C_RESET_BOLD}${url}${C_INFO}."
@@ -432,8 +438,6 @@ fetch::plugin::git::checkout_project()
       then
          need_fetch='YES'
       fi
-      log_info "Checking out branch ${C_RESET_BOLD}${branch}${C_INFO} of \
-${C_MAGENTA}${C_BOLD}${name}${C_INFO} ..."
    else
       if [ ! -z "${branch}" ]
       then
@@ -446,8 +450,6 @@ ${C_RESET_BOLD}${tag}${C_WARNING} is set"
       then
          need_fetch='YES'
       fi
-      log_info "Checking out tag ${C_RESET_BOLD}${tag}${C_INFO} of \
-${C_MAGENTA}${C_BOLD}${name}${C_INFO} ..."
    fi
 
    if [ "${need_fetch}" = 'YES' ]
@@ -459,6 +461,9 @@ ${C_MAGENTA}${C_BOLD}${name}${C_INFO} ..."
    fi
 
    (
+      log_info "Checking out ${C_RESET_BOLD}${tag:-${branch}}${C_INFO} of \
+${C_MAGENTA}${C_BOLD}${name}${C_INFO} ..."
+
       exekutor cd "${dstdir}" &&
       exekutor git ${OPTION_TOOL_FLAGS} checkout ${options} "${tag:-${branch}}" >&2
    ) || return 1

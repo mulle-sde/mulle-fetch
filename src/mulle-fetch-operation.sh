@@ -165,9 +165,9 @@ this platform"
 }
 
 
-fetch::operation::type_of_local_item()
+fetch::operation::r_type_of_local_item()
 {
-   log_entry "fetch::operation::type_of_local_item" "$@"
+   log_entry "fetch::operation::r_type_of_local_item" "$@"
 
    local url="$1"
 
@@ -277,7 +277,7 @@ fetch::operation::_operation()
          found="`fetch::operation::get_local_item "$@"`"
          if [ ! -z "${found}" ]
          then
-            fetch::operation::type_of_local_item "${found}"
+            fetch::operation::r_type_of_local_item "${found}"
             localtype="${RVAL}"
 
             case "${localtype}" in
