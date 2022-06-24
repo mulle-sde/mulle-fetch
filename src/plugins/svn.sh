@@ -41,7 +41,7 @@ MULLE_FETCH_PLUGIN_SVN_SH="included"
 #
 fetch::plugin::svn::fetch_project()
 {
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
    local unused="$1"
    local name="$2"
@@ -54,7 +54,7 @@ fetch::plugin::svn::fetch_project()
 
    shift 8
 
-   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
+   _log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
 ${C_RESET_BOLD}${url}${C_INFO}."
 
    fetch::source::prepare_filesystem_for_fetch "${dstdir}"
@@ -86,7 +86,7 @@ ${C_RESET_BOLD}${url}${C_INFO}."
 
 fetch::plugin::svn::update_project()
 {
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
    local unused="$1"
    local name="$2"
@@ -106,7 +106,7 @@ fetch::plugin::svn::update_project()
       options="`fetch::source::get_option "${sourceoptions}" "update"`"
    fi
 
-   [ ! -z "${dstdir}" ] || internal_fail "dstdir is empty"
+   [ ! -z "${dstdir}" ] || _internal_fail "dstdir is empty"
 
    log_info "SVN updating ${C_MAGENTA}${C_BOLD}${dstdir}${C_INFO} ..."
 
@@ -131,7 +131,7 @@ fetch::plugin::svn::update_project()
 
 fetch::plugin::svn::status_project()
 {
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
    local unused="$1"
    local name="$2"
@@ -151,7 +151,7 @@ fetch::plugin::svn::status_project()
       options="`fetch::source::get_option "${sourceoptions}" "status"`"
    fi
 
-   [ ! -z "${dstdir}" ] || internal_fail "dstdir is empty"
+   [ ! -z "${dstdir}" ] || _internal_fail "dstdir is empty"
 
    (
       exekutor cd "${dstdir}" ;

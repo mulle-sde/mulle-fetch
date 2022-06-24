@@ -50,9 +50,9 @@ fetch::plugin::file::download()
    then
       if [ ! -e "${download}" ] 
       then
-         internal_fail "expected file \"${download}\" is missing"
+         _internal_fail "expected file \"${download}\" is missing"
       else
-         internal_fail "expected file \"${download}\" is not a file"
+         _internal_fail "expected file \"${download}\" is not a file"
       fi
    fi
 }
@@ -66,7 +66,7 @@ fetch::plugin::file::fetch_project()
 {
    log_entry "fetch::plugin::file::fetch_project" "$@"
 
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
    local unused="$1"
    local name="$2"            # name of the clone
@@ -77,7 +77,7 @@ fetch::plugin::file::fetch_project()
    local sourceoptions="$7"   # options to use on source
    local destination="$8"     # destination of file (absolute or relative to $PWD)
 
-   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
+   _log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
 ${C_RESET_BOLD}${url}${C_INFO}."
 
    local dstdir

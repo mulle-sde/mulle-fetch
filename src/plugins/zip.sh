@@ -35,7 +35,7 @@ fetch::plugin::zip::fetch_project()
 {
    log_entry "fetch::plugin::zip::fetch_project" "$@"
 
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
    local unused="$1"
    local name="$2"            # name of the clone
@@ -46,8 +46,7 @@ fetch::plugin::zip::fetch_project()
    local sourceoptions="$7"   # options to use on source
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
-   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
-${C_RESET_BOLD}${url}${C_INFO}."
+   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from ${C_RESET_BOLD}${url}${C_INFO}."
 
    fetch::source::prepare_filesystem_for_fetch "${dstdir}"
 

@@ -76,8 +76,7 @@ fetch::plugin::symlink::fetch_project()
       ;;
    esac
 
-   log_info "Symlinked ${C_MAGENTA}${C_BOLD}${name}${C_INFO} to \
-${C_RESET_BOLD}${url}${C_INFO}"
+   log_info "Symlinked ${C_MAGENTA}${C_BOLD}${name}${C_INFO} to ${C_RESET_BOLD}${url}${C_INFO}"
 
    local branchlabel
 
@@ -90,10 +89,10 @@ ${C_RESET_BOLD}${url}${C_INFO}"
 
    if [ "${branch}" != "${GIT_DEFAULT_BRANCH:-master}" -a "${branch}" != "latest" -a ! -z "${branch}" ]
    then
-      log_warning "warning: The intended ${branchlabel} ${C_RESET_BOLD}${branch}${C_WARNING} \
+      _log_warning "warning: The intended ${branchlabel} ${C_RESET_BOLD}${branch}${C_WARNING} \
 may have been ignored, because the repository is symlinked."
       # this can be often more confusing so just issue onv erbosr
-      log_verbose "If you want to checkout this ${branchlabel} you may want to:
+      _log_verbose "If you want to checkout this ${branchlabel} you may want to:
    ${C_RESET}(cd ${dstdir}; git checkout ${OPTION_TOOL_OPTIONS} \"${branch}\" )${C_WARNING}"
    fi
 }

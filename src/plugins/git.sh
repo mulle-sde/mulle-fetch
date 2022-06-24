@@ -48,8 +48,6 @@ fetch::plugin::git::r_get_mirror_url()
    mkdir_if_missing "${MULLE_FETCH_MIRROR_DIR}/${_fork}"
    mirrordir="${MULLE_FETCH_MIRROR_DIR}/${_fork}/${_name}" # try to keep it global
 
-   local match
-
    if [ ! -d "${mirrordir}" ]
    then
       log_verbose "Set up git-mirror \"${mirrordir}\""
@@ -95,7 +93,7 @@ fetch::plugin::git::r_check_file_url()
          log_error "\"${url}\" is not a git repository ($PWD)."
          if [ -d "${url}" ]
          then
-            log_info "Hint: You may want to symlink it.
+            _log_info "Hint: You may want to symlink it.
 If you are fetching by hand, use \`fetch --symlink\`. If mulle-sde is
 involved, check that environment \`MULLE_SOURCETREE_SYMLINK\` is set to YES"
          fi
@@ -166,7 +164,7 @@ fetch::plugin::git::clone()
 {
    log_entry "fetch::plugin::git::clone" "$@"
 
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
 #   local unused="$1"
 #   local name="$2"
@@ -177,10 +175,10 @@ fetch::plugin::git::clone()
    local sourceoptions="$7"
    local dstdir="$8"
 
-   [ ! -z "${url}" ]    || internal_fail "url is empty"
-   [ ! -z "${dstdir}" ] || internal_fail "dstdir is empty"
+   [ ! -z "${url}" ]    || _internal_fail "url is empty"
+   [ ! -z "${dstdir}" ] || _internal_fail "dstdir is empty"
 
-   [ -e "${dstdir}" ]   && internal_fail "${dstdir} already exists"
+   [ -e "${dstdir}" ]   && _internal_fail "${dstdir} already exists"
 
    local dstdir
    local options
@@ -195,7 +193,7 @@ fetch::plugin::git::clone()
 
    if [ ! -z "${branch}" ]
    then
-      log_verbose "Cloning branch ${C_RESET_BOLD}$branch${C_INFO} of \
+      _log_verbose "Cloning branch ${C_RESET_BOLD}$branch${C_INFO} of \
 ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       r_concat "${options}" "-b ${branch}"
       options="${RVAL}"
@@ -380,7 +378,7 @@ fetch::plugin::git::fetch_project()
 #   local sourceoptions="$7"   # options to use on source
    local dstdir="$8"           # destination of file (absolute or relative to $PWD)
 
-   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
+   _log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
 ${C_RESET_BOLD}${url}${C_INFO}."
 
    fetch::source::prepare_filesystem_for_fetch "${dstdir}"
@@ -402,7 +400,7 @@ fetch::plugin::git::checkout_project()
 {
    log_entry "fetch::plugin::git::checkout_project" "$@"
 
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
    local unused="$1"
    local name="$2"
@@ -415,8 +413,8 @@ fetch::plugin::git::checkout_project()
 
    shift 8
 
-   [ -z "${dstdir}" ]                && internal_fail "dstdir is empty"
-   [ -z "${tag}" -a -z "${branch}" ] && internal_fail "tag and branch are empty"
+   [ -z "${dstdir}" ]                && _internal_fail "dstdir is empty"
+   [ -z "${tag}" -a -z "${branch}" ] && _internal_fail "tag and branch are empty"
 
    local options
 
@@ -441,7 +439,7 @@ fetch::plugin::git::checkout_project()
    else
       if [ ! -z "${branch}" ]
       then
-         log_warning "Branch ${C_RESET_BOLD}${branch}${C_WARNING} of \
+         _log_warning "Branch ${C_RESET_BOLD}${branch}${C_WARNING} of \
 ${C_MAGENTA}${C_BOLD}${name}${C_WARNING} ignored as tag \
 ${C_RESET_BOLD}${tag}${C_WARNING} is set"
       fi
@@ -461,7 +459,7 @@ ${C_RESET_BOLD}${tag}${C_WARNING} is set"
    fi
 
    (
-      log_info "Checking out ${C_RESET_BOLD}${tag:-${branch}}${C_INFO} of \
+      _log_info "Checking out ${C_RESET_BOLD}${tag:-${branch}}${C_INFO} of \
 ${C_MAGENTA}${C_BOLD}${name}${C_INFO} ..."
 
       exekutor cd "${dstdir}" &&
@@ -470,7 +468,7 @@ ${C_MAGENTA}${C_BOLD}${name}${C_INFO} ..."
 
    if [ $? -ne 0 ]
    then
-      log_error "Checkout failed, moving ${C_CYAN}${C_BOLD}${dstdir}${C_ERROR} \
+      _log_error "Checkout failed, moving ${C_CYAN}${C_BOLD}${dstdir}${C_ERROR} \
 to ${C_CYAN}${C_BOLD}${dstdir}.failed${C_ERROR}"
       log_error "You need to fix this manually and then move it back."
 
@@ -486,7 +484,7 @@ fetch::plugin::git::update_project()
 {
    log_entry "fetch::plugin::git::update_project" "$@"
 
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
    local unused="$1"
    local name="$2"
@@ -506,7 +504,7 @@ fetch::plugin::git::update_project()
    then
       options="`fetch::source::get_option "${sourceoptions}" "update" `"
    fi
-   remote="`fetch::plugin::git::fetch_remote "${url}"`" || internal_fail "can't figure out remote"
+   remote="`fetch::plugin::git::fetch_remote "${url}"`" || _internal_fail "can't figure out remote"
 
    log_info "Fetching ${C_MAGENTA}${C_BOLD}${dstdir#${PWD}/}${C_INFO} ..."
 
@@ -522,7 +520,7 @@ fetch::plugin::git::upgrade_project()
 {
    log_entry "fetch::plugin::git::upgrade_project" "$@"
 
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
    local unused="$1"
    local name="$2"
@@ -542,7 +540,7 @@ fetch::plugin::git::upgrade_project()
    then
       options="`fetch::source::get_option "${sourceoptions}" "upgrade"`"
    fi
-   remote="`fetch::plugin::git::fetch_remote "${url}"`" || internal_fail "can't figure out remote"
+   remote="`fetch::plugin::git::fetch_remote "${url}"`" || _internal_fail "can't figure out remote"
 
    log_info "Pulling ${C_MAGENTA}${C_BOLD}${dstdir}${C_INFO} ..."
 
@@ -563,7 +561,7 @@ fetch::plugin::git::status_project()
 {
    log_entry "fetch::plugin::git::status_project" "$@"
 
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
    local unused="$1"
    local name="$2"

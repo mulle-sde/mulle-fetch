@@ -29,10 +29,10 @@
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #   POSSIBILITY OF SUCH DAMAGE.
 #
-[ "${TRACE}" = 'YES' -o "${MULLE_FETCH_TRACE}" = 'YES' ] && set -x && : "$0" "$@"
+[ "${TRACE:-}" = 'YES' -o "${MULLE_FETCH_TRACE:-}" = 'YES' ] && set -x && : "$0" "$@"
 
 
-MULLE_EXECUTABLE_VERSION="3.0.0"
+MULLE_EXECUTABLE_VERSION="3.0.1"
 
 ##########################################################################
 ###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###
@@ -45,7 +45,7 @@ MULLE_EXECUTABLE_VERSION="3.0.0"
 #
 # Figure out MULLE_BASHFUNCTIONS_LIBEXEC_DIR on this machine if needed.
 #
-if [ -z "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}" ]
+if ! [ ${MULLE_BASHFUNCTIONS_LIBEXEC_DIR+x} ]
 then
    MULLE_BASHFUNCTIONS_LIBEXEC_DIR="`mulle-bashfunctions libexec-dir`" || exit 1
    export MULLE_BASHFUNCTIONS_LIBEXEC_DIR
@@ -55,7 +55,7 @@ fi
 # The booter reruns the executable either with bash or zsh, whatever the
 # system provides. On the second run --no-auto-shell will be set first.
 #
-if [ "$1" != --no-auto-shell ]
+if [ "${1:-}" != --no-auto-shell ]
 then
    . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-boot.sh" || exit 1
 else
@@ -71,6 +71,7 @@ fi
 #
 # Do this first to get aliases
 #
+MULLE_EXECUTABLE="${BASH_SOURCE[0]:-${(%):-%x}}"
 . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-bashfunctions.sh" || exit 1
 
 ###
@@ -80,20 +81,18 @@ fi
 ###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###
 ###########################################################################
 
-MULLE_EXECUTABLE="${BASH_SOURCE[0]:-${(%):-%x}}"
-
 #
 # Determine location of own libexec directory. Which is `src` in development
 # and ../libexec when deployed. MULLE_EXECUTABLE needs to be defined for this.
 #
 
-if [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ]
+if ! [ ${MULLE_FETCH_LIBEXEC_DIR+x} ]
 then
    r_get_libexec_dir "${MULLE_EXECUTABLE}" "mulle-fetch" "mulle-fetch-archive.sh"
    MULLE_FETCH_LIBEXEC_DIR="${RVAL}"
 fi
 
-
+set +u
 
 
 #
@@ -430,4 +429,4 @@ fetch::main()
    esac
 }
 
-call_with_flags "fetch::main" "${MULLE_FETCH_FLAGS}" "$@"
+call_with_flags "fetch::main" "${MULLE_FETCH_FLAGS:-}" "$@"

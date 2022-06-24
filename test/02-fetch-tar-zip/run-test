@@ -38,19 +38,19 @@ setup_demo_repo()
       mkdir_if_missing "$1" &&
       ( exekutor cd "$1" && _setup_demo_repo ) &&
       set +e
-   ) || internal_fail "fail"
+   ) || _internal_fail "fail"
 }
 
 
 setup_demo_tar()
 {
-   tar cfz "$1" "$2" || internal_fail "fail"
+   tar cfz "$1" "$2" || _internal_fail "fail"
 }
 
 
 setup_demo_zip()
 {
-   zip -u -q -r "$1" "$2" || internal_fail "fail"
+   zip -u -q -r "$1" "$2" || _internal_fail "fail"
 }
 
 

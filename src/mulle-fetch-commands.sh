@@ -115,7 +115,8 @@ Options:
    --recursive            : fetch git recursively (does nothing for other scms)
    --refresh              : refresh mirrored repositories and cached archives
    --symlink-returns-4    : if a repository was symlinked return with code 4
-   --symlink              : allow symlinks to be create
+   --symlink              : allow symlinks to be created
+   --no-symlink           : forbid symlinks to be created
 EOF
 
    fetch::commands::show_plugins >&2
@@ -308,11 +309,11 @@ fetch::commands::common()
             OPTION_REFRESH='NO'
          ;;
 
-         --symlink)
+         --symlink|--symlinks)
             OPTION_SYMLINK='YES'
          ;;
 
-         --no-symlinks)
+         --no-symlink|--no-symlinks)
             OPTION_ABSOLUTE_SYMLINK='NO'
          ;;
 
@@ -441,7 +442,7 @@ fetch::commands::common()
    fetch::plugin::load "symlink" "scm" # brauchen wir immer
    fetch::plugin::load "${OPTION_SCM}" "scm"
 
-   [ -z "${DEFAULT_IFS}" ] && internal_fail "IFS fail"
+   [ -z "${DEFAULT_IFS}" ] && _internal_fail "IFS fail"
 
    local directory
    local name
@@ -740,7 +741,7 @@ fetch::commands::initialize()
 
    if [ -z "${MULLE_BASHFUNCTIONS_SH}" ]
    then
-      [ -z "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}" ] && internal_fail "MULLE_BASHFUNCTIONS_LIBEXEC_DIR is empty"
+      [ -z "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}" ] && _internal_fail "MULLE_BASHFUNCTIONS_LIBEXEC_DIR is empty"
 
       # shellcheck source=../../mulle-bashfunctions/src/mulle-bashfunctions.sh
       . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-bashfunctions.sh" || exit 1

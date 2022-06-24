@@ -148,7 +148,7 @@ fetch::archive::move_stuff()
 
    local src
    local toremove
-   [ ! -e "${dstdir}" ] || internal_fail "destination must not exist"
+   [ ! -e "${dstdir}" ] || _internal_fail "destination must not exist"
 
    toremove="${tmpdir}"
 
@@ -187,7 +187,7 @@ fetch::archive::r_search_local()
    local name="$2"
    local filename="$3"
 
-   [ $# -ne 3 ] && internal_fail "fail"
+   [ $# -ne 3 ] && _internal_fail "fail"
 
    local found
 

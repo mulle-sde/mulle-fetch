@@ -97,7 +97,7 @@ fetch::source::r_get_plugin_function()
    local sourcetype="$1"
    local opname="$2"
 
-   [ -z "$1" -o -z "$2" ] && internal_fail "parameter is empty"
+   [ -z "$1" -o -z "$2" ] && _internal_fail "parameter is empty"
 
    local operation
    local funcname
@@ -109,7 +109,7 @@ fetch::source::r_get_plugin_function()
    operation="fetch::plugin::${sourcetype}::${funcname}_project"
    if ! shell_is_function "${operation}"
    then
-      log_verbose "Operation \"${opname}\" is not provided by \"${sourcetype}\" \
+      _log_verbose "Operation \"${opname}\" is not provided by \"${sourcetype}\" \
 (function \"$operation\" is missing)"
       RVAL=
       return 1
@@ -201,11 +201,8 @@ fetch::source::r_search_local()
    RVAL=
 
 
-   if [ "${MULLE_FLAG_LOG_SETTINGS}" = 'YES' ]
-   then
-      log_trace2 "directory      : ${directory}"
-      log_trace2 "repo           : ${repo}"
-   fi
+   log_setting "directory      : ${directory}"
+   log_setting "repo           : ${repo}"
 
    log_verbose "Looking for local repo \"${repo}\" in \"${directory#${MULLE_USER_PWD}/}\""
    local inhibit
@@ -266,7 +263,7 @@ fetch::source::r_search_local_in_searchpath()
 
    curdir="${curdir:-`pwd -P`}"
 
-   [ -z "${url}" ] && internal_fail "empty url"
+   [ -z "${url}" ] && _internal_fail "empty url"
 
    log_debug "MULLE_FETCH_SEARCH_PATH is \"${MULLE_FETCH_SEARCH_PATH}\""
 
@@ -306,7 +303,7 @@ fetch::source::r_search_local_in_searchpath()
 
       if [ "${realdir}" = "${curdir}" ]
       then
-         log_warning "Search path mistakenly contains \"${directory}\", which is \
+         _log_warning "Search path mistakenly contains \"${directory}\", which is \
 the current directory: skipping"
          continue
       fi

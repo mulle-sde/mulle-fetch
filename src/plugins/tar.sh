@@ -138,8 +138,8 @@ fetch::plugin::tar::archive_cache_grab()
    local download="$2"
    local sourceoptions="$3"
 
-   [ -z "${url}" ]      && internal_fail "url is empty"
-   [ -z "${download}" ] && internal_fail "download is empty"
+   [ -z "${url}" ]      && _internal_fail "url is empty"
+   [ -z "${download}" ] && _internal_fail "download is empty"
 
    _cachable_path=""
    _cached_archive=""
@@ -173,7 +173,7 @@ fetch::plugin::tar::archive_cache_grab()
    #
    case "${OPTION_REFRESH}" in
       "")
-         internal_fail "illegal OPTION_REFRESH value"
+         _internal_fail "illegal OPTION_REFRESH value"
       ;;
 
       DEFAULT|NO)
@@ -184,7 +184,7 @@ fetch::plugin::tar::archive_cache_grab()
 
          if [ ! -z "${_cached_archive}" ]
          then
-            log_info "Using cached \"${_cached_archive/#${HOME}/~}\" for \
+            _log_info "Using cached \"${_cached_archive/#${HOME}/~}\" for \
 ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
             # we are in a tmp dir
             _cachable_path=""
@@ -242,7 +242,7 @@ fetch::plugin::tar::download()
       fetch::source::download "${url}" "${download}" "${sourceoptions}"
    fi
 
-   [ -e "${download}" ] || internal_fail "expected file \"${download}\" is missing"
+   [ -e "${download}" ] || _internal_fail "expected file \"${download}\" is missing"
 
    if [ -z "${_cached_archive}" -a ! -z "${_cachable_path}" ]
    then
@@ -263,7 +263,7 @@ fetch::plugin::tar::fetch_project()
 {
    log_entry "fetch::plugin::tar::fetch_project" "$@"
 
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
    local unused="$1"
    local name="$2"            # name of the clone
@@ -274,8 +274,7 @@ fetch::plugin::tar::fetch_project()
    local sourceoptions="$7"   # options to use on source
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
-   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
-${C_RESET_BOLD}${url}${C_INFO}."
+   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from ${C_RESET_BOLD}${url}${C_INFO}."
 
    fetch::source::prepare_filesystem_for_fetch "${dstdir}"
 

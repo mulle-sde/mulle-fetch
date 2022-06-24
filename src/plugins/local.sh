@@ -41,7 +41,7 @@ MULLE_FETCH_PLUGIN_LOCAL_SH="included"
 #
 fetch::plugin::local::fetch_project()
 {
-   [ $# -lt 8 ] && internal_fail "parameters missing"
+   [ $# -lt 8 ] && _internal_fail "parameters missing"
 
    local unused="$1"
    local name="$2"

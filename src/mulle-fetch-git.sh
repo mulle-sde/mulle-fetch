@@ -71,8 +71,8 @@ fetch::git::add_remote()
    local remote="$2"
    local url="$3"
 
-   [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && internal_fail "empty parameter"
-   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && _internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
    (
@@ -87,8 +87,8 @@ fetch::git::has_remote()
    local repository="$1"
    local remote="$2"
 
-   [ -z "${repository}" -o -z "${remote}" ] && internal_fail "empty parameter"
-   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${repository}" -o -z "${remote}" ] && _internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
    (
@@ -105,8 +105,8 @@ fetch::git::remove_remote()
    local repository="$1"
    local remote="$2"
 
-   [ -z "${repository}" -o -z "${remote}" ] && internal_fail "empty parameter"
-   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${repository}" -o -z "${remote}" ] && _internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
    (
@@ -122,8 +122,8 @@ fetch::git::set_url()
    local remote="$2"
    local url="$3"
 
-   [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && internal_fail "empty parameter"
-   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && _internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
    (
@@ -137,8 +137,8 @@ fetch::git::unset_default_remote()
 {
    local repository="$1"
 
-   [ -z "${repository}" ] && internal_fail "empty parameter"
-   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${repository}" ] && _internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
    (
@@ -154,8 +154,8 @@ fetch::git::set_default_remote()
    local remote="$2"
    local url="$3"
 
-   [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && internal_fail "empty parameter"
-   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${repository}" -o -z "${remote}" -o -z "${url}" ] && _internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
    local repository="$1"
@@ -175,8 +175,8 @@ fetch::git::has_branch()
    local repository="$1"
    local branch="$2"
 
-   [ -z "${repository}" -o -z "${branch}" ] && internal_fail "empty parameter"
-   [ ! -d "${repository}" ] && internal_fail "directory does not exist"
+   [ -z "${repository}" -o -z "${branch}" ] && _internal_fail "empty parameter"
+   [ ! -d "${repository}" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
    (
@@ -188,8 +188,8 @@ fetch::git::has_branch()
 
 fetch::git::has_fetched_tags()
 {
-   [ -z "$1" ] && internal_fail "empty parameter"
-   [ ! -d "$1" ] && internal_fail "directory does not exist"
+   [ -z "$1" ] && _internal_fail "empty parameter"
+   [ ! -d "$1" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
    (
@@ -204,8 +204,8 @@ fetch::git::has_fetched_tags()
 
 fetch::git::has_tag()
 {
-   [ -z "$1" -o -z "$2" ] && internal_fail "empty parameter"
-   [ ! -d "$1" ] && internal_fail "directory does not exist"
+   [ -z "$1" -o -z "$2" ] && _internal_fail "empty parameter"
+   [ ! -d "$1" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
    (
@@ -217,8 +217,8 @@ fetch::git::has_tag()
 
 fetch::git::branch_contains_tag()
 {
-   [ -z "$1" -o -z "$2" -o -z "$3" ] && internal_fail "empty parameter"
-   [ ! -d "$1" ] && internal_fail "directory does not exist"
+   [ -z "$1" -o -z "$2" -o -z "$3" ] && _internal_fail "empty parameter"
+   [ ! -d "$1" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
    (
@@ -230,8 +230,8 @@ fetch::git::branch_contains_tag()
 
 fetch::git::get_branch()
 {
-   [ -z "$1" ] && internal_fail "empty parameter"
-   [ ! -d "$1" ] && internal_fail "directory does not exist"
+   [ -z "$1" ] && _internal_fail "empty parameter"
+   [ ! -d "$1" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
    (
@@ -241,63 +241,63 @@ fetch::git::get_branch()
 }
 
 
-fetch::git::append_dir_to_gitignore_if_needed()
-{
-   local directory=$1
-
-   [ -z "${directory}" ] && internal_fail "empty directory"
-
-   case "${directory}" in
-      "${REPOS_DIR}/"*)
-         return 0
-      ;;
-   esac
-
-   # strip slashes
-   directory="${directory##/}"
-   directory="${directory%%/}"
-
-   #
-   # prepend \n because it is safer, in case .gitignore has no trailing
-   # LF which it often seems to not have
-   # fgrep is bugged on at least OS X 10.x, so can't use -e chaining
-   if [ -f ".gitignore" ]
-   then
-      local pattern0
-      local pattern1
-      local pattern2
-      local pattern3
-
-      # variations with leading and trailing slashes
-      pattern0="${directory}"
-      pattern1="${pattern0}/"
-      pattern2="/${pattern0}"
-      pattern3="/${pattern0}/"
-
-      if fgrep -q -s -x -e "${pattern0}" .gitignore ||
-         fgrep -q -s -x -e "${pattern1}" .gitignore ||
-         fgrep -q -s -x -e "${pattern2}" .gitignore ||
-         fgrep -q -s -x -e "${pattern3}" .gitignore
-      then
-         return
-      fi
-   fi
-
-   local line
-   local lf
-   local terminator
-
-   line="/${directory}"
-   terminator="`rexekutor tail -c 1 ".gitignore" 2> /dev/null | tr '\012' '|'`"
-
-   if [ "${terminator}" != "|" ]
-   then
-      line="${lf}/${directory}"
-   fi
-
-   log_info "Adding \"/${directory}\" to \".gitignore\""
-   redirect_append_exekutor .gitignore printf "%s\n" "${line}" || fail "Couldn\'t append to .gitignore"
-}
+#fetch::git::append_dir_to_gitignore_if_needed()
+#{
+#   local directory=$1
+#
+#   [ -z "${directory}" ] && _internal_fail "empty directory"
+#
+#   case "${directory}" in
+#      "${REPOS_DIR}/"*)
+#         return 0
+#      ;;
+#   esac
+#
+#   # strip slashes
+#   directory="${directory##/}"
+#   directory="${directory%%/}"
+#
+#   #
+#   # prepend \n because it is safer, in case .gitignore has no trailing
+#   # LF which it often seems to not have
+#   # fgrep is bugged on at least OS X 10.x, so can't use -e chaining
+#   if [ -f ".gitignore" ]
+#   then
+#      local pattern0
+#      local pattern1
+#      local pattern2
+#      local pattern3
+#
+#      # variations with leading and trailing slashes
+#      pattern0="${directory}"
+#      pattern1="${pattern0}/"
+#      pattern2="/${pattern0}"
+#      pattern3="/${pattern0}/"
+#
+#      if fgrep -q -s -x -e "${pattern0}" .gitignore ||
+#         fgrep -q -s -x -e "${pattern1}" .gitignore ||
+#         fgrep -q -s -x -e "${pattern2}" .gitignore ||
+#         fgrep -q -s -x -e "${pattern3}" .gitignore
+#      then
+#         return
+#      fi
+#   fi
+#
+#   local line
+#   local lf
+#   local terminator
+#
+#   line="/${directory}"
+#   terminator="`rexekutor tail -c 1 ".gitignore" 2> /dev/null | tr '\012' '|'`"
+#
+#   if [ "${terminator}" != "|" ]
+#   then
+#      line="${lf}/${directory}"
+#   fi
+#
+#   log_info "Adding \"/${directory}\" to \".gitignore\""
+#   redirect_append_exekutor .gitignore printf "%s\n" "${line}" || fail "Couldn\'t append to .gitignore"
+#}
 
 #
 # local _fork
@@ -336,7 +336,7 @@ fetch::git::__fork_and_name_from_url()
 #
 fetch::git::is_repository()
 {
-   [ -z "$1" ] && internal_fail "empty parameter"
+   [ -z "$1" ] && _internal_fail "empty parameter"
 
    [ -d "${1}/.git" ] || [ -d  "${1}/refs" -a -f "${1}/HEAD" ]
 }
@@ -344,7 +344,7 @@ fetch::git::is_repository()
 
 fetch::git::is_valid_remote_url()
 {
-   [ -z "$1" ] && internal_fail "empty parameter"
+   [ -z "$1" ] && _internal_fail "empty parameter"
 
    #
    # memo -q --exit-code are basically useless, stuff still gets printed
@@ -378,8 +378,8 @@ fetch::git::is_bare_repository()
              )"
    if [ -z "${is_bare}" ]
    then
-      [ ! -x "$1" ]    && internal_fail "Given wrong or protected directory \"$1\" (${PWD})"
-      [ -d "$1/.git" ] && internal_fail "Given non git directory \"$1\" (${PWD})"
+      [ ! -x "$1" ]    && _internal_fail "Given wrong or protected directory \"$1\" (${PWD})"
+      [ -d "$1/.git" ] && _internal_fail "Given non git directory \"$1\" (${PWD})"
       return 1
    fi
 

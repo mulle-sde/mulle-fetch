@@ -57,8 +57,8 @@ fetch::plugin::all_names()
    local pluginpath
    local name
 
-   [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
-   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
+   [ -z "${DEFAULT_IFS}" ] && _internal_fail "DEFAULT_IFS not set"
+   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && _internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
 
    shell_enable_nullglob
    IFS=$'\n'; shell_enable_glob #sic
@@ -101,7 +101,7 @@ fetch::plugin::load_if_needed()
    r_uppercase "${name}"
    variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
 
-   if [ ! -z "${ZSH_VERSION}" ]
+   if [ ${ZSH_VERSION+x} ]
    then
       value="${(P)variable}"
    else
@@ -133,7 +133,7 @@ fetch::plugin::load_if_present()
 
    r_uppercase "${name}"
    variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
-   if [ ! -z "${ZSH_VERSION}" ]
+   if [ ${ZSH_VERSION+x} ]
    then
       value="${(P)variable}"
    else
@@ -181,8 +181,8 @@ fetch::plugin::list()
 
    local pluginpath
 
-   [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
-   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
+   [ -z "${DEFAULT_IFS}" ] && _internal_fail "DEFAULT_IFS not set"
+   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && _internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
 
    log_info "Plugins"
 
@@ -201,10 +201,10 @@ fetch::plugin::load_all()
 
    local name
 
-   [ -z "${DEFAULT_IFS}" ] && internal_fail "DEFAULT_IFS not set"
-   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
+   [ -z "${DEFAULT_IFS}" ] && _internal_fail "DEFAULT_IFS not set"
+   [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && _internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
 
-   log_fluff "Loading plugins..."
+   log_fluff "Loading fetch plugins..."
 
    local names
 

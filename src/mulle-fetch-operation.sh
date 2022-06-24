@@ -70,8 +70,8 @@ fetch::operation::log_action()
 
    case "${action}" in
       fetch)
-         [ -z "${url}" ]    && internal_fail "parameter: url is empty"
-         [ -z "${dstdir}" ] && internal_fail "parameter: dstdir is empty"
+         [ -z "${url}" ]    && _internal_fail "parameter: url is empty"
+         [ -z "${dstdir}" ] && _internal_fail "parameter: dstdir is empty"
 
          proposition=" into "
          if [ -L "${url}" ]
@@ -81,13 +81,13 @@ fetch::operation::log_action()
       ;;
 
       search-local|guess|exists)
-         [ -z "${url}" ]      && internal_fail "parameter: url is empty"
+         [ -z "${url}" ]      && _internal_fail "parameter: url is empty"
          info=" of "
          proposition=" at "
       ;;
 
       *)
-         [ -z "${dstdir}" ]   && internal_fail "parameter: dstdir is empty"
+         [ -z "${dstdir}" ]   && _internal_fail "parameter: dstdir is empty"
          [ ! -d "${dstdir}" ] && fail "Directory ${C_RESET_BOLD}${dstdir}${C_ERROR_TEXT} does not exist"
          proposition=" in "
       ;;
@@ -113,7 +113,7 @@ fetch::operation::can_symlink_it()
    #
    if [ "${OPTION_SYMLINK}" != 'YES' ]
    then
-      log_verbose "Not allowed to symlink it. (Use --symlink to allow).
+      _log_verbose "Not allowed to symlink it. (Use --symlink to allow).
 Within mulle-sde:
 ${C_RESET_BOLD}  mulle-sde env set MULLE_SOURCETREE_SYMLINK YES
 "
@@ -122,7 +122,7 @@ ${C_RESET_BOLD}  mulle-sde env set MULLE_SOURCETREE_SYMLINK YES
 
    case "${MULLE_UNAME}" in
       minwgw)
-         log_verbose "Can't symlink it, because symlinking is unavailable on \
+         _log_verbose "Can't symlink it, because symlinking is unavailable on \
 this platform"
          return 1
       ;;
@@ -215,7 +215,7 @@ fetch::operation::get_local_item()
 
    if [ -z "${MULLE_FETCH_SEARCH_PATH}" ]
    then
-      log_fluff "Not searching local filesystem because MULLE_FETCH_SEARCH_PATH \
+      _log_fluff "Not searching local filesystem because MULLE_FETCH_SEARCH_PATH \
 is empty (use --local-search-path to set)"
       return
    fi
@@ -229,7 +229,7 @@ is empty (use --local-search-path to set)"
    then
       exekutor "${operation}" "$@"
    else
-      log_fluff "Not searching locals because source \"${sourcetype}\" does \
+      _log_fluff "Not searching locals because source \"${sourcetype}\" does \
 not support \"${operation}\""
    fi
 }
@@ -249,7 +249,7 @@ fetch::operation::_operation()
    local sourceoptions="$7"   # options to use on source
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
-   [ $# -eq 8 ] || internal_fail "parameters imcomplete"
+   [ $# -eq 8 ] || _internal_fail "parameters imcomplete"
 
    local found
    local rval
@@ -262,7 +262,7 @@ fetch::operation::_operation()
       *'/../'*|'../'*|*'/..'|'..')
          if [ "${sourcetype}" != "symlink" ]
          then
-            internal_fail "Faulty url \"${url}\" should have been caught before"
+            _internal_fail "Faulty url \"${url}\" should have been caught before"
          fi
       ;;
 
@@ -330,7 +330,7 @@ fetch::operation::_operation()
       ;;
 
       111)
-         log_fail "Source \"${sourcetype}\" is unknown"
+         fail "Source \"${sourcetype}\" is unknown"
       ;;
 
       *)
@@ -354,7 +354,7 @@ fetch::operation::do()
 
    local opname="$1" ; shift
 
-   [ -z "${opname}" ] && internal_fail "operation is empty"
+   [ -z "${opname}" ] && _internal_fail "operation is empty"
 
    fetch::operation::log_action "${opname}" "$@"
 
@@ -367,7 +367,7 @@ fetch::operation::do()
 #   local sourceoptions="$7"   # options to use on source
 #   local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
-   [ -z "${sourcetype}" ] && internal_fail "source is empty"
+   [ -z "${sourcetype}" ] && _internal_fail "source is empty"
 
    local rval
 
@@ -376,8 +376,7 @@ fetch::operation::do()
          fetch::operation::_operation "$@"
          rval=$?
 
-         log_debug "fetch::operation::do \"${opname}\": \"${sourcetype}\" \
-returns with ${rval}"
+         log_debug "fetch::operation::do \"${opname}\": \"${sourcetype}\" returns with ${rval}"
 
          return "${rval}"
       ;;
