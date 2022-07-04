@@ -198,7 +198,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       r_concat "${options}" "-b ${branch}"
       options="${RVAL}"
    else
-      log_verbose "Cloning ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
+      log_verbose "Cloning default branch of ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    fi
 
    # MEMO: options are unused currently!!
