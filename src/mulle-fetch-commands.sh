@@ -43,7 +43,7 @@ MULLE_FETCH_COMMANDS_SH="included"
 # url="$3"           # URL of the clone
 # branch="$4"        # branch of the clone
 # tag="$5"           # tag to checkout of the clone
-# sourcetype="$6"        # source to use for this clone
+# sourcetype="$6"    # source to use for this clone
 # sourceoptions="$7" # sourceoptions
 # dstdir="$8"        # dstdir of this clone (absolute or relative to $PWD)
 #
@@ -77,11 +77,16 @@ fetch::commands::convenient_fetch_usage()
 {
    cat <<EOF >&2
 Usage:
-   ${MULLE_EXECUTABLE_NAME} cfetch <url>
+   ${MULLE_EXECUTABLE_NAME} [cfetch] <url>
 
    You only specify the url to fetch. mulle-fetch will try to figure out from
    the URL what the name of the destination directory should be and what
    kind of repository it is downloading.
+
+   For more options, say you want to specify the destination, use the fetch
+   command instead.
+
+      ${MULLE_EXECUTABLE_NAME} fetch help
 
 EOF
 
@@ -295,6 +300,10 @@ fetch::commands::common()
       case "$1" in
          -h*|--help|help)
             ${USAGE}
+         ;;
+
+         --git|--tar|--file)
+            OPTION_SCM="${1:2}"
          ;;
 
          --recursive)
@@ -622,7 +631,7 @@ fetch::commands::update_main()
 
 fetch::commands::upgrade_main()
 {
-   log_entry "upgrade_main" "$@"
+   log_entry "fetch::commands::upgrade_main" "$@"
 
    USAGE="fetch::commands::other_usage"
    COMMAND="upgrade"
@@ -708,23 +717,32 @@ fetch::commands::convenient_fetch_main()
       fail "Couldn't figure out what kind of repository \"${url}\" is."
    fi
 
-   local dstdir
+   local dst
 
-   case "${guessed_tag}" in
-      ${GIT_DEFAULT_BRANCH:-master}|master|main|trunk|release)
-         dstdir="${guessed_repo}"
+   case "${guessed_scm}" in
+      file)
+         r_basename "${guessed_repo}"
+         dst="${RVAL}"
       ;;
 
       *)
-         r_concat "${guessed_repo}" "${guessed_tag}" "-"
-         dstdir="${RVAL}"
+         case "${guessed_tag}" in
+            ${GIT_DEFAULT_BRANCH:-master}|master|main|trunk|release)
+               dst="${guessed_repo}"
+            ;;
+
+            *)
+               r_concat "${guessed_repo}" "${guessed_tag}" "-"
+               dst="${RVAL}"
+            ;;
+         esac
       ;;
    esac
 
-   fetch::commands::common --scm "${guessed_scm}" "${url}" "${dstdir}"
+   fetch::commands::common --scm "${guessed_scm}" "${url}" "${dst}"
 
    # print where something has been unpacked so that a script can run with it
-   printf "%s\n" "${dstdir}"
+   printf "%s\n" "${dst}"
 }
 
 
@@ -733,19 +751,7 @@ fetch::commands::initialize()
 {
    log_entry "fetch::commands::initialize"
 
-   if [ -z "${MULLE_FETCH_OPERATION_SH}" ]
-   then
-      # shellcheck source=mulle-fetch-operation.sh
-      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-operation.sh" || exit 1
-   fi
-
-   if [ -z "${MULLE_BASHFUNCTIONS_SH}" ]
-   then
-      [ -z "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}" ] && _internal_fail "MULLE_BASHFUNCTIONS_LIBEXEC_DIR is empty"
-
-      # shellcheck source=../../mulle-bashfunctions/src/mulle-bashfunctions.sh
-      . "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-bashfunctions.sh" || exit 1
-   fi
+   include "fetch::operation"
 }
 
 

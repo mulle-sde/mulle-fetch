@@ -217,6 +217,8 @@ fetch::main()
 
    local GIT_FETCH_FLAGS
 
+   local cmd
+
    #
    # simple option handling
    #
@@ -262,8 +264,9 @@ fetch::main()
          ;;
 
          -*)
-            log_error "Unknown option \"$1\""
-            fetch::usage "${MULLE_TRACE}"
+            # forward unknown flags to fetch command
+            cmd="fetch"
+            break
          ;;
 
          *)
@@ -276,8 +279,13 @@ fetch::main()
 
    options_setup_trace "${MULLE_TRACE}" && set -x
 
-   local cmd="$1"
-   [ $# -eq 0 ] || shift
+   #
+   #
+   if [ -z "${cmd}" -a $# -ne 0 ]
+   then
+      cmd="$1"
+      shift
+   fi
 
    case "${cmd}" in
       ""|help)
@@ -411,7 +419,7 @@ fetch::main()
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
-         fetch::commands::convenient_fetch_main "${cmd}"
+         fetch::commands::convenient_fetch_main "${cmd}" "$@"
       ;;
 
       *)
@@ -420,7 +428,7 @@ fetch::main()
          then
             . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
-            fetch::commands::fetch_main --symlink "${cmd}"
+            fetch::commands::fetch_main --symlink "${cmd}" "$@"
             return $?
          fi
 
