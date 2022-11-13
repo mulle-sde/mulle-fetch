@@ -152,7 +152,7 @@ If you clone certain (git) repositories often, it can be useful to use a mirror
 to lighten the bandwidth load with `--mirror-dir`:
 
 ```
-mulle-fetch fetch --mirror-dir ~/.cache/mulle-fetch/git-mirrors/ \
+mulle-fetch fetch --mirror-dir ~/.cache/mulle-fetch/git-mirror/ \
    https://github.com/mulle-nat/mulle-c11.git mulle-c11
 ```
 
@@ -161,7 +161,7 @@ want that to happen, when a repository has a mirror use the `--no-refresh`
 option.
 
 ```
-mulle-fetch fetch --no-refresh --mirror-dir ~/.cache/mulle-fetch/git-mirrors/ \
+mulle-fetch fetch --no-refresh --mirror-dir ~/.cache/mulle-fetch/git-mirror/ \
    https://github.com/mulle-nat/mulle-c11.git mulle-c11
 ```
 
@@ -173,7 +173,7 @@ If you download archives often, it can be useful to cache them, to lighten the
 bandwidth load with `--cache-dir`:
 
 ```
-mulle-fetch fetch --cache-dir ~/.cache/mulle-fetch/archives \
+mulle-fetch fetch --cache-dir ~/.cache/mulle-fetch/archive \
    https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz mulle-c11
 ```
 

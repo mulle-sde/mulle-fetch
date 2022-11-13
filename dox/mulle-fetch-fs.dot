@@ -8,8 +8,8 @@ digraph G {
 
     "MULLE_FETCH_SEARCH_PATH" -> "src"
     "MULLE_FETCH_SEARCH_PATH" -> "src2"
-    "MULLE_FETCH_ARCHIVE_DIR"   -> "archives"
-    "MULLE_FETCH_MIRROR_DIR" -> "git-mirrors"
+    "MULLE_FETCH_ARCHIVE_DIR"   -> "archive"
+    "MULLE_FETCH_MIRROR_DIR" -> "git-mirror"
 
 
     node[ shape="folder", color="gray", fontcolor="gray" ];
@@ -22,8 +22,8 @@ digraph G {
     "project" [ color="blue", penwidth="2", fontcolor="blue" ]
     "user" -> ".cache"
     ".cache" -> "mulle-fetch"
-    "mulle-fetch" -> "archives"
-    "mulle-fetch" -> "git-mirrors"
+    "mulle-fetch" -> "archive"
+    "mulle-fetch" -> "git-mirror"
 
     "/" -> "usr"
     "usr" -> "local"

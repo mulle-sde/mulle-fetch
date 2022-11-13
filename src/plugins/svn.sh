@@ -69,12 +69,14 @@ ${C_RESET_BOLD}${url}${C_INFO}."
    if [ ! -z "${tag}" ]
    then
       log_info "SVN checkout revision ${C_RESET_BOLD}${tag}${C_INFO} of ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
-      options="`concat "${options}" "-r ${tag}"`"
+      r_concat "${options}" "-r ${tag}"
+      options="${RVAL}"
    else
       log_info "SVN checkout ${C_MAGENTA}${C_BOLD}${url}${C_INFO} ..."
    fi
 
-   options="`concat "-q" "${options}"`"
+   r_concat "-q" "${options}"
+   options="${RVAL}"
 
    if ! exekutor svn ${OPTION_TOOL_FLAGS} checkout ${options} "$@" ${OPTION_TOOL_OPTIONS} "${url}" "${dstdir}"  >&2
    then

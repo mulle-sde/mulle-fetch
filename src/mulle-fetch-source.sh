@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+# shellcheck shell=bash
 #
 #   Copyright (c) 2015 Nat! - Mulle kybernetiK
 #   All rights reserved.
@@ -151,7 +151,7 @@ fetch::source::check_file_url()
 
    if ! fetch::source::validate_file_url "${url}"
    then
-      log_error "\"${url}\" does not exist (${PWD#${MULLE_USER_PWD}/})"
+      log_error "\"${url}\" does not exist (${PWD#"${MULLE_USER_PWD}/"})"
       return 1
    fi
 
@@ -200,11 +200,11 @@ fetch::source::r_search_local()
 
    RVAL=
 
-
    log_setting "directory      : ${directory}"
    log_setting "repo           : ${repo}"
 
-   log_verbose "Looking for local repo \"${repo}\" in \"${directory#${MULLE_USER_PWD}/}\""
+   log_verbose "Looking for local repo \"${repo}\" in \"${directory#"${MULLE_USER_PWD}/"}\""
+
    local inhibit
 
    inhibit="${directory}/.mulle/etc/fetch/no-search"
@@ -217,7 +217,7 @@ fetch::source::r_search_local()
    if [ ! -z "${branch}" ]
    then
       if fetch::source::r_search_local_exists_directory "${directory}" \
-                                                "${repo}.${branch}${extension}"
+                                                        "${repo}.${branch}${extension}"
       then
          return 0
       fi
@@ -228,7 +228,7 @@ fetch::source::r_search_local()
    if [ "${repo%.*}${extension}" != "${repo}" ]
    then
       if fetch::source::r_search_local_exists_directory "${directory}" \
-                                                "${repo}${extension}"
+                                                        "${repo}${extension}"
       then
          return 0
       fi
@@ -282,20 +282,17 @@ fetch::source::r_search_local_in_searchpath()
       return 1
    fi
 
-   shell_disable_glob ; IFS=':'
-   for directory in ${MULLE_FETCH_SEARCH_PATH}
-   do
-      shell_enable_glob; IFS="${DEFAULT_IFS}"
-
+   .foreachpath directory in ${MULLE_FETCH_SEARCH_PATH}
+   .do
       if [ -z "${directory}" ]
       then
-         continue
+         .continue
       fi
 
       if [ ! -d "${directory}" ]
       then
          log_debug "Local path \"${directory}\" does not exist: skipping"
-         continue
+         .continue
       fi
 
       r_realpath "${directory}"
@@ -305,16 +302,14 @@ fetch::source::r_search_local_in_searchpath()
       then
          _log_warning "Search path mistakenly contains \"${directory}\", which is \
 the current directory: skipping"
-         continue
+         .continue
       fi
 
       if fetch::source::r_search_local "${realdir}" "${repo}" "$@"
       then
          return 0
       fi
-   done
-
-   shell_enable_glob; IFS="${DEFAULT_IFS}"
+   .done
 
    return 1
 }

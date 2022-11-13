@@ -98,7 +98,7 @@ If you are fetching by hand, use \`fetch --symlink\`. If mulle-sde is
 involved, check that environment \`MULLE_SOURCETREE_SYMLINK\` is set to YES"
          fi
       else
-         log_error "Repository \"${url}\" does not exist (${PWD#${MULLE_USER_PWD}/})"
+         log_error "Repository \"${url}\" does not exist (${PWD#"${MULLE_USER_PWD}/"})"
       fi
       RVAL=
       return 1
@@ -659,6 +659,8 @@ fetch::plugin::git::exists_project()
          fi
       ;;
    esac
+
+   log_verbose "Check if \"${url}\" exists"
 
    fetch::git::is_valid_remote_url "${url}"
 }

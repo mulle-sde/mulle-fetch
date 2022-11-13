@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+# shellcheck shell=bash
 #
 #   Copyright (c) 2015 Nat! - Mulle kybernetiK
 #   All rights reserved.
@@ -37,6 +37,8 @@ MULLE_FETCH_GIT_SH="included"
 #
 fetch::git::get_default_remote()
 {
+  log_entry "fetch::git::get_default_remote" "$@"
+
    local i
    local match
 
@@ -67,6 +69,8 @@ fetch::git::get_default_remote()
 
 fetch::git::add_remote()
 {
+  log_entry "fetch::git::add_remote" "$@"
+
    local repository="$1"
    local remote="$2"
    local url="$3"
@@ -84,6 +88,8 @@ fetch::git::add_remote()
 
 fetch::git::has_remote()
 {
+  log_entry "fetch::git::has_remote" "$@"
+
    local repository="$1"
    local remote="$2"
 
@@ -102,6 +108,8 @@ fetch::git::has_remote()
 
 fetch::git::remove_remote()
 {
+  log_entry "fetch::git::remove_remote" "$@"
+
    local repository="$1"
    local remote="$2"
 
@@ -118,6 +126,8 @@ fetch::git::remove_remote()
 
 fetch::git::set_url()
 {
+  log_entry "fetch::git::set_url" "$@"
+
    local repository="$1"
    local remote="$2"
    local url="$3"
@@ -135,6 +145,8 @@ fetch::git::set_url()
 
 fetch::git::unset_default_remote()
 {
+  log_entry "fetch::git::unset_default_remote" "$@"
+
    local repository="$1"
 
    [ -z "${repository}" ] && _internal_fail "empty parameter"
@@ -150,6 +162,8 @@ fetch::git::unset_default_remote()
 
 fetch::git::set_default_remote()
 {
+  log_entry "fetch::git::set_default_remote" "$@"
+
    local repository="$1"
    local remote="$2"
    local url="$3"
@@ -172,6 +186,8 @@ fetch::git::set_default_remote()
 
 fetch::git::has_branch()
 {
+   log_entry "fetch::git::has_branch" "$@"
+
    local repository="$1"
    local branch="$2"
 
@@ -188,6 +204,8 @@ fetch::git::has_branch()
 
 fetch::git::has_fetched_tags()
 {
+   log_entry "fetch::git::has_fetched_tags" "$@"
+
    [ -z "$1" ] && _internal_fail "empty parameter"
    [ ! -d "$1" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
@@ -204,6 +222,8 @@ fetch::git::has_fetched_tags()
 
 fetch::git::has_tag()
 {
+   log_entry "fetch::git::has_tag" "$@"
+
    [ -z "$1" -o -z "$2" ] && _internal_fail "empty parameter"
    [ ! -d "$1" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
@@ -217,6 +237,8 @@ fetch::git::has_tag()
 
 fetch::git::branch_contains_tag()
 {
+   log_entry "fetch::git::branch_contains_tag" "$@"
+
    [ -z "$1" -o -z "$2" -o -z "$3" ] && _internal_fail "empty parameter"
    [ ! -d "$1" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
@@ -230,6 +252,8 @@ fetch::git::branch_contains_tag()
 
 fetch::git::get_branch()
 {
+   log_entry "fetch::git::get_branch" "$@"
+
    [ -z "$1" ] && _internal_fail "empty parameter"
    [ ! -d "$1" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
@@ -305,6 +329,8 @@ fetch::git::get_branch()
 #
 fetch::git::__fork_and_name_from_url()
 {
+   log_entry "fetch::git::__fork_and_name_from_url" "$@"
+
    local url="$1"
 
    local hack
@@ -336,32 +362,18 @@ fetch::git::__fork_and_name_from_url()
 #
 fetch::git::is_repository()
 {
+   log_entry "fetch::git::is_repository" "$@"
+
    [ -z "$1" ] && _internal_fail "empty parameter"
 
    [ -d "${1}/.git" ] || [ -d  "${1}/refs" -a -f "${1}/HEAD" ]
 }
 
 
-fetch::git::is_valid_remote_url()
-{
-   [ -z "$1" ] && _internal_fail "empty parameter"
-
-   #
-   # memo -q --exit-code are basically useless, stuff still gets printed
-   # e.g. GIT_ASKPASS=true git ls-remote -q --exit-code 'https://github.com/craftinfo/zlib-crafthelp.git'
-   #
-   if [ "${MULLE_FLAG_LOG_VERBOSE}" = 'YES' ]
-   then
-      GIT_ASKPASS=true rexekutor git ls-remote -q --exit-code "$1" > /dev/null
-      return $?
-   fi
-
-   GIT_ASKPASS=true rexekutor git ls-remote -q --exit-code "$1" > /dev/null 2>&1
-}
-
-
 fetch::git::is_bare_repository()
 {
+   log_entry "fetch::git::is_bare_repository" "$@"
+
    local is_bare
 
    if [ -z "${GIT}" ]
@@ -385,6 +397,27 @@ fetch::git::is_bare_repository()
 
    [ "${is_bare}" = "true" ]
 }
+
+
+fetch::git::is_valid_remote_url()
+{
+   log_entry "fetch::git::is_valid_remote_url" "$@"
+
+   [ -z "$1" ] && _internal_fail "empty parameter"
+
+   #
+   # memo -q --exit-code are basically useless, stuff still gets printed
+   # e.g. GIT_ASKPASS=true git ls-remote -q --exit-code 'https://github.com/craftinfo/zlib-crafthelp.git'
+   #
+   if [ "${MULLE_FLAG_LOG_VERBOSE}" = 'YES' ]
+   then
+      GIT_ASKPASS=true rexekutor git ls-remote -q --exit-code "$1" > /dev/null
+      return $?
+   fi
+
+   GIT_ASKPASS=true rexekutor git ls-remote -q --exit-code "$1" > /dev/null 2>&1
+}
+
 
 
 fetch::git::initialize()

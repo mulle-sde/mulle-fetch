@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+# shellcheck shell=bash
 #
 #   Copyright (c) 2015-2017 Nat! - Mulle kybernetiK
 #   All rights reserved.
@@ -130,13 +130,13 @@ this platform"
 
    if [ ! -d "${directory}" ]
    then
-      log_verbose "\"${directory#${MULLE_USER_PWD}/}\" is not a directory, can not symlink"
+      log_verbose "\"${directory#"${MULLE_USER_PWD}/"}\" is not a directory, can not symlink"
       return 1
    fi
 
    if [ -e "${directory}/.mulle/etc/fetch/no-symlink" ]
    then
-      log_verbose "Symlinking disabled by \"${directory#${MULLE_USER_PWD}/}/.mulle/etc/fetch/no-symlink\""
+      log_verbose "Symlinking disabled by \"${directory#"${MULLE_USER_PWD}/"}/.mulle/etc/fetch/no-symlink\""
       return 1
    fi
 
@@ -154,11 +154,11 @@ this platform"
        # if bare repo, we can only clone anyway
       if fetch::git::is_bare_repository "${directory}"
       then
-         log_verbose "${directory#${MULLE_USER_PWD}/} is a bare git repository. So no symlinking"
+         log_verbose "${directory#"${MULLE_USER_PWD}/"} is a bare git repository. So no symlinking"
          return 1
       fi
    else
-      log_info "${directory#${MULLE_USER_PWD}/} is not a git repository. Can only symlink."
+      log_info "${directory#"${MULLE_USER_PWD}/"} is not a git repository. Can only symlink."
    fi
 
   return 0

@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+# shellcheck shell=bash
 #
 #   Copyright (c) 2015-2018 Nat! - Mulle kybernetiK
 #   All rights reserved.
@@ -101,12 +101,11 @@ fetch::plugin::load_if_needed()
    r_uppercase "${name}"
    variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
 
-   if [ ${ZSH_VERSION+x} ]
-   then
-      value="${(P)variable}"
-   else
-      value="${!variable}"
-   fi
+   local value
+
+   r_shell_indirect_expand "${variable}"
+   value="${RVAL}"
+
    if [ "${value}" = 'YES' ]
    then
       return 0
@@ -133,12 +132,12 @@ fetch::plugin::load_if_present()
 
    r_uppercase "${name}"
    variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
-   if [ ${ZSH_VERSION+x} ]
-   then
-      value="${(P)variable}"
-   else
-      value="${!variable}"
-   fi
+
+   local value
+
+   r_shell_indirect_expand "${variable}"
+   value="${RVAL}"
+
    if [ "${value}" = 'YES' ]
    then
       return 0
