@@ -233,14 +233,11 @@ fetch::archive::search_local()
    local found
    local directory
 
-   shell_disable_glob ; IFS=':'
-   for directory in ${MULLE_FETCH_SEARCH_PATH}
-   do
-      shell_enable_glob; IFS="${DEFAULT_IFS}"
-
+   .foreachpath directory in ${MULLE_FETCH_SEARCH_PATH}
+   .do
       if [ -z "${directory}" ]
       then
-         continue
+         .continue
       fi
 
       fetch::archive::r_search_local "${directory}" "${name}" "${filename}" || exit 1
@@ -253,9 +250,7 @@ fetch::archive::search_local()
          echo "file://${found}"
          return 0
       fi
-   done
-
-   shell_enable_glob; IFS="${DEFAULT_IFS}"
+   .done
 
    return 1
 }

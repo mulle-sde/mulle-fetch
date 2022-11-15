@@ -80,8 +80,6 @@ main()
 
    _options_mini_main "$@" && set -x
 
-   local repo
-
    local directory
    local dstdir
    local repo

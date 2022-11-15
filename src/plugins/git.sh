@@ -180,11 +180,9 @@ fetch::plugin::git::clone()
 
    [ -e "${dstdir}" ]   && _internal_fail "${dstdir} already exists"
 
-   local dstdir
    local options
    local mirroroptions
 
-   dstdir="${dstdir}"
    if [ ! -z "${sourceoptions}" ]
    then
       options="`fetch::source::get_option "${sourceoptions}" "fetch"`"

@@ -83,12 +83,10 @@ main()
 
    _options_mini_main "$@" && set -x
 
-   local repo
-   local repo2
-
    local directory
    local dstdir
    local repo
+   local repo2
 
    r_make_tmp_directory || exit 1
    directory="${RVAL:-/tmp/exekutor}"
