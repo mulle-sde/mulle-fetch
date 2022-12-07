@@ -43,13 +43,12 @@ fetch::git::get_default_remote()
    local match
 
    match=""
-   IFS=$'\n'
-   for i in `( cd "$1" ; git remote)`
-   do
+   .foreachline i in `( cd "$1" ; git remote)`
+   .do
       case "$i" in
          origin)
             match="$i"
-            break
+            .break
          ;;
 
          *)
@@ -59,9 +58,7 @@ fetch::git::get_default_remote()
             fi
          ;;
       esac
-   done
-
-   IFS="${DEFAULT_IFS}"
+   .done
 
    printf "%s\n" "$match"
 }

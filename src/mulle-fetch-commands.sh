@@ -538,13 +538,13 @@ fetch::commands::common()
    name="${RVAL}"
 
    fetch::operation::do "${COMMAND}" "unused" \
-                                   "${name}" \
-                                   "${url}" \
-                                   "${OPTION_BRANCH}" \
-                                   "${OPTION_TAG}" \
-                                   "${OPTION_SCM}" \
-                                   "${OPTION_OPTIONS}" \
-                                   "${directory}"
+                                     "${name}" \
+                                     "${url}" \
+                                     "${OPTION_BRANCH}" \
+                                     "${OPTION_TAG}" \
+                                     "${OPTION_SCM}" \
+                                     "${OPTION_OPTIONS}" \
+                                     "${directory}"
 }
 
 
@@ -681,9 +681,34 @@ fetch::commands::convenient_fetch_main()
    USAGE="fetch::commands::convenient_fetch_usage"
    COMMAND="fetch"
 
-   [ $# -ne 1 ] && fetch::commands::convenient_fetch_usage
+   case "${url}" in
+      -h|--help|help)
+         fetch::commands::convenient_fetch_usage
+      ;;
+   esac
+
+   local user
+   local project
 
    case "${url}" in
+      -h|--help|help)
+         fetch::commands::convenient_fetch_usage
+      ;;
+
+      */*)
+         r_extended_identifier "${url%%/*}"
+         user="${RVAL}"
+
+         r_extended_identifier "${url##*/}"
+         project="${RVAL}"
+
+         if [ "${url}" = "${user}/${project}" ]
+         then
+            url="https://github.com/${user}/${project}.git"
+            log_verbose "Expanded ${user}/${project} into ${url}"
+         fi
+      ;;
+
       craftinfo:*)
          url="`fetch::commands::convenient_craftinfo_fetch "${url#craftinfo:}" `"
          if [ $? -ne 0 ]
@@ -691,7 +716,23 @@ fetch::commands::convenient_fetch_main()
             fail "No craftinfo found for \"${url#craftinfo:}\""
          fi
       ;;
+
+      *)
+         if [ ! -z "${OPTION_GITHUB_USER}" ]
+         then
+            r_extended_identifier "${url}"
+            project="${RVAL}"
+
+            if [ "${url}" = "${project}" ]
+            then
+               url="https://github.com/${OPTION_GITHUB_USER}/${project}.git"
+               log_verbose "Expanded ${OPTION_GITHUB_USER}/${project} into ${url}"
+            fi
+         fi
+      ;;
    esac
+
+   [ $# -ne 1 ] && fetch::commands::convenient_fetch_usage
 
    local guessed_scheme
    local guessed_domain

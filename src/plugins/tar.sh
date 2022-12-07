@@ -242,13 +242,13 @@ fetch::plugin::tar::download()
       fetch::source::download "${url}" "${download}" "${sourceoptions}"
    fi
 
-   [ -e "${download}" ] || _internal_fail "expected file \"${download}\" is missing"
+   [ -e "${download}" ] || _internal_fail "The expected file \"${download}\" is missing"
 
    if [ -z "${_cached_archive}" -a ! -z "${_cachable_path}" ]
    then
       log_verbose "Caching \"${url}\" as \"${_cachable_path}\" ..."
-      mkdir_if_missing "${_archive_cache}" || fail "failed to create archive cache \"${_archive_cache}\""
-      exekutor cp "${download}" "${_cachable_path}" || fail "failed to copy \"${download}\" to \"${_cachable_path}\""
+      mkdir_if_missing "${_archive_cache}" || fail "Failed to create archive cache \"${_archive_cache}\""
+      exekutor cp "${download}" "${_cachable_path}" || fail "Failed to copy \"${download}\" to \"${_cachable_path}\""
    else
       log_fluff "Not caching the archive"
    fi

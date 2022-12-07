@@ -187,11 +187,12 @@ fetch::curl::download()
    then
       exekutor ${CURL} ${OPTION_CURL_FLAGS:-${defaultflags}} \
                   -o "${download}" \
-                  -O -L \
+                  -L \
                   ${options} \
                   "${url}" || fail "failed to download \"${url}\""
    else
       exekutor ${CURL} ${OPTION_CURL_FLAGS:-${defaultflags}} \
+                  -O \
                   -L \
                   ${options} \
                   "${url}" || fail "failed to download \"${url}\""

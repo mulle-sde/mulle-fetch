@@ -129,19 +129,17 @@ fetch::plugin::git::r_get_default_branch()
       # expansion into separated names by IFS only happens from
       # a variable ? bash WTF
       #
-      IFS=":"; shell_disable_glob
-      for name in ${names}
-      do
+      .foreachpath name in ${names}
+      .do
          if [ ! -z "${name}" ]
          then
             if grep -s -q -x "${name}" <<< "${branches}"
             then
                RVAL="${name}"
-               break
+               .break
             fi
          fi
-      done
-      IFS="${DEFAULT_IFS}"; shell_enable_glob
+      .done
 
       if [ -z "${RVAL}" ]
       then

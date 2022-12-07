@@ -60,13 +60,10 @@ fetch::plugin::all_names()
    [ -z "${DEFAULT_IFS}" ] && _internal_fail "DEFAULT_IFS not set"
    [ -z "${MULLE_FETCH_LIBEXEC_DIR}" ] && _internal_fail "MULLE_FETCH_LIBEXEC_DIR not set"
 
-   shell_enable_nullglob
-   IFS=$'\n'; shell_enable_glob #sic
-   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}"/plugins/*.sh`
-   do
-      IFS="${DEFAULT_IFS}"
-
-      name="`basename -- "${pluginpath}" .sh`"
+   .foreachline pluginpath in `dir_list_files "${MULLE_FETCH_LIBEXEC_DIR}/plugins" "*.sh"`
+   .do
+      r_extensionless_basename "${pluginpath}"
+      name="${RVAL}"
 
       # don't load xcodebuild on non macos platforms
       case "${MULLE_UNAME}" in
@@ -76,17 +73,14 @@ fetch::plugin::all_names()
          *)
             case "${name}" in
                xcodebuild)
-                  continue
+                  .continue
                ;;
             esac
          ;;
       esac
 
       printf "%s\n" "${name}"
-   done
-   shell_disable_nullglob
-
-   IFS="${DEFAULT_IFS}"
+   .done
 }
 
 
@@ -98,7 +92,9 @@ fetch::plugin::load_if_needed()
 
    local variable
 
-   r_uppercase "${name}"
+   include "case"
+
+   r_smart_upcase_identifier "${name}"
    variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
 
    local value
@@ -130,7 +126,9 @@ fetch::plugin::load_if_present()
 
    local variable
 
-   r_uppercase "${name}"
+   include "case"
+
+   r_smart_upcase_identifier "${name}"
    variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
 
    local value
@@ -185,12 +183,10 @@ fetch::plugin::list()
 
    log_info "Plugins"
 
-   IFS=$'\n'
-   for pluginpath in `ls -1 "${MULLE_FETCH_LIBEXEC_DIR}"/plugins/*.sh`
-   do
+   .foreachline pluginpath in `dir_list_files "${MULLE_FETCH_LIBEXEC_DIR}/plugins" "*.sh"`
+   .do
       basename -- "${pluginpath}" .sh
-   done
-   IFS="${DEFAULT_IFS}"
+   .done
 }
 
 
@@ -209,15 +205,10 @@ fetch::plugin::load_all()
 
    names="`fetch::plugin::all_names`"
 
-   IFS=$'\n'; shell_disable_glob
-   for name in ${names}
-   do
-      IFS="${DEFAULT_IFS}"; shell_enable_glob
-
+   .foreachline name in ${names}
+   .do
       fetch::plugin::load_if_present "${name}"
-   done
-
-   IFS="${DEFAULT_IFS}"; shell_enable_glob
+   .done
 }
 
 
