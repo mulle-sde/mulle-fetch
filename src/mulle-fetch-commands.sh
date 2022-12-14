@@ -648,9 +648,10 @@ fetch::commands::convenient_craftinfo_fetch()
    local rval=1
 
    local urls
-   local url
 
    urls="${CRAFTINFO_REPOS:-https://github.com/craftinfo}"
+
+   local url
 
    IFS='|'; shell_disable_glob
    for url in ${urls}
