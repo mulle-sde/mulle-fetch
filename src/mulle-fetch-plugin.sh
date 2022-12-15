@@ -94,7 +94,7 @@ fetch::plugin::load_if_needed()
 
    include "case"
 
-   r_smart_upcase_identifier "${name}"
+   r_smart_upcase_identifier "${name}" # not file
    variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
 
    local value
@@ -128,7 +128,7 @@ fetch::plugin::load_if_present()
 
    include "case"
 
-   r_smart_upcase_identifier "${name}"
+   r_smart_upcase_identifier "${name}"  # not file
    variable="_MULLE_FETCH_PLUGIN_LOADED_${RVAL}"
 
    local value
