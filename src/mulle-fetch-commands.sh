@@ -122,6 +122,7 @@ Options:
    --symlink-returns-4    : if a repository was symlinked return with code 4
    --symlink              : allow symlinks to be created
    --no-symlink           : forbid symlinks to be created
+
 EOF
 
    fetch::commands::show_plugins >&2
