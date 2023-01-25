@@ -117,7 +117,7 @@ fetch::plugin::git::r_get_default_branch()
 
    local branches
 
-   branches="`exekutor git ls-remote --heads "${remote}" | sed -e 's|.*/||'`" || return 1
+   branches="`exekutor git ${OPTION_TOOL_FLAGS} ls-remote --heads "${remote}" | sed -e 's|.*/||'`" || return 1
    if [ ! -z "${branches}" ]
    then
       local name
@@ -256,8 +256,8 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       mkdir_if_missing "${dstdir}" &&
       (
          exekutor cd "${dstdir}"
-         exekutor git init ${GIT_QUIET} &&
-         exekutor git remote add origin "${url}" || exit 1
+         exekutor git ${OPTION_TOOL_FLAGS} init ${GIT_QUIET} &&
+         exekutor git ${OPTION_TOOL_FLAGS} remote add origin "${url}" || exit 1
 
          if [ -z "${branch}" ]
          then
@@ -266,8 +266,8 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
          fi
 
          # TODO: could use --shallow here probably
-         exekutor git fetch ${GIT_QUIET} --no-tags "origin" "${branch}" &&
-         exekutor git checkout ${GIT_QUIET} -b "${branch}" "origin/${branch}"
+         exekutor git ${OPTION_TOOL_FLAGS} fetch ${GIT_QUIET} --no-tags "origin" "${branch}" &&
+         exekutor git ${OPTION_TOOL_FLAGS} checkout ${GIT_QUIET} -b "${branch}" "origin/${branch}"
       ) >&2
       rval="$?"
 #   else
@@ -604,8 +604,8 @@ fetch::plugin::git::set_url_project()
 
    (
       cd "${dstdir}" &&
-      git remote set-url "${remote}" "${url}" >&2 &&
-      git fetch "${remote}" >&2  # prefetch to get new branches
+      git ${OPTION_TOOL_FLAGS} remote set-url "${remote}" "${url}" >&2 &&
+      git ${OPTION_TOOL_FLAGS} fetch "${remote}" >&2  # prefetch to get new branches
    ) || exit 1
 }
 

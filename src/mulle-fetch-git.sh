@@ -98,7 +98,7 @@ fetch::git::has_remote()
       local remotes
    
       rexekutor cd "${repository}" &&
-      rexekutor fgrep -q -x -e "${remote}" <<< "`rexekutor git remote`"
+      rexekutor grep -F -q -x -e "${remote}" <<< "`rexekutor git remote`"
    )
 }
 
@@ -194,7 +194,7 @@ fetch::git::has_branch()
 
    (
       rexekutor cd "${repository}" &&
-      rexekutor "${GIT}" branch | cut -c3- | fgrep -q -s -x -e "$2" > /dev/null
+      rexekutor "${GIT}" branch | cut -c3- | grep -F -q -s -x -e "$2" > /dev/null
    )
 }
 
@@ -227,7 +227,7 @@ fetch::git::has_tag()
 
    (
       rexekutor cd "$1" &&
-      rexekutor "${GIT}" tag -l | fgrep -s -x -e "$2" > /dev/null
+      rexekutor "${GIT}" tag -l | grep -F -s -x -e "$2" > /dev/null
    )
 }
 
@@ -242,7 +242,7 @@ fetch::git::branch_contains_tag()
 
    (
       rexekutor cd "$1" &&
-      rexekutor "${GIT}" branch --contains "$3"| cut -c3- | fgrep -s -x -e "$2" > /dev/null
+      rexekutor "${GIT}" branch --contains "$3"| cut -c3- | grep -F -s -x -e "$2" > /dev/null
    )
 }
 
@@ -281,7 +281,7 @@ fetch::git::get_branch()
 #   #
 #   # prepend \n because it is safer, in case .gitignore has no trailing
 #   # LF which it often seems to not have
-#   # fgrep is bugged on at least OS X 10.x, so can't use -e chaining
+#   # grep -F is bugged on at least OS X 10.x, so can't use -e chaining
 #   if [ -f ".gitignore" ]
 #   then
 #      local pattern0
@@ -295,10 +295,10 @@ fetch::git::get_branch()
 #      pattern2="/${pattern0}"
 #      pattern3="/${pattern0}/"
 #
-#      if fgrep -q -s -x -e "${pattern0}" .gitignore ||
-#         fgrep -q -s -x -e "${pattern1}" .gitignore ||
-#         fgrep -q -s -x -e "${pattern2}" .gitignore ||
-#         fgrep -q -s -x -e "${pattern3}" .gitignore
+#      if grep -F -q -s -x -e "${pattern0}" .gitignore ||
+#         grep -F -q -s -x -e "${pattern1}" .gitignore ||
+#         grep -F -q -s -x -e "${pattern2}" .gitignore ||
+#         grep -F -q -s -x -e "${pattern3}" .gitignore
 #      then
 #         return
 #      fi
@@ -367,6 +367,10 @@ fetch::git::is_repository()
 }
 
 
+#
+# return 0 : yes
+#        1 : not a bare git repo (or not a repo at all)
+#
 fetch::git::is_bare_repository()
 {
    log_entry "fetch::git::is_bare_repository" "$@"
@@ -375,8 +379,7 @@ fetch::git::is_bare_repository()
 
    if [ -z "${GIT}" ]
    then
-      # literal tab character in sed command
-      egrep -q -s '^[    ]*bare\ =\ true$' "$1/.git/config"
+      grep -E -q -s '^'$'\t''*bare[[:space:]]*=[[:space:]]*true$' "$1/.git/config"
       return $?
    fi
 
@@ -385,15 +388,17 @@ fetch::git::is_bare_repository()
                rexekutor cd "$1" &&
                rexekutor "${GIT}" rev-parse --is-bare-repository 2> /dev/null
              )"
-   if [ -z "${is_bare}" ]
-   then
-      [ ! -x "$1" ]    && _internal_fail "Given wrong or protected directory \"$1\" (${PWD})"
-      [ -d "$1/.git" ] && _internal_fail "Given non git directory \"$1\" (${PWD})"
-      return 1
-   fi
+
+#   if [ -z "${is_bare}" ]
+#   then
+#      [ ! -x "$1" ]      && _internal_fail "Given wrong or protected directory \"$1\" (${PWD})"
+#      [ ! -d "$1/.git" ] && _internal_fail "Given non git directory \"$1\" (${PWD})"
+#      return 1
+#   fi
 
    [ "${is_bare}" = "true" ]
 }
+
 
 
 fetch::git::is_valid_remote_url()

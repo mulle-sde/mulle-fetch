@@ -259,9 +259,6 @@ fetch::source::r_search_local_in_searchpath()
    local found
    local directory
    local realdir
-   local curdir
-
-   curdir="${curdir:-`pwd -P`}"
 
    [ -z "${url}" ] && _internal_fail "empty url"
 
@@ -274,6 +271,9 @@ fetch::source::r_search_local_in_searchpath()
       return 0
    fi
 
+   # short-cut to avoid mulle-domain call
+   [ -z "${MULLE_FETCH_SEARCH_PATH}" ] && return 1
+
    local repo
 
    repo="`rexekutor "${MULLE_DOMAIN:-mulle-domain}" nameguess "${url}" `"
@@ -281,6 +281,8 @@ fetch::source::r_search_local_in_searchpath()
    then
       return 1
    fi
+
+   local curdir
 
    .foreachpath directory in ${MULLE_FETCH_SEARCH_PATH}
    .do
@@ -298,6 +300,7 @@ fetch::source::r_search_local_in_searchpath()
       r_realpath "${directory}"
       realdir="${RVAL}"
 
+      curdir="${curdir:-`pwd -P`}"
       if [ "${realdir}" = "${curdir}" ]
       then
          _log_warning "Search path mistakenly contains \"${directory}\", which is \
@@ -433,7 +436,7 @@ fetch::source::download()
          case "${MULLE_UNAME}" in
             mingw)
                log_fluff "Copying local archive \"${download}\" to \"${url}\""
-               exekutor cp -Ra "${url}" "${download}" || exit 1
+               exekutor cp -Rp "${url}" "${download}" || exit 1
             ;;
 
             *)

@@ -50,33 +50,67 @@ fetch::plugin::symlink::fetch_project()
 
    url="${url#file://}"
 
-   case "${MULLE_UNAME}" in 
-      mingw)
-         mkdir_if_missing "${dstdir}"
+   local action
 
-         # mingw can't symlink but we want the local repository and not the remote
-         # so... copy it. Tricky though, if we are a subdirectory of url (like test)
-         if ! (cd "${url}" ; exekutor tar cf - \
-                                          --exclude='./stash' \
-                                          --exclude='./kitchen' \
-                                          --exclude='./[Bb]uild' \
-                                          --exclude='./addiction' \
-                                          --exclude='./test*' \
-                                          --exclude='./mulle/var' \
-                                          . ) | ( cd "${dstdir}" ; tar xf - )
+   action=symlink
+
+   # windows can actually symlink, so check if it does
+   case "${MULLE_UNAME}" in 
+      'mingw'|'msys'|'windows')
+         action="copy"  # pessimist
+
+         local tstdir
+
+         # create a directory besides dstdir
+         r_dirname "${dstdir}"
+         tstdir="${RVAL}"
+
+         local symlink
+
+         r_uuidgen
+         symlink="${tstdir}/${RVAL}"
+
+         if ln -s "${tstdir}" "${symlink}" 2> /dev/null
          then
-            return 1
-         fi
-      ;;
-      *)
-         if ! exekutor create_symlink "${url}" "${dstdir}" "${OPTION_ABSOLUTE_SYMLINK:-NO}"
-         then
-            return 1
+            rm "${symlink}"
+            action=symlink
          fi
       ;;
    esac
 
-   log_info "Symlinked ${C_MAGENTA}${C_BOLD}${name}${C_INFO} to ${C_RESET_BOLD}${url}${C_INFO}"
+   local verb
+
+   if [ "${action}" = "symlink" ]
+   then
+      verb="Symlinked"
+      if ! exekutor create_symlink "${url}" "${dstdir}" "${OPTION_ABSOLUTE_SYMLINK:-NO}"
+      then
+         return 1
+      fi
+   else
+      verb="Copied"
+      mkdir_if_missing "${dstdir}"
+
+      # mingw could not symlink, but we want the local repository and not
+      # the remote so... copy it. Tricky though, if we are a subdirectory
+      # of url (like test). with the -h option, we make sure that symlinks
+      # are resolved.
+      # Well windows can do symlinks..., mingw can also sort of but then
+      # the tar can't ...
+      if ! (cd "${url}" ; exekutor tar -chf  - \
+                                       --exclude='./stash' \
+                                       --exclude='./kitchen' \
+                                       --exclude='./[Bb]uild' \
+                                       --exclude='./addiction' \
+                                       --exclude='./test*' \
+                                       --exclude='./mulle/var' \
+                                       . ) | ( cd "${dstdir}" ; tar xf - )
+      then
+         return 1
+      fi
+   fi
+
+   log_info "${verb} ${C_MAGENTA}${C_BOLD}${name}${C_INFO} to ${C_RESET_BOLD}${url}${C_INFO}"
 
    local branchlabel
 

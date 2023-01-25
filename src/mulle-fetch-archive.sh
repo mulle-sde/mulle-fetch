@@ -75,11 +75,11 @@ fetch::archive::tar_remove_extension()
    if [ ! -z "${ext}" ]
    then
       case "${MULLE_UNAME}" in
-         darwin|freebsd)
+         'darwin'|*'bsd'|'dragonfly')
             echo "-s/\.$1\$//"
          ;;
 
-         linux|mingw*)
+         'linux'|'mingw'|'msys')
             echo "--transform s/\.$1\$//"
          ;;
 
@@ -111,7 +111,7 @@ fetch::archive::archive_files()
       else
          exekutor find . \( -type f -a -name "*.${ext}" \) -print
       fi |
-         exekutor tar -c ${taroptions} -f - -T -
+         exekutor "${TAR:-tar}" -c ${taroptions} -f - -T -
    ) || exit 1
 }
 
@@ -128,9 +128,9 @@ fetch::archive::unarchive_files()
       exekutor cd "${dstdir}" ;
       if [ "${noclobber}" = 'NO' ]
       then
-         exekutor tar -x ${TARFLAGS} -f -
+         exekutor "${TAR:-tar}" -x ${TARFLAGS} -f -
       else
-         exekutor tar -x ${TARFLAGS} -k -f -
+         exekutor "${TAR:-tar}" -x ${TARFLAGS} -k -f -
       fi
       :  # ignore trashy tar rval
    )  2> /dev/null

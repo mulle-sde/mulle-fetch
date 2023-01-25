@@ -73,7 +73,7 @@ fetch::plugin::tar::archive_test()
    esac
 
 
-   redirect_exekutor /dev/null tar ${OPTION_TOOL_FLAGS} ${tarcommand} ${OPTION_TOOL_OPTIONS} ${options} "${archive}" || return 1
+   redirect_exekutor /dev/null "${TAR:-tar}" ${OPTION_TOOL_FLAGS} ${tarcommand} ${OPTION_TOOL_OPTIONS} ${options} "${archive}" || return 1
 }
 
 
@@ -97,7 +97,7 @@ fetch::plugin::tar::tar_unpack()
 
       *)
          case "${url}" in
-            *.gz)
+            *.gz|*.tgz)
                tarcommand="xfz"
             ;;
 
@@ -119,7 +119,7 @@ fetch::plugin::tar::tar_unpack()
       options="`fetch::source::get_option "${sourceoptions}" "tar"`"
    fi
 
-   exekutor tar ${OPTION_TOOL_FLAGS} ${tarcommand} ${OPTION_TOOL_OPTIONS} ${options} "${archive}" || return 1
+   exekutor "${TAR:-tar}" ${OPTION_TOOL_FLAGS} ${tarcommand} ${OPTION_TOOL_OPTIONS} ${options} "${archive}" || return 1
 }
 
 
@@ -363,11 +363,13 @@ fetch::plugin::tar::initialize()
 {
    log_entry "fetch::plugin::tar::initialize"
 
-   if [ -z "${MULLE_FETCH_ARCHIVE_SH}" ]
-   then
-      # shellcheck source=src/mulle-fetch-archive.sh
-      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-archive.sh" || exit 1
-   fi
+   include "fetch::archive"
+
+   case "${MULLE_UNAME}" in 
+      sunos)
+         TAR=gtar 
+      ;;
+   esac
 }
 
 fetch::plugin::tar::initialize

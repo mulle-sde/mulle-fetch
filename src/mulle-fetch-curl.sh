@@ -46,18 +46,21 @@ fetch::curl::validate_shasum256()
    esac
 
    local shasum
+   local shasumflags
 
-   shasum="${SHASUM}"
+   shasumflags="-a 256"
+   shasum="${SHASUM:-`command -v shasum`}"
    if [ -z "${shasum}" ]
    then
-      shasum="`command -v shasum`"
+      shasumflags=
+      shasum="${SHASUM:-`command -v sha256sum`}"
    fi
 
-   [ -z "${shasum}" ] && fail "shasum is not in PATH"
+   [ -z "${shasum}" ] && fail "shasum (or sha256sum) is not in PATH"
 
    local checksum
 
-   checksum="`${shasum} -a 256 "${filename}" | awk '{ print $1 }'`" || exit 1
+   checksum="`${shasum} ${shasumflags} "${filename}" | awk '{ print $1 }'`" || exit 1
    if [ "${expected}" != "${checksum}" ]
    then
       log_error "${filename} sha256 is ${checksum}, not ${expected} as expected"
@@ -227,7 +230,6 @@ fetch::curl::curl_exists()
    exekutor ${CURL} ${OPTION_CURL_FLAGS:-${defaultflags}} \
                --output /dev/null -r 0-0 "${url}"
 }
-
 
 
 :
