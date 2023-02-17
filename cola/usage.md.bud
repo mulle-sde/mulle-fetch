@@ -1,0 +1,120 @@
+## What mulle-fetch does
+
+Essentially, `mulle-fetch` is a shortcut for:
+
+``` sh
+curl -o download.tgz ${URL}
+tar xfz download.tgz
+mv download "${DST}"
+```
+
+One invariably specifies the **url** to download from and the **destination**
+directory to download to. The destination directory must not exist yet.
+
+
+#### Download and unpack a tar archive:
+
+Here the version is specified in the URL
+
+``` sh
+mulle-fetch fetch -s tar https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz mulle-c11
+```
+
+
+#### Clone a git repository:
+
+Use a tag to checkout a specific version:
+
+``` sh
+mulle-fetch fetch -t '1.3.5' https://github.com/mulle-nat/mulle-c11.git mulle-c11
+```
+
+#### Or even more convenient:
+
+mulle-fetch can often guess the correct type and project-name of an URL. Just
+give it the URL and let the magic happen:
+
+``` sh
+mulle-fetch https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz
+```
+
+
+## Reduce bandwidth
+
+
+A typical setup might look like this:
+
+![](dox/mulle-fetch-fs.svg)
+
+
+### Use a mirror for git repositories
+
+If you clone certain (git) repositories often, it can be useful to use a mirror
+to lighten the bandwidth load with `--mirror-dir`:
+
+``` sh
+mulle-fetch fetch --mirror-dir ~/.cache/mulle-fetch/git-mirror/ \
+   https://github.com/mulle-nat/mulle-c11.git mulle-c11
+```
+
+This will still create network connections to update the mirror. If you don't
+want that to happen, when a repository has a mirror use the `--no-refresh`
+option.
+
+``` sh
+mulle-fetch fetch --no-refresh --mirror-dir ~/.cache/mulle-fetch/git-mirror/ \
+   https://github.com/mulle-nat/mulle-c11.git mulle-c11
+```
+
+> You can also set the environment variable `MULLE_FETCH_MIRROR_DIR`.
+
+
+### Use a cache for archives
+
+If you download archives often, it can be useful to cache them, to lighten the
+bandwidth load with `--cache-dir`:
+
+```
+mulle-fetch fetch --cache-dir ~/.cache/mulle-fetch/archive \
+   https://github.com/mulle-nat/mulle-c11/archive/1.3.5.tar.gz mulle-c11
+```
+
+> You can also set the environment variable `MULLE_FETCH_ARCHIVE_DIR`.
+
+
+### Use a search path for local repositories
+
+Before actually cloning or checking out a repository, you can let
+**mulle-fetch** search through some local directories to find a matching
+repository. This is an alternative to mirroring and especially useful for
+repositories that are only locally available.
+
+In the next example the option `--search-path` instructs **mulle-fetch** to
+look for a repository named `mulle-c11` in `${HOME}/src` and
+then in `/usr/local/src`. If nothing is found the repository is cloned from
+`https://github.com/mulle-nat/mulle-c11.git`:
+
+``` sh
+mulle-fetch fetch --search-path ${HOME}/src:/usr/local/src \
+   https://github.com/mulle-nat/mulle-c11.git mulle-c11
+```
+
+> You can also set the environment variable `MULLE_FETCH_SEARCH_PATH`.
+
+### Create symbolic links to local projects
+
+> Symbolic links are not available on mingw.
+
+It may be inconvenient to clone a local project repository, when its
+development is still ongoing. You'd have to sync the clone to often.
+You can allow **mulle-fetch** with `--symlink` to install a symlink instead with:
+
+``` sh
+mulle-fetch fetch --symlink --search-path ${HOME}/src:/usr/local/src \
+   https://github.com/mulle-nat/mulle-c11.git mulle-c11
+```
+
+Since one is not actually cloning anything the found project directory, does
+not need to be under version control.
+
+

@@ -1,0 +1,12 @@
+{
+   project =
+   {
+      description="🏃🏿 Download and unpack source repositories or archives";
+      domain="github";
+      name="mulle-fetch";
+      username="mulle-sde";
+      reponame="mulle-fetch";
+      homepage="https://github.com/mulle-sde/mulle-fetch";
+      license="BSD-3-Clause"
+   };
+}

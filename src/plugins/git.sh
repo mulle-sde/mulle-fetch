@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_GIT_SH="included"
+MULLE_FETCH_PLUGIN_GIT_SH='included'
 
 
 fetch::plugin::git::r_get_mirror_url()
@@ -95,7 +95,7 @@ fetch::plugin::git::r_check_file_url()
          then
             _log_info "Hint: You may want to symlink it.
 If you are fetching by hand, use \`fetch --symlink\`. If mulle-sde is
-involved, check that environment \`MULLE_SOURCETREE_SYMLINK\` is set to YES"
+involved, use \`mulle-sde -DMULLE_SOURCETREE_SYMLINK=YES ...\`"
          fi
       else
          log_error "Repository \"${url}\" does not exist (${PWD#"${MULLE_USER_PWD}/"})"
@@ -668,11 +668,7 @@ fetch::plugin::git::guess_project()
 
    local url="$3"      # URL of the clone
 
-   if [ -z "${MULLE_FETCH_URL_SH}" ]
-   then
-      # shellcheck source=src/mulle-fetch-archive.sh
-      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
-   fi
+   include "fetch::url"
 
    r_url_get_path "${url}"
    r_extensionless_basename "${RVAL}"

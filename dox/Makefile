@@ -1,9 +1,9 @@
 
-PIX=mulle-fetch-fs.png \
-mulle-fetch-overview.png
+PIX=mulle-fetch-fs.svg \
+mulle-fetch-overview.svg
 
-%.png: %.dot
-	dot -Tpng -o $*.png $<
+%.svg: %.dot
+	dot -Tsvg -o $*.svg $<
 
 
 all: $(PIX)

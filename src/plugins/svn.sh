@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SVN_SH="included"
+MULLE_FETCH_PLUGIN_SVN_SH='included'
 
 
 ###
@@ -194,11 +194,7 @@ fetch::plugin::svn::guess_project()
 
    local url="$3"             # URL of the clone
 
-   if [ -z "${MULLE_FETCH_URL_SH}" ]
-   then
-      # shellcheck source=src/mulle-fetch-archive.sh
-      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-url.sh" || exit 1
-   fi
+   include "fetch::url"
 
    r_url_get_path "${url}"
    r_extensionless_basename "${RVAL}"

@@ -30,7 +30,7 @@
 #   POSSIBILITY OF SUCH DAMAGE.
 #
 
-MULLE_FETCH_COMMANDS_SH="included"
+MULLE_FETCH_COMMANDS_SH='included'
 
 #
 # ## NOTE ##

@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_SOURCE_SH="included"
+MULLE_FETCH_SOURCE_SH='included'
 
 
 #
@@ -405,47 +405,50 @@ fetch::source::download()
    #
    # local urls don't need to be curled
    #
-   local curlit
+   local fetcher
 
-   curlit='YES'
    case "${url}" in
       file://*)
          fetch::source::check_file_url "${url}"  || return 1
          url="${url:7}"
-         curlit='NO'
+         fetcher=''
       ;;
 
       *:*)
+         fetcher="curl"
       ;;
 
       *)
-         if fetch::source::check_file_url "${url}"
+         if ! fetch::source::check_file_url "${url}"
          then
-            curlit='NO'
+            fetcher="curl"
          fi
       ;;
    esac
 
-   if [ "${curlit}" = 'YES' ]
-   then
-      fetch::curl::download "${url}" "${download}" "${sourceoptions}" \
-         || fail "failed to download \"${url}\""
-   else
-      if [ "${url}" != "${download}" ]
-      then
-         case "${MULLE_UNAME}" in
-            mingw)
-               log_fluff "Copying local archive \"${download}\" to \"${url}\""
-               exekutor cp -Rp "${url}" "${download}" || exit 1
-            ;;
+   case "${fetcher}" in
+      'curl')
+         fetch::curl::download "${url}" "${download}" "${sourceoptions}" \
+            || fail "failed to download \"${url}\""
+      ;;
 
-            *)
-               log_fluff "Symlinking local archive \"${download}\" to \"${url}\""
-               exekutor ln -s "${url}" "${download}" || exit 1
-            ;;
-         esac
-      fi
-   fi
+      "")
+         if [ "${url}" != "${download}" ]
+         then
+            case "${MULLE_UNAME}" in
+               mingw)
+                  log_fluff "Copying local archive \"${download}\" to \"${url}\""
+                  exekutor cp -Rp "${url}" "${download}" || exit 1
+               ;;
+
+               *)
+                  log_fluff "Symlinking local archive \"${download}\" to \"${url}\""
+                  exekutor ln -s "${url}" "${download}" || exit 1
+               ;;
+            esac
+         fi
+      ;;
+   esac
 
    if ! fetch::curl::validate_download "${download}" "${sourceoptions}"
    then

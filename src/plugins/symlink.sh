@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SYMLINK_SH="included"
+MULLE_FETCH_PLUGIN_SYMLINK_SH='included'
 
 
 ###
@@ -158,7 +158,7 @@ fetch::plugin::symlink::search_local_project()
          r_dirname "${RVAL}"  # remove name from url
          filename="${RVAL}"
 
-         if fetch::source::r_search_local "${filename}" "${name}" "${branch}" "" "NO"
+         if fetch::source::r_search_local "${filename}" "${name}" "${branch}" "" 'NO'
          then
             log_fluff "Found via URL \"${url}\""
             printf "%s\n" "${RVAL}"
