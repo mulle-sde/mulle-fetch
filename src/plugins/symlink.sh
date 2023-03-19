@@ -37,13 +37,15 @@ MULLE_FETCH_PLUGIN_SYMLINK_SH='included'
 
 fetch::plugin::symlink::fetch_project()
 {
+   log_entry "fetch::plugin::symlink::fetch_project" "$@"
+
 #   local unused="$1"
    local name="$2"           # name of the clone
    local url="$3"            # URL of the clone
    local branch="$4"         # branch of the clone
    local tag="$5"            # tag to checkout of the clone
-#   local sourcetype="$6"    # source to use for this clone
-#   local sourceoptions="$7" # options to use on source
+   local sourcetype="$6"    # source to use for this clone
+   local sourceoptions="$7" # options to use on source
    local dstdir="$8"         # dstdir of this clone (absolute or relative to $PWD)
 
    fetch::source::prepare_filesystem_for_fetch "${dstdir}"
@@ -51,44 +53,99 @@ fetch::plugin::symlink::fetch_project()
    url="${url#file://}"
 
    local action
+   local verb
 
    action=symlink
+   verb="Symlinked"
 
    # windows can actually symlink, so check if it does
    case "${MULLE_UNAME}" in 
       'mingw'|'msys'|'windows')
          action="copy"  # pessimist
+         verb="Copied"
 
-         local tstdir
+         local testdir
 
          # create a directory besides dstdir
          r_dirname "${dstdir}"
-         tstdir="${RVAL}"
+         testdir="${RVAL}"
 
          local symlink
 
          r_uuidgen
-         symlink="${tstdir}/${RVAL}"
+         symlink="${testdir}/${RVAL}"
 
-         if ln -s "${tstdir}" "${symlink}" 2> /dev/null
+         if ln -s "${testdir}" "${symlink}" 2> /dev/null
          then
             rm "${symlink}"
             action=symlink
+            verb="Symlinked"
          fi
       ;;
    esac
 
-   local verb
+   case ",${sourceoptions}," in
+      *,clib=YES,*)
+         fetch::plugin::load_if_needed "clib"
+
+         local absolute
+         local hardlink
+         local writeprotect
+
+         absolute="${OPTION_ABSOLUTE_SYMLINK:-NO}"
+         hardlink='NO'
+         writeprotect='NO'
+
+         case "${MULLE_FETCH_CLIB_MODE}" in
+            '')
+               # no change !
+            ;;
+
+            'symlink')
+               action="symlink"
+            ;;
+
+            'copy')
+               action="copy"
+               writeprotect='YES'
+            ;;
+
+            'hardlink')
+               action="symlink"
+               hardlink='YES'
+               writeprotect='YES'
+            ;;
+
+            *)
+               fail "Unknown MULLE_FETCH_CLIB_MODE \"${MULLE_FETCH_CLIB_MODE}\""
+            ;;
+         esac
+
+         #
+         # for clib, hardcopy is actually preferable
+         # also write protect, so that we don't actually edit dupes
+         #
+         fetch::plugin::clib::symlink_or_copy "${action}" \
+                                              "${url}" \
+                                              "${dstdir}" \
+                                              "${absolute}" \
+                                              "${hardlink}" \
+                                              "${writeprotect}"
+         return $?
+      ;;
+   esac
+
 
    if [ "${action}" = "symlink" ]
    then
-      verb="Symlinked"
-      if ! exekutor create_symlink "${url}" "${dstdir}" "${OPTION_ABSOLUTE_SYMLINK:-NO}"
+      if ! exekutor create_symlink "${url}" \
+                                   "${dstdir}" \
+                                   "${OPTION_ABSOLUTE_SYMLINK:-NO}" \
+                                   "${OPTION_HARDLINK:-NO}"
       then
          return 1
       fi
    else
-      verb="Copied"
       mkdir_if_missing "${dstdir}"
 
       # mingw could not symlink, but we want the local repository and not

@@ -277,6 +277,7 @@ fetch::commands::common()
    local OPTION_SYMLINK="DEFAULT"
    local OPTION_REFRESH="DEFAULT"
    local OPTION_ABSOLUTE_SYMLINK='NO'
+   local OPTION_HARDLINK='NO'
    local OPTION_SYMLINK_RETURNS_4='NO'
 
    local OPTION_OPTIONS
@@ -321,6 +322,10 @@ fetch::commands::common()
 
          --symlink|--symlinks)
             OPTION_SYMLINK='YES'
+         ;;
+
+         --hardlink)
+            OPTION_HARDLINK='YES'
          ;;
 
          --no-symlink|--no-symlinks)

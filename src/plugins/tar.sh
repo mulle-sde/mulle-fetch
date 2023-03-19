@@ -152,16 +152,16 @@ fetch::plugin::tar::archive_cache_grab()
    fi
 
    local filename
-   local reponame
-
-   reponame="`rexekutor "${MULLE_DOMAIN:-mulle-domain}" nameguess "${url}" `"
-   if [ -z "${reponame}" ]
+   local repo
+   
+   repo="`rexekutor "${MULLE_DOMAIN:-mulle-domain}" nameguess "${url}" `"
+   if [ -z "${repo}" ]
    then
       log_fluff "Could not figure out repository name of \"${url}\", so won't cache"
       return 4
    fi
 
-   filename="${reponame}-${download}"
+   filename="${repo}-${download}"
 
    # tar and zip can share a cache due to file extension
    _archive_cache="${MULLE_FETCH_ARCHIVE_DIR}"

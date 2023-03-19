@@ -82,8 +82,26 @@ tag ${C_RESET_BOLD}${tag}${C_WARNING} information of \
 ${C_MAGENTA}${C_BOLD}${name}${C_WARNING} ignored by clib"
    fi
 
+   if ! CLIB="`${CLIB:-command -v clib}`"
+   then
+      fail "clib is not installed"
+   fi
+
+   local user_repo
+   local rval
+
+   user_repo="${url#clib:}"
+
    r_dirname "${dstdir}"
-   exekutor clib ${OPTION_TOOL_FLAGS} install --out "${RVAL}" ${name} >&2
+   exekutor ${CLIB} ${OPTION_TOOL_FLAGS} install --out "${RVAL}" "${user_repo}" >&2
+   rval=$?
+   log_debug "clib returns with: $rval"
+
+   if [ $rval -ne 0 ]
+   then
+      fail "${CLIB} could not checkout \"${user_repo}\""
+   fi
+   return 0
 }
 
 
@@ -160,18 +178,22 @@ fetch::plugin::clib::search_local_project()
 #   local unused="$1"
    local name="$2"
    local url="$3"
-   local branch="$4"
+#   local branch="$4"
 #   local tag="$5"
 #   local sourcetype="$6"
 #   local sourceoptions="$7"
 #   local dstdir="$8"
 
-   if fetch::source::r_search_local_in_searchpath "${name}" "${branch}" "" 'NO' "${url}"
+   if fetch::source::r_search_local_in_searchpath "${name}" "" "" 'NO' "${url}"
    then
-      echo ${RVAL}
-      return 0
+      if [ -f "${RVAL}/clib.json" ]
+      then
+         printf "%s\n" "${RVAL}"
+         return 0
+      fi
    fi
 
+   log_verbose "No clib.json found in \"${RVAL}\""
    return 1
 }
 
@@ -196,6 +218,270 @@ fetch::plugin::clib::guess_project()
    r_extensionless_basename "${RVAL}"
    printf "%s\n" "${RVAL}"
 }
+
+
+fetch::plugin::clib::r_get_clib_json_repo_jq()
+{
+   log_entry "fetch::plugin::clib::r_get_clib_json_repo_jq" "$@"
+
+   local clib_json="$1"
+
+   RVAL="`\
+   rexekutor "${JQ}" .repo "${clib_json}" \
+   | sed -e 's/^[[:space:]]*"\(.*\)"/\1/' \
+         -e 's/\\"/"/g' `"
+}
+
+
+
+
+#
+# this oughta be more true JSON parsing, being able to parse any valid
+# clib
+#
+fetch::plugin::clib::get_clib_json_files_jq()
+{
+   log_entry "fetch::plugin::clib::get_clib_json_files_jq" "$@"
+
+   local clib_json="$1"
+
+   rexekutor "${JQ}" .src "${clib_json}" \
+   | sed -e '1d; $d' \
+         -e 's/^[[:space:]]*"\(.*\)"/\1/' \
+         -e 's/\\"/"/g'
+}
+
+
+
+
+#
+# this may only parse a subset of clib.json, which is "pretty"
+#
+fetch::plugin::clib::r_get_clib_json_repo_sh()
+{
+   log_entry "fetch::plugin::clib::r_get_clib_json_repo_sh" "$@"
+
+   local clib_json="$1"
+
+   local line
+   local repo
+
+   while IFS=$'\n' read line
+   do
+      case "${line}" in
+         *\"repo\"*\:*)
+            RVAL="${RVAL#*:}"
+            r_trim_whitespace "${RVAL%,}"
+            RVAL="${RVAL#\"}"
+            RVAL="${RVAL%\"}"
+            r_unescaped_doublequotes "${RVAL}"
+            return 0
+         ;;
+   esac
+   done < "${clib_json}"
+
+   RVAL=""
+   return 1
+}
+
+
+#
+# this may only parse a subset of clib.json, which is "pretty"
+#
+fetch::plugin::clib::get_clib_json_files_sh()
+{
+   log_entry "fetch::plugin::clib::get_clib_json_files_sh" "$@"
+
+   local clib_json="$1"
+
+   local line
+   local collect
+   local repo
+
+   while IFS=$'\n' read line
+   do
+      case "${line}" in
+         *\"src\"*\:*)
+            collect='YES'
+         ;;
+
+         *\]*)
+            collect='NO'
+         ;;
+
+         *)
+            if [ "${collect}" != 'YES' ]
+            then
+               continue
+            fi
+
+            r_trim_whitespace "${line%,}"
+            RVAL="${RVAL#\"}"
+            RVAL="${RVAL%\"}"
+            r_unescaped_doublequotes "${RVAL}"
+            printf "%s\n" "${RVAL}"
+         ;;
+      esac
+   done < "${clib_json}"
+
+   RVAL="${repo}"
+}
+
+
+fetch::plugin::clib::symlink_or_copy()
+{
+   log_entry "fetch::plugin::clib::symlink_or_copy" "$@"
+
+   local action="$1"
+   local url="$2"
+   local dstdir="$3"
+   local absolute_symlink="${4:-}"
+   local hardlink="${5:-}"
+   local writeprotect="${6:-}"
+
+   r_absolutepath "${url}"
+   url="${RVAL}"
+
+   local clib_json
+
+   r_filepath_concat "${url}" "clib.json"
+   clib_json="${RVAL}"
+
+   local files
+
+   JQ="${JQ:-`command -v jq`}"
+   if [ ! -z "${JQ}" ]
+   then
+      fetch::plugin::clib::r_get_clib_json_repo_jq "${clib_json}"
+      repo="${RVAL}"
+      files="`fetch::plugin::clib::get_clib_json_files_sh "${clib_json}" `"
+   else
+      fetch::plugin::clib::r_get_clib_json_repo_sh "${clib_json}"
+      repo="${RVAL}"
+      files="`fetch::plugin::clib::get_clib_json_files_jq "${clib_json}" `"
+   fi
+
+   if [ -z "${repo}" ]
+   then
+      fail "Could not figure out repo from \"${clib_json#${MULLE_USER_PWD}/}\""
+   fi
+
+   if [ -z "${files}" ]
+   then
+      fail "No src files found in \"${clib_json#${MULLE_USER_PWD}/}\""
+   fi
+
+   local reponame
+
+   r_basename "${repo}"
+   reponame="${RVAL}"
+
+   #
+   # the "trick" is that clib flattens the source and stores them
+   # in a per-repository subdirectory
+   #
+   local dstfile
+   local srcfile
+   local filename
+   local linksrc
+   local linkdst
+   local directory
+
+   r_absolutepath "${dstdir}"
+   directory="${RVAL}"
+
+   mkdir_if_missing "${directory}"
+   exekutor chmod -R ug+w "${directory}"
+
+   if [ "${action}" != "copy" -a "${hardlink}" = 'YES' ]
+   then
+      local devsrc
+      local devdst
+
+      devsrc="`file_devicenumber "${url}"`"
+      devdst="`file_devicenumber "${directory}"`"
+
+      if [ "${devdst}" != "${devsrc}" ]
+      then
+         log_warning "Can not use hardlinks for cross device links (${url#${MULLE_USER_PWD}/} -> ${directory#${MULLE_USER_PWD}/})"
+         action="copy"
+      fi
+   fi
+
+   if [ "${hardlink}" = 'YES' -a "${MULLE_SDE_SANDBOX_RUNNING}" = 'YES' ]
+   then
+      log_warning "Can not use hardlinks inside the sandbox (because of sandbox bugs)"
+      action="copy"
+   fi
+
+   local cmd
+   local cmdflags
+   local verb
+
+   if [ "${action}" = "copy" ]
+   then
+      cmd="cp"
+      cmdflags=""
+      verb="Copy"
+   else
+      cmd="ln"
+      if [ "${hardlink}" = 'YES' ]
+      then
+         case "${MULLE_UNAME}" in
+            linux)
+               cmdflags="-f -L"
+            ;;
+
+            *)
+               cmdflags="-f"
+            ;;
+         esac
+         verb="Hard-link"
+         absolute_symlink='YES'
+      else
+         cmdflags="-f -s"
+         verb="Symlink"
+      fi
+   fi
+
+   log_info "${verb}ing ${C_MAGENTA}${C_BOLD}${reponame}${C_INFO} source files to ${C_RESET_BOLD}${directory#${MULLE_USER_PWD}/}"
+   # for hard symlinks we need to be in directory
+   (
+      .foreachline filename in ${files}
+      .do
+         r_basename "${filename}"
+         linkdst="${RVAL}"
+         r_filepath_concat "${directory}" "${linkdst}"
+         dstfile="${RVAL}"
+
+         r_filepath_concat "${url}" "${filename}"
+         srcfile="${RVAL}"
+
+         log_setting "srcfile: \"${srcfile}\""
+         log_setting "dstfile: \"${dstfile}\""
+
+         linksrc="${srcfile}"
+         if [ "${action}" = "copy" -o "${absolute_symlink}" = 'YES' ]
+         then
+            # is already absolute
+            :
+         else
+            r_relative_path_between "${srcfile}" "${directory}"
+            linksrc="${RVAL}"
+         fi
+
+#         echo "${linksrc}   device: " `stat -c "%d" "${linksrc}"`
+#         echo "${directory} device: " `stat -c "%d" "${directory}"`
+         exekutor "${cmd}" ${cmdflags} "${linksrc}" "${dstfile}" || exit 1
+
+         if [ "${writeprotect}" = 'YES' ]
+         then
+            exekutor chmod ugo-w "${dstfile}"
+         fi
+      .done
+   )
+}
+
 
 
 fetch::plugin::clib::initialize()

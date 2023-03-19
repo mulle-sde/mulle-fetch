@@ -176,7 +176,7 @@ fetch::source::r_search_local_exists_directory()
 
    if [ -d "${dirpath}" ]
    then
-      log_fluff "Found \"${name}\" in \"${directory}\""
+      log_verbose "Found \"${name}\" in \"${directory}\""
       RVAL="${dirpath}"
       return 0
    fi
@@ -203,7 +203,7 @@ fetch::source::r_search_local()
    log_setting "directory      : ${directory}"
    log_setting "repo           : ${repo}"
 
-   log_verbose "Looking for local repo \"${repo}\" in \"${directory#"${MULLE_USER_PWD}/"}\""
+   log_fluff "Looking for local repo \"${repo}\" in \"${directory#"${MULLE_USER_PWD}/"}\""
 
    local inhibit
 
@@ -362,7 +362,7 @@ fetch::source::operation()
 
 fetch::source::prepare_filesystem_for_fetch()
 {
-   log_entry "source_prepare_for_fetch" "$@"
+   log_entry "fetch::source::prepare_filesystem_for_fetch" "$@"
 
    if [ -e "${dstdir}" ]
    then
@@ -399,8 +399,7 @@ fetch::source::download()
 
    local options
 
-   [ -z "${MULLE_FETCH_CURL_SH}" ] && \
-      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-curl.sh"
+   include "fetch::curl"
 
    #
    # local urls don't need to be curled

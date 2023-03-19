@@ -143,11 +143,7 @@ this platform"
    #
    # lazy load this as we need it now
    #
-   if [ -z "${MULLE_FETCH_GIT_SH}" ]
-   then
-      # shellcheck source=src/mulle-fetch-git.sh
-      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-git.sh" || exit 1
-   fi
+   include "fetch::git"
 
    if fetch::git::is_repository "${directory}"
    then
@@ -227,7 +223,7 @@ is empty (use --local-search-path to set)"
 
    if [ ! -z "${operation}" ]
    then
-      exekutor "${operation}" "$@"
+      "${operation}" "$@"
    else
       _log_fluff "Not searching locals because source \"${sourcetype}\" does \
 not support \"${operation}\""
@@ -270,6 +266,20 @@ fetch::operation::_operation()
          if fetch::operation::can_symlink_it "${url}"
          then
             sourcetype="symlink"
+         fi
+      ;;
+
+      clib:*)
+         found="`fetch::operation::get_local_item "$@"`"
+         if [ ! -z "${found}" ]
+         then
+            if fetch::operation::can_symlink_it "${found}"
+            then
+               sourcetype="symlink"
+               url="${found}"
+               r_comma_concat "clib=YES" "${sourceoptions}"
+               sourceoptions="${RVAL}"
+            fi
          fi
       ;;
 
