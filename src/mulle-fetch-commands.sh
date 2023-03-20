@@ -279,7 +279,7 @@ fetch::commands::common()
    local OPTION_ABSOLUTE_SYMLINK='NO'
    local OPTION_HARDLINK='NO'
    local OPTION_SYMLINK_RETURNS_4='NO'
-
+   local OPTION_WRITE_PROTECT='NO'
    local OPTION_OPTIONS
    local OPTION_TOOL_FLAGS
    local OPTION_TOOL_OPTIONS
@@ -366,6 +366,10 @@ fetch::commands::common()
             shift
 
             MULLE_FETCH_MIRROR_DIR="$1"
+         ;;
+
+         --write-protect)
+            OPTION_WRITE_PROTECT='YES'
          ;;
 
          #
@@ -543,6 +547,18 @@ fetch::commands::common()
    r_basename "${directory}"
    name="${RVAL}"
 
+   case "${COMMAND}" in
+      fetch)
+         if [ "${OPTION_WRITE_PROTECT}" = 'YES' ] && [ -d "${directory}" ]
+         then
+            log_fluff "Unprotecting possibly write protected files"
+            exekutor find "${directory}" -type f -exec chmod ug+w {} \;
+         fi
+      ;;
+   esac
+
+   local rval
+
    fetch::operation::do "${COMMAND}" "unused" \
                                      "${name}" \
                                      "${url}" \
@@ -551,6 +567,22 @@ fetch::commands::common()
                                      "${OPTION_SCM}" \
                                      "${OPTION_OPTIONS}" \
                                      "${directory}"
+   rval=$?
+
+   if [ $rval -eq 0 ]
+   then
+      case "${COMMAND}" in
+         fetch)
+            if [ "${OPTION_WRITE_PROTECT}" = 'YES' ] && [ -d "${directory}" ]
+            then
+               log_fluff "Write protecting fetched files"
+               exekutor find "${directory}" -type f -exec chmod ugo-w {} \;
+            fi
+         ;;
+      esac
+   fi
+
+   return $rval
 }
 
 
@@ -702,6 +734,17 @@ fetch::commands::convenient_fetch_main()
          fetch::commands::convenient_fetch_usage
       ;;
 
+      clib:*)
+      ;;
+
+      craftinfo:*)
+         url="`fetch::commands::convenient_craftinfo_fetch "${url#craftinfo:}" `"
+         if [ $? -ne 0 ]
+         then
+            fail "No craftinfo found for \"${url#craftinfo:}\""
+         fi
+      ;;
+
       */*)
          r_extended_identifier "${url%%/*}"
          user="${RVAL}"
@@ -716,13 +759,6 @@ fetch::commands::convenient_fetch_main()
          fi
       ;;
 
-      craftinfo:*)
-         url="`fetch::commands::convenient_craftinfo_fetch "${url#craftinfo:}" `"
-         if [ $? -ne 0 ]
-         then
-            fail "No craftinfo found for \"${url#craftinfo:}\""
-         fi
-      ;;
 
       *)
          if [ ! -z "${OPTION_GITHUB_USER}" ]
