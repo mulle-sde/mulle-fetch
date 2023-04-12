@@ -728,13 +728,12 @@ fetch::commands::convenient_fetch_main()
 
    local user
    local project
+   local domain
+   local s
 
    case "${url}" in
       -h|--help|help)
          fetch::commands::convenient_fetch_usage
-      ;;
-
-      clib:*)
       ;;
 
       craftinfo:*)
@@ -745,6 +744,12 @@ fetch::commands::convenient_fetch_main()
          fi
       ;;
 
+      *:*)
+         s="`rexekutor mulle-domain parse-url "${url}"| mulle-domain compose -`"
+         log_verbose "Transformed \"${url}\" into \"${s}\" with mulle-domain"
+         url="${s}"
+      ;;
+
       */*)
          r_extended_identifier "${url%%/*}"
          user="${RVAL}"
@@ -752,13 +757,12 @@ fetch::commands::convenient_fetch_main()
          r_extended_identifier "${url##*/}"
          project="${RVAL}"
 
-         if [ "${url}" = "${user}/${project}" ]
+         if [ "${url#*:}" = "${user}/${project}" ]
          then
             url="https://github.com/${user}/${project}.git"
             log_verbose "Expanded ${user}/${project} into ${url}"
          fi
       ;;
-
 
       *)
          if [ ! -z "${OPTION_GITHUB_USER}" ]
