@@ -744,6 +744,13 @@ fetch::commands::convenient_fetch_main()
          fi
       ;;
 
+      clib:*)
+         # strip trailing '@'
+         s="`rexekutor mulle-domain parse-url "${url%%@}"| mulle-domain compose -`"
+         log_verbose "Transformed \"${url}\" into \"${s}\" with mulle-domain"
+         url="${s}"
+      ;;
+
       *:*)
          s="`rexekutor mulle-domain parse-url "${url}"| mulle-domain compose -`"
          log_verbose "Transformed \"${url}\" into \"${s}\" with mulle-domain"
