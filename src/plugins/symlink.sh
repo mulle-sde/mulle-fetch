@@ -44,8 +44,8 @@ fetch::plugin::symlink::fetch_project()
    local url="$3"            # URL of the clone
    local branch="$4"         # branch of the clone
    local tag="$5"            # tag to checkout of the clone
-   local sourcetype="$6"    # source to use for this clone
-   local sourceoptions="$7" # options to use on source
+   local sourcetype="$6"     # source to use for this clone
+   local sourceoptions="$7"  # options to use on source
    local dstdir="$8"         # dstdir of this clone (absolute or relative to $PWD)
 
    fetch::source::prepare_filesystem_for_fetch "${dstdir}"
@@ -84,19 +84,28 @@ fetch::plugin::symlink::fetch_project()
       ;;
    esac
 
-   case ",${sourceoptions}," in
-      *,clib=YES,*)
+   if [ ! -z "${sourceoptions}" ]
+   then
+      include "array"
+
+      r_assoc_array_get "${sourceoptions}" "clib"
+      if [ "${RVAL}" = 'YES' ]
+      then
          fetch::plugin::load_if_needed "clib"
 
          local absolute
          local hardlink
          local writeprotect
+         local mode
 
          absolute="${OPTION_ABSOLUTE_SYMLINK:-NO}"
          hardlink='NO'
          writeprotect='NO'
 
-         case "${MULLE_FETCH_CLIB_MODE}" in
+         r_assoc_array_get "${sourceoptions}" "clibmode"
+         mode="${RVAL:-${MULLE_FETCH_CLIB_MODE}}"
+
+         case "${mode}" in
             '')
                # no change !
             ;;
@@ -117,12 +126,12 @@ fetch::plugin::symlink::fetch_project()
             ;;
 
             *)
-               fail "Unknown MULLE_FETCH_CLIB_MODE \"${MULLE_FETCH_CLIB_MODE}\""
+               fail "Unknown clibmode \"${mode}\""
             ;;
          esac
 
          #
-         # for clib, hardcopy is actually preferable
+         # for clib, hardlink or copy is actually preferable
          # also write protect, so that we don't actually edit dupes
          #
          fetch::plugin::clib::symlink_or_copy "${action}" \
@@ -132,9 +141,8 @@ fetch::plugin::symlink::fetch_project()
                                               "${hardlink}" \
                                               "${writeprotect}"
          return $?
-      ;;
-   esac
-
+      fi
+   fi
 
    if [ "${action}" = "symlink" ]
    then
@@ -204,7 +212,6 @@ fetch::plugin::symlink::search_local_project()
 
 
    local filename
-   local found
 
    #
    # the URL can be used to find a local repository
