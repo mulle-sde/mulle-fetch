@@ -189,7 +189,7 @@ fetch::plugin::git::clone()
 
    if [ ! -z "${branch}" ]
    then
-      _log_verbose "Cloning branch ${C_RESET_BOLD}$branch${C_INFO} of \
+      _log_info "Cloning branch ${C_RESET_BOLD}$branch${C_INFO} of \
 ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       r_concat "${options}" "-b ${branch}"
       options="${RVAL}"

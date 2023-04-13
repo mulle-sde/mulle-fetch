@@ -92,6 +92,7 @@ ${C_MAGENTA}${C_BOLD}${name}${C_WARNING} ignored by clib"
    user_repo="${url#clib:}"
    if [ ! -z "${branch}" ]
    then
+      user_repo="${user_repo%@*}"
       user_repo="${user_repo}@${branch}"
    fi
 
