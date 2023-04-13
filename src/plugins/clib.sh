@@ -49,7 +49,7 @@ fetch::plugin::clib::fetch_project()
    local dstdir="$8"           # destination of file (absolute or relative to $PWD)
 
    _log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
-${C_RESET_BOLD}${url%%@}${C_INFO}."
+${C_RESET_BOLD}${url}${C_INFO}."
 
    fetch::plugin::clib::checkout_project "$@"
    return $?
@@ -75,10 +75,9 @@ fetch::plugin::clib::checkout_project()
 
    [ -z "${dstdir}" ] && _internal_fail "dstdir is empty"
 
-   if [ ! -z "${tag}" -o ! -z "${branch}" ]
+   if [ ! -z "${tag}" ]
    then
-      _log_warning "Branch ${C_RESET_BOLD}${branch}${C_WARNING} and \
-tag ${C_RESET_BOLD}${tag}${C_WARNING} information of \
+      _log_warning "Tag ${C_RESET_BOLD}${tag}${C_WARNING} information of \
 ${C_MAGENTA}${C_BOLD}${name}${C_WARNING} ignored by clib"
    fi
 
@@ -91,12 +90,10 @@ ${C_MAGENTA}${C_BOLD}${name}${C_WARNING} ignored by clib"
    local rval
 
    user_repo="${url#clib:}"
-
-   #
-   # remove trailing "@" so the slug can be mulle-c/mulle-allocator@${MULLE_TAG}
-   # (clib itself don't like a trailing @)
-   #
-   user_repo="${user_repo%%@}"
+   if [ ! -z "${branch}" ]
+   then
+      user_repo="${user_repo}@${branch}"
+   fi
 
    r_dirname "${dstdir}"
    exekutor ${CLIB} ${OPTION_TOOL_FLAGS} install --out "${RVAL}" "${user_repo}" >&2
@@ -154,18 +151,17 @@ fetch::plugin::clib::upgrade_project()
    log_info "Updating ${C_MAGENTA}${C_BOLD}${dstdir}${C_INFO} ..."
 
    local user_repo
-   local rval
 
    user_repo="${url#clib:}"
 
-   #
-   # remove trailing "@" so the slug can be mulle-c/mulle-allocator@${MULLE_TAG}
-   # (clib itself don't like a trailing @)
-   #
-   user_repo="${user_repo%%@}"
-
    r_dirname "${dstdir}"
-   exekutor clib ${OPTION_TOOL_FLAGS} update --out "${RVAL}" ${user_repo} >&2
+
+   if ! CLIB="`${CLIB:-command -v clib}`"
+   then
+      fail "clib is not installed"
+   fi
+
+   exekutor "${CLIB}" ${OPTION_TOOL_FLAGS} update --out "${RVAL}" ${user_repo} >&2
 }
 
 
@@ -201,7 +197,9 @@ fetch::plugin::clib::search_local_project()
 #   local sourceoptions="$7"
 #   local dstdir="$8"
 
-   if fetch::source::r_search_local_in_searchpath "${name}" "" "" 'NO' "${url%%@}"
+   # remove branch info
+   url="${url%@*}"
+   if fetch::source::r_search_local_in_searchpath "${name}" "" "" 'NO' "${url}"
    then
       if [ -f "${RVAL}/clib.json" ]
       then
@@ -219,7 +217,7 @@ fetch::plugin::clib::exists_project()
 {
    log_entry "fetch::plugin::clib::exists_project" "$@"
 
-   fetch::source::url_exists "${url%%@}"
+   fetch::source::url_exists "${url}"
 }
 
 
@@ -231,7 +229,7 @@ fetch::plugin::clib::guess_project()
 
    include "fetch::url"
 
-   r_url_get_path "${url%%@}"
+   r_url_get_path "${url}"
    r_extensionless_basename "${RVAL}"
    printf "%s\n" "${RVAL}"
 }
@@ -356,7 +354,7 @@ fetch::plugin::clib::symlink_or_copy()
    local hardlink="${5:-}"
    local writeprotect="${6:-}"
 
-   r_absolutepath "${url%%@}"
+   r_absolutepath "${url}"
    url="${RVAL}"
 
    local clib_json
