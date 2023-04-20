@@ -1,3 +1,11 @@
+## 3.2.0
+
+* added --write-protect support
+* added Clib support
+* added clibs/clib as a scm (source code management) module for embedding sources
+* fix cross-platform bugs
+
+
 ## 3.1.0
 
 * made fetch command a little easier to use
