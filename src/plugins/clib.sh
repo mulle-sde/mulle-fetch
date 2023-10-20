@@ -242,13 +242,13 @@ fetch::plugin::clib::r_get_clib_json_repo_jq()
 
    local clib_json="$1"
 
+   [ -z "${JQ}" ] && _internal_fail "JQ is undefined"
+
    RVAL="`\
    rexekutor "${JQ}" .repo "${clib_json}" \
    | sed -e 's/^[[:space:]]*"\(.*\)"/\1/' \
          -e 's/\\"/"/g' `"
 }
-
-
 
 
 #
@@ -261,13 +261,14 @@ fetch::plugin::clib::get_clib_json_files_jq()
 
    local clib_json="$1"
 
+   [ -z "${JQ}" ] && _internal_fail "JQ is undefined"
+
    rexekutor "${JQ}" .src "${clib_json}" \
    | sed -e '1d; $d' \
          -e 's/^[[:space:]]*"\(.*\)"/\1/' \
-         -e 's/\\"/"/g'
+         -e 's/\\"/"/g' \
+         -e 's/,$//g'
 }
-
-
 
 
 #
@@ -293,7 +294,7 @@ fetch::plugin::clib::r_get_clib_json_repo_sh()
             r_unescaped_doublequotes "${RVAL}"
             return 0
          ;;
-   esac
+      esac
    done < "${clib_json}"
 
    RVAL=""
@@ -370,11 +371,11 @@ fetch::plugin::clib::symlink_or_copy()
    then
       fetch::plugin::clib::r_get_clib_json_repo_jq "${clib_json}"
       repo="${RVAL}"
-      files="`fetch::plugin::clib::get_clib_json_files_sh "${clib_json}" `"
+      files="`fetch::plugin::clib::get_clib_json_files_jq "${clib_json}" `"
    else
       fetch::plugin::clib::r_get_clib_json_repo_sh "${clib_json}"
       repo="${RVAL}"
-      files="`fetch::plugin::clib::get_clib_json_files_jq "${clib_json}" `"
+      files="`fetch::plugin::clib::get_clib_json_files_sh "${clib_json}" `"
    fi
 
    if [ -z "${repo}" ]
@@ -384,8 +385,10 @@ fetch::plugin::clib::symlink_or_copy()
 
    if [ -z "${files}" ]
    then
-      fail "No src files found in \"${clib_json#${MULLE_USER_PWD}/}\""
+      fail "No \"src\" files found in \"${clib_json#${MULLE_USER_PWD}/}\""
    fi
+
+   log_debug "${clib_json}: ${files}"
 
    local reponame
 

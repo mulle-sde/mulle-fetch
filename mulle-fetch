@@ -33,7 +33,7 @@
 [ "${TRACE:-}" = 'YES' -o "${MULLE_FETCH_TRACE:-}" = 'YES' ] && set -x && : "$0" "$@"
 
 
-MULLE_EXECUTABLE_VERSION="3.2.0"
+MULLE_EXECUTABLE_VERSION="3.2.1"
 
 #
 # Determine location of own libexec directory. Which is `src` in development
@@ -61,6 +61,7 @@ fetch::print_commands()
    domain      : special commands to query remote tags
    cfetch      : conveniently fetch and unpack URL by guessing a lot (default)
    fetch       : explicitly fetch archive or repository into a directory
+   search-local: search repo in folders given in MULLE_FETCH_SEARCH_PATH
    update      : update repository (-> git fetch)
    upgrade     : upgrade repository (-> git pull)"
 
@@ -258,6 +259,15 @@ fetch::main()
          else
             log_verbose "${PWD} is already local-searchable and symlinkable"
          fi
+      ;;
+
+      # "hidden" test code
+      debug-clib-fetch)
+         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh"
+
+         fetch::plugin::load "clib"
+
+         fetch::plugin::clib::symlink_or_copy "$@"
       ;;
 
       checkout)

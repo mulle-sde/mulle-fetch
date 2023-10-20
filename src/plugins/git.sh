@@ -283,6 +283,12 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
       return 1
    fi
 
+   #
+   # TODO: could do submodules here
+   # git submodule init
+   # git submodule update
+   #
+
    if [ ! -z "${originalurl}" ]
    then
       fetch::git::unset_default_remote "${dstdir}"

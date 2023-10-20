@@ -458,8 +458,8 @@ fetch::commands::common()
    # shellcheck source=mulle-fetch-plugin.sh
    . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh"
 
-   fetch::plugin::load "symlink" "scm" # brauchen wir immer
-   fetch::plugin::load "${OPTION_SCM}" "scm"
+   fetch::plugin::load "symlink"        # brauchen wir immer
+   fetch::plugin::load "${OPTION_SCM}"
 
    [ -z "${DEFAULT_IFS}" ] && _internal_fail "IFS fail"
 
