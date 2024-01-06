@@ -273,6 +273,8 @@ fetch::operation::_operation()
          found="`fetch::operation::get_local_item "$@"`"
          if [ ! -z "${found}" ]
          then
+            # MEMO: symlinking needs a flat copy of the files
+            #       we must not just symlink the directory
             if fetch::operation::can_symlink_it "${found}"
             then
                sourcetype="symlink"

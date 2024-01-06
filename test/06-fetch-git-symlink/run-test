@@ -22,7 +22,7 @@ run_mulle_fetch()
 
 _setup_demo_repo()
 {
-   git init
+   git init --initial-branch=master
 
    redirect_exekutor version echo "1.0.0"
    exekutor git add version

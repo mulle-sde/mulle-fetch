@@ -10,7 +10,8 @@ Can search for and symlink local projects in favor over fetching "stuff".
 
 | Release Version                                       | Release Notes
 |-------------------------------------------------------|--------------
-| ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-sde/mulle-fetch.svg?branch=release) | [RELEASENOTES](RELEASENOTES.md) |
+| ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-sde/mulle-fetch.svg?branch=release)  | [RELEASENOTES](RELEASENOTES.md) |
+
 
 
 
@@ -208,10 +209,12 @@ mulle-fetch url \
 
 
 
+
 ## Install
 
 See [mulle-sde-developer](//github.com/mulle-sde/mulle-sde-developer) how to
-install mulle-sde, which will also install mulle-fetch.
+install mulle-sde, which will also install mulle-fetch with required
+dependencies.
 
 The command to install only the latest mulle-fetch into
 `/usr/local` (with **sudo**) is:
@@ -226,3 +229,5 @@ curl -L 'https://github.com/mulle-sde/mulle-fetch/archive/latest.tar.gz' \
 ## Author
 
 [Nat!](https://mulle-kybernetik.com/weblog) for Mulle kybernetiK
+
+
