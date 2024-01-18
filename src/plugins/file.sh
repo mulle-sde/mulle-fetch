@@ -78,7 +78,7 @@ fetch::plugin::file::fetch_project()
    local destination="$8"     # destination of file (absolute or relative to $PWD)
 
    _log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
-${C_RESET_BOLD}${url}${C_INFO}."
+${C_RESET_BOLD}${url}"
 
    local dstdir
 

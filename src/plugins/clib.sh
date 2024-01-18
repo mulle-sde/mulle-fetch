@@ -49,7 +49,7 @@ fetch::plugin::clib::fetch_project()
    local dstdir="$8"           # destination of file (absolute or relative to $PWD)
 
    _log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
-${C_RESET_BOLD}${url}${C_INFO}."
+${C_RESET_BOLD}${url}"
 
    fetch::plugin::clib::checkout_project "$@"
    return $?
@@ -96,8 +96,30 @@ ${C_MAGENTA}${C_BOLD}${name}${C_WARNING} ignored by clib"
       user_repo="${user_repo}@${branch}"
    fi
 
-   r_dirname "${dstdir}"
-   exekutor ${CLIB} ${OPTION_TOOL_FLAGS} install --out "${RVAL}" "${user_repo}" >&2
+   #
+   # why is this happening ? if we fetch xxx src/xxx then we want only src
+   # buf if we do clib:user/xxx src/ we want it placed in src/
+   # best i come up with is to compare by name
+   local outdir
+
+   outdir="${dstdir%/}"
+
+   case "${dstdir}" in
+      */)
+         # keep as is
+      ;;
+
+      *)
+         r_basename "${dstdir}"
+         if [ "${RVAL}" = "${user_repo%%/*}" ]
+         then
+            r_dirname "${dstdir}"
+            outdir="${RVAL}"
+         fi
+      ;;
+   esac
+
+   exekutor ${CLIB} ${OPTION_TOOL_FLAGS} install --out "${outdir}" "${user_repo}" >&2
    rval=$?
    log_debug "clib returns with: $rval"
 

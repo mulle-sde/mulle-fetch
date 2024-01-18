@@ -55,7 +55,7 @@ fetch::plugin::svn::fetch_project()
    shift 8
 
    _log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
-${C_RESET_BOLD}${url}${C_INFO}."
+${C_RESET_BOLD}${url}"
 
    fetch::source::prepare_filesystem_for_fetch "${dstdir}"
 

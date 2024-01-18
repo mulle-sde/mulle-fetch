@@ -294,8 +294,7 @@ fetch::commands::common()
    # need this for usage now
 
    # shellcheck source=mulle-fetch-source.sh
-   . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh" \
-      || fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh"
+   include "mulle-fetch::source"
 
    while [ $# -ne 0 ]
    do
@@ -456,7 +455,7 @@ fetch::commands::common()
    done
 
    # shellcheck source=mulle-fetch-plugin.sh
-   . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || fail "failed to load ${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-source.sh"
+   include "mulle-fetch::plugin"
 
    fetch::plugin::load "symlink"        # brauchen wir immer
    fetch::plugin::load "${OPTION_SCM}"
@@ -469,6 +468,7 @@ fetch::commands::common()
    local cmd
    local repo
 
+   # this is old code that should die
    if [ ! -z "${OPTION_GITHUB_USER}" ]
    then
       case "${url}" in
@@ -715,16 +715,46 @@ fetch::commands::convenient_fetch_main()
 {
    log_entry "fetch::commands::convenient_fetch_main" "$@"
 
-   local url="$1"
+   local OPTION_DIRECTORY=
 
    USAGE="fetch::commands::convenient_fetch_usage"
    COMMAND="fetch"
 
-   case "${url}" in
-      -h|--help|help)
-         fetch::commands::convenient_fetch_usage
-      ;;
-   esac
+   while [ $# -ne 0 ]
+   do
+      case "$#{url}" in
+         -h|--help|help)
+            fetch::commands::convenient_fetch_usage
+         ;;
+
+         -d)
+            [ $# -eq 1 ] && fetch::commands::convenient_fetch_usage "Missing argument to \"$1\""
+            shift
+
+            OPTION_DIRECTORY="$1"
+         ;;
+
+         -*)
+            fetch::commands::convenient_fetch_usage "Unknown option \"$1\""
+         ;;
+
+         *)
+            break
+         ;;
+      esac
+      shift
+   done
+
+   [ $# -lt 1 -o $# -gt 2 ] && fetch::commands::convenient_fetch_usage
+
+   local url
+   local directory="${OPTION_DIRECTORY}"
+
+   url="$1"
+   if [ $# -eq 2 ]
+   then
+      directory="$2"
+   fi
 
    local user
    local project
@@ -732,10 +762,6 @@ fetch::commands::convenient_fetch_main()
    local s
 
    case "${url}" in
-      -h|--help|help)
-         fetch::commands::convenient_fetch_usage
-      ;;
-
       craftinfo:*)
          url="`fetch::commands::convenient_craftinfo_fetch "${url#craftinfo:}" `"
          if [ $? -ne 0 ]
@@ -744,8 +770,15 @@ fetch::commands::convenient_fetch_main()
          fi
       ;;
 
+      *://*|*@*:*)
+         # plain URLs keep as is
+      ;;
+
+
       *:*)
-         s="`rexekutor mulle-domain parse-url "${url}"| mulle-domain compose -`"
+         s="`rexekutor mulle-domain parse-url "${url}" \
+             | rexekutor mulle-domain compose -`"
+
          log_verbose "Transformed \"${url}\" into \"${s}\" with mulle-domain"
          url="${s}"
       ;;
@@ -779,8 +812,6 @@ fetch::commands::convenient_fetch_main()
       ;;
    esac
 
-   [ $# -ne 1 ] && fetch::commands::convenient_fetch_usage
-
    local guessed_scheme
    local guessed_domain
    local guessed_repo
@@ -790,44 +821,50 @@ fetch::commands::convenient_fetch_main()
    local guessed_tag
 
    local text
+   local rc
 
    text="`rexekutor "${MULLE_DOMAIN:-mulle-domain}" \
          ${MULLE_TECHNICAL_FLAGS} \
          ${MULLE_DOMAIN_FLAGS} \
        parse-url \
          --prefix "guessed_" \
-         "${url}" `" || exit 1
+         "${url}" `"
 
-   eval "${text}"
+   case $? in
+      0|4)
+         eval "${text}"
+      ;;
+   esac
 
    if [ -z "${guessed_scm}" ]
    then
       fail "Couldn't figure out what kind of repository \"${url}\" is."
    fi
 
-   local dst
+   if [ -z "${directory}" ]
+   then
+      case "${guessed_scm}" in
+         file)
+            r_basename "${guessed_repo}"
+            directory="${RVAL}"
+         ;;
 
-   case "${guessed_scm}" in
-      file)
-         r_basename "${guessed_repo}"
-         dst="${RVAL}"
-      ;;
+         *)
+            case "${guessed_tag}" in
+               ${GIT_DEFAULT_BRANCH:-master}|master|main|trunk|release)
+                  directory="${guessed_repo}"
+               ;;
 
-      *)
-         case "${guessed_tag}" in
-            ${GIT_DEFAULT_BRANCH:-master}|master|main|trunk|release)
-               dst="${guessed_repo}"
-            ;;
+               *)
+                  r_concat "${guessed_repo}" "${guessed_tag}" "-"
+                  directory="${RVAL}"
+               ;;
+            esac
+         ;;
+      esac
+   fi
 
-            *)
-               r_concat "${guessed_repo}" "${guessed_tag}" "-"
-               dst="${RVAL}"
-            ;;
-         esac
-      ;;
-   esac
-
-   fetch::commands::common --scm "${guessed_scm}" "${url}" "${dst}"
+   fetch::commands::common --scm "${guessed_scm}" "${url}" "${directory}"
 
    # print where something has been unpacked so that a script can run with it
    printf "%s\n" "${dst}"

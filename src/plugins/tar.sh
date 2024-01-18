@@ -274,7 +274,7 @@ fetch::plugin::tar::fetch_project()
    local sourceoptions="$7"   # options to use on source
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
-   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from ${C_RESET_BOLD}${url}${C_INFO}."
+   log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from ${C_RESET_BOLD}${url}"
 
    fetch::source::prepare_filesystem_for_fetch "${dstdir}"
 

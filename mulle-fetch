@@ -33,7 +33,7 @@
 [ "${TRACE:-}" = 'YES' -o "${MULLE_FETCH_TRACE:-}" = 'YES' ] && set -x && : "$0" "$@"
 
 
-MULLE_EXECUTABLE_VERSION="3.2.1"
+MULLE_EXECUTABLE_VERSION="4.0.0"
 
 #
 # Determine location of own libexec directory. Which is `src` in development
@@ -101,14 +101,24 @@ fetch::do_usage()
 
    cat <<EOF
 Usage:
-   ${MULLE_USAGE_NAME} [flags] <command>
+   ${MULLE_USAGE_NAME} [flags] <url> [directory] | <command> ...
 
-   Retrieve and unpack tar archive, git repositories, svn repositories.
-   For complete control use the explicit fetch command. For quick and dirty
-   fetches use the cfetch command or the shortcut without any command:
+   Retrieve and unpack zip/tar archive, git repositories, svn repositories.
+   Usually a zip/tar archive is faster.
 
-   Example:
-      mulle-fetch https://github.com/mulle-core/mulle-mmap/archive/0.0.1.zip
+   Use the explicit "fetch" command for complete control and many more
+   available options.
+
+   For quick and dirty fetches, use mulle-fetch with just an URL. Repositories
+   that support \`clib\` with a "clib.json" file, mulle-fetch supports this
+   too.
+
+   Examples:
+      mulle-fetch "github:mulle-core/mulle-core"
+      mulle-fetch "github:mulle-core/mulle-core@0.1.0" "src/mulle-core"
+      mulle-fetch "github:mulle-core/mulle-core.tar"
+      mulle-fetch "clib:mulle-core/mulle-core" "src/""
+      mulle-fetch "https://github.com/mulle-core/mulle-mmap/archive/0.0.1.zip"
 
 Flags:
 EOF
@@ -220,8 +230,8 @@ fetch::main()
          ;;
 
          -*)
-            # forward unknown flags to fetch command
-            cmd="fetch"
+            # forward unknown flags to cfetch command
+            cmd="cfetch"
             break
          ;;
 

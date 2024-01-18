@@ -1,3 +1,10 @@
+# 4.0.0
+
+* much improved and much more intuitive quick and dirty fetch mode
+* the github plugin now also understands tarball|zipball URLs
+* the github plugin will try to search for the latest tag on github, if the URL is an archive URL and no tag was specified
+
+
 ## 3.2.0
 
 * added --write-protect support
