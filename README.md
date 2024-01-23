@@ -8,6 +8,8 @@ Clones [git](//enux.pl/article/en/2014-01-21/why-git-sucks) repositories and it
 can also checkout [svn](//andreasjacobsen.com/2008/10/26/subversion-sucks-get-over-it/).
 Can search for and symlink local projects in favor over fetching "stuff".
 
+![GIF](opti.gif)
+
 | Release Version                                       | Release Notes
 |-------------------------------------------------------|--------------
 | ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-sde/mulle-fetch.svg?branch=release)  | [RELEASENOTES](RELEASENOTES.md) |
