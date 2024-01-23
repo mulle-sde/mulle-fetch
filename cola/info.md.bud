@@ -5,14 +5,14 @@ release archive with a special "tag filter" syntax, that expresses version
 ranges. For this to work the releases must be tagged in [semantic versioning]
 style.
 
-For example '>= 1.0.0 AND < 2.0.0' would get you the lastet version 1. A tag
+For example '>= 1.0.0 AND < 2.0.0' would get you the latest version 1. A tag
 filter is of the form
 
-| Filter                      |
+| Filter                      | Description
 |-----------------------------|-------------------
 | 'newest:' &lt;qualifier&gt; | Use the newest compatible version
 | 'oldest:' &lt;qualifier&gt; | Use the oldest compatible version
-&lt;qualifier&gt;             | same as `newest:`, just shorter
+| &lt;qualifier&gt;           | same as `newest:`, just shorter
 
 
 | Qualifier                 | Description
