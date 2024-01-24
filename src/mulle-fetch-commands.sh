@@ -716,6 +716,7 @@ fetch::commands::convenient_fetch_main()
    log_entry "fetch::commands::convenient_fetch_main" "$@"
 
    local OPTION_DIRECTORY=
+   local OPTION_PRINT='YES'
 
    USAGE="fetch::commands::convenient_fetch_usage"
    COMMAND="fetch"
@@ -732,6 +733,14 @@ fetch::commands::convenient_fetch_main()
             shift
 
             OPTION_DIRECTORY="$1"
+         ;;
+
+         --print)
+            OPTION_PRINT='YES'
+         ;;
+
+         --no-print)
+            OPTION_PRINT='NO'
          ;;
 
          -*)
@@ -867,7 +876,10 @@ fetch::commands::convenient_fetch_main()
    fetch::commands::common --scm "${guessed_scm}" "${url}" "${directory}"
 
    # print where something has been unpacked so that a script can run with it
-   printf "%s\n" "${dst}"
+   if [ "${OPTION_PRINT}" = 'YES' ]
+   then
+      printf "%s\n" "${directory}"
+   fi
 }
 
 

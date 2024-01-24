@@ -33,7 +33,7 @@
 [ "${TRACE:-}" = 'YES' -o "${MULLE_FETCH_TRACE:-}" = 'YES' ] && set -x && : "$0" "$@"
 
 
-MULLE_EXECUTABLE_VERSION="4.0.0"
+MULLE_EXECUTABLE_VERSION="4.0.1"
 
 #
 # Determine location of own libexec directory. Which is `src` in development
@@ -282,28 +282,28 @@ fetch::main()
 
       checkout)
          # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+         include "fetch::commands"
 
          fetch::commands::checkout_main "$@"
       ;;
 
       exists)
          # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+         include "fetch::commands"
 
          fetch::commands::exists_main "$@"
       ;;
 
       cfetch|convenient-fetch)
          # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+         include "fetch::commands"
 
          fetch::commands::convenient_fetch_main "$@"
       ;;
 
       fetch)
          # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+         include "fetch::commands"
 
          fetch::commands::fetch_main "$@"
       ;;
@@ -314,14 +314,14 @@ fetch::main()
 
       list)
          # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh"
+         include "fetch::commands"
 
          fetch::plugin::main "$@" list
       ;;
 
       operation)
-         # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-operation.sh"
+         # shellcheck source=src/mulle-fetch-operation.sh
+         include "fetch::operation"
 
          fetch::commands::operation_main "$@"
       ;;
@@ -347,21 +347,21 @@ fetch::main()
 
       search-local)
          # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+         include "fetch::commands"
 
          fetch::commands::search_local_main "$@"
       ;;
 
       set-url)
          # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+         include "fetch::commands"
 
          fetch::commands::set_url_main "$@"
       ;;
 
       status)
          # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+         include "fetch::commands"
 
          fetch::commands::status_main "$@"
       ;;
@@ -372,14 +372,14 @@ fetch::main()
 
       update)
          # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+         include "fetch::commands"
 
          fetch::commands::update_main "$@"
       ;;
 
       upgrade)
          # shellcheck source=src/mulle-fetch-commands.sh
-         . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
+         include "fetch::commands"
 
          fetch::commands::upgrade_main "$@"
       ;;

@@ -1,3 +1,7 @@
+### 4.0.1
+
+* fix output of convenient-fetch
+
 # 4.0.0
 
 * much improved and much more intuitive quick and dirty fetch mode
