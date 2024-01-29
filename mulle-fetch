@@ -33,7 +33,7 @@
 [ "${TRACE:-}" = 'YES' -o "${MULLE_FETCH_TRACE:-}" = 'YES' ] && set -x && : "$0" "$@"
 
 
-MULLE_EXECUTABLE_VERSION="4.0.1"
+MULLE_EXECUTABLE_VERSION="4.1.0"
 
 #
 # Determine location of own libexec directory. Which is `src` in development
@@ -410,7 +410,7 @@ fetch::main()
          # shellcheck source=src/mulle-fetch-commands.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-commands.sh"
 
-         fetch::commands::convenient_fetch_main "${cmd}" "$@"
+         fetch::commands::convenient_fetch_main --no-print "${cmd}" "$@"
       ;;
    esac
 }

@@ -1,3 +1,8 @@
+## 4.1.0
+
+* default convenient-fetch doesn't print anymore
+
+
 ### 4.0.1
 
 * fix output of convenient-fetch
