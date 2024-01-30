@@ -723,7 +723,7 @@ fetch::commands::convenient_fetch_main()
 
    while [ $# -ne 0 ]
    do
-      case "$#{url}" in
+      case "$1" in
          -h|--help|help)
             fetch::commands::convenient_fetch_usage
          ;;

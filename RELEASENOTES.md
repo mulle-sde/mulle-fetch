@@ -1,3 +1,7 @@
+### 4.1.1
+
+* Various small improvements
+
 ## 4.1.0
 
 * default convenient-fetch doesn't print anymore
