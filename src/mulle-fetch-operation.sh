@@ -503,7 +503,7 @@ fetch::commands::operation_main()
 
    case "${cmd}" in
       list)
-         [ $# -ne 0 ] && fetch::operation::usage "superflous parameters"
+         [ $# -ne 0 ] && fetch::operation::usage "superfluous parameters"
 
          # shellcheck source=mulle-fetch-plugin.sh
          . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || \

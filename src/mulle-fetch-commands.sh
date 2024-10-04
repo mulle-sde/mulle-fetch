@@ -504,7 +504,7 @@ fetch::commands::common()
       case "${COMMAND}" in
          fetch)
             [ $# -lt 1 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
-            [ $# -gt 2 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
+            [ $# -gt 2 ] && log_error "superfluous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
 
             url="$1"
             directory="$2"
@@ -518,7 +518,7 @@ fetch::commands::common()
 
          set-url)
             [ $# -lt 2 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
-            [ $# -gt 2 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
+            [ $# -gt 2 ] && log_error "superfluous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
 
             url="$1"
             directory="$2"
@@ -526,19 +526,19 @@ fetch::commands::common()
 
          search-local|exists)
             [ $# -eq 0 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
-            [ $# -ne 1 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
+            [ $# -ne 1 ] && log_error "superfluous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
             url="$1"
          ;;
 
          *)
             [ $# -eq 0 ] && log_error "Missing argument to \"${COMMAND}\"" && ${USAGE}
-            [ $# -ne 1 ] && log_error "superflous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
+            [ $# -ne 1 ] && log_error "superfluous arguments \"$*\" to \"${COMMAND}\"" && ${USAGE}
             directory="$1"
          ;;
       esac
    else
       # uniform scheme, when URL is passed
-      # don't check superflous or absent arguments
+      # don't check superfluous or absent arguments
 
       url="${OPTION_URL}"
       directory="$1"
