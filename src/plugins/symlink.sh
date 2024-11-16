@@ -164,6 +164,7 @@ fetch::plugin::symlink::fetch_project()
       # the tar can't ...
       if ! (cd "${url}" ; exekutor tar -chf  - \
                                        --exclude='./stash' \
+                                       --exclude='./node_modules' \
                                        --exclude='./kitchen' \
                                        --exclude='./[Bb]uild' \
                                        --exclude='./addiction' \
