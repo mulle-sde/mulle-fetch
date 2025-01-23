@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 
-project( mulle-fetch VERSION 4.1.2 LANGUAGES NONE)
+project( mulle-fetch VERSION 4.1.3 LANGUAGES NONE)
 
 #
 # Primarily used for packaging on Linux

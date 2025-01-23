@@ -1,3 +1,7 @@
+### 4.1.3
+
+Various small improvements
+
 ### 4.1.2
 
 * exclude `node_modules` for npm
