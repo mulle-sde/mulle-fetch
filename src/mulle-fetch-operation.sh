@@ -28,7 +28,7 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_OPERATION_SH='included'
+MULLE_FETCH_OPERATION_SH="included"
 
 
 fetch::operation::usage()
@@ -100,6 +100,67 @@ fetch::operation::log_action()
 #
 ###
 #
+fetch::operation::can_copy_it()
+{
+   log_entry "fetch::operation::can_copy_it" "$@"
+
+   local directory="$1"
+
+   directory="${directory#file://}"
+
+   #
+   # DEFAULT is no
+   #
+   if [ "${OPTION_SYMLINK}" != 'COPY' ]
+   then
+      _log_verbose "Not allowed to copy it. (Use --copy to allow).
+Within mulle-sde:
+${C_RESET_BOLD}  mulle-sde env set MULLE_SOURCETREE_SYMLINK COPY
+"
+      return 1
+   fi
+
+   if [ ! -d "${directory}" ]
+   then
+      log_verbose "\"${directory#"${MULLE_USER_PWD}/"}\" is not a directory, can not copy"
+      return 1
+   fi
+
+   if [ -e "${directory}/.mulle/etc/fetch/no-copy" ]
+   then
+      log_verbose "Copying disabled by \"${directory#"${MULLE_USER_PWD}/"}/.mulle/etc/fetch/no-copy\""
+      return 1
+   fi
+
+   #
+   # lazy load this as we need it now
+   #
+   if [ -z "${MULLE_FETCH_GIT_SH}" ]
+   then
+      # shellcheck source=src/mulle-fetch-git.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-git.sh" || exit 1
+   fi
+
+   if fetch::git::is_repository "${directory}"
+   then
+       # if bare repo, we can only clone anyway
+      if fetch::git::is_bare_repository "${directory}"
+      then
+         log_verbose "${directory#"${MULLE_USER_PWD}/"} is a bare git repository. So no copying"
+         return 1
+      fi
+   else
+      log_info "${directory#"${MULLE_USER_PWD}/"} is not a git repository. Can only copy or symlink."
+   fi
+
+   log_debug "Copy of local directory \"${directory#"${MULLE_USER_PWD}/"}\" is possible"
+   return 0
+}
+
+
+#
+###
+#
 fetch::operation::can_symlink_it()
 {
    log_entry "fetch::operation::can_symlink_it" "$@"
@@ -107,6 +168,8 @@ fetch::operation::can_symlink_it()
    local directory="$1"
 
    directory="${directory#file://}"
+
+   [ "${OPTION_SYMLINK}" = 'COPY' ] && _internal_fail "should not have come here"
 
    #
    # DEFAULT is no
@@ -143,7 +206,11 @@ this platform"
    #
    # lazy load this as we need it now
    #
-   include "fetch::git"
+   if [ -z "${MULLE_FETCH_GIT_SH}" ]
+   then
+      # shellcheck source=src/mulle-fetch-git.sh
+      . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-git.sh" || exit 1
+   fi
 
    if fetch::git::is_repository "${directory}"
    then
@@ -154,10 +221,12 @@ this platform"
          return 1
       fi
    else
-      log_info "${directory#"${MULLE_USER_PWD}/"} is not a git repository. Can only symlink."
+      log_info "${directory#"${MULLE_USER_PWD}/"} is not a git repository. Can only copy or symlink."
    fi
 
-  return 0
+   log_debug "Symlink to local directory \"${directory#"${MULLE_USER_PWD}/"}\" is possible"
+
+   return 0
 }
 
 
@@ -221,13 +290,73 @@ is empty (use --local-search-path to set)"
    fetch::source::r_get_plugin_function "${sourcetype}" "search-local"
    operation="${RVAL}"
 
-   if [ ! -z "${operation}" ]
+   if [ -z "${operation}" ]
    then
-      "${operation}" "$@"
-   else
       _log_fluff "Not searching locals because source \"${sourcetype}\" does \
 not support \"${operation}\""
+      return 1
    fi
+
+   exekutor "${operation}" "$@"
+}
+
+
+fetch::operation::r_modify_sourcetype()
+{
+   log_entry "fetch::operation::r_modify_sourcetype" "$@"
+
+   local sourcetype="$1"      # source to use for this clone
+   local sourceoptions="$2"   # options to use on source
+   local dstdir="$3"          # dstdir of this clone (absolute or relative to $PWD)
+
+   case "${sourcetype}" in
+      'symlink')
+         # windows can actually symlink, so check if it does
+         case "${MULLE_UNAME}" in
+            'mingw'|'msys'|'windows')
+               sourcetype='copy'  # pessimist
+
+               local testdir
+
+               # create a directory besides dstdir
+               r_dirname "${dstdir}"
+               testdir="${RVAL}"
+
+               local symlink
+
+               r_uuidgen
+               symlink="${testdir}/${RVAL}"
+
+               if ln -s "${testdir}" "${symlink}" 2> /dev/null
+               then
+                  rm "${symlink}"
+                  sourcetype='symlink'
+               fi
+            ;;
+         esac
+      ;;
+   esac
+
+   #
+   # MEMO: moved here from plugin code, because its shared between
+   #       not really sure why sourceoptions is so "mighty" here...
+   #
+   case "${sourcetype}" in
+      'symlink'|'copy')
+         if [ ! -z "${sourceoptions}" ]
+         then
+            include "array"
+
+            r_assoc_array_get "${sourceoptions}" 'clib'
+            if [ "${RVAL}" = 'YES' ]
+            then
+               sourcetype='clib'
+            fi
+         fi
+      ;;
+   esac
+
+   RVAL="${sourcetype}"
 }
 
 
@@ -247,6 +376,17 @@ fetch::operation::_operation()
 
    [ $# -eq 8 ] || _internal_fail "parameters imcomplete"
 
+   case "${dstdir}" in
+      file:*)
+         dstdir="${dstdir#file:}"
+         dstdir="${dstdir#//}"
+         ;;
+
+      *://*)
+         fail "Destination \"${dstdir}\" must be on local filesystem"
+      ;;
+   esac
+
    local found
    local rval
    local localtype
@@ -256,31 +396,20 @@ fetch::operation::_operation()
       # don't move up using url
       #
       *'/../'*|'../'*|*'/..'|'..')
-         if [ "${sourcetype}" != "symlink" ]
+         if [ "${sourcetype}" != 'symlink' -a "${sourcetype}" != 'copy' ]
          then
             _internal_fail "Faulty url \"${url}\" should have been caught before"
          fi
       ;;
 
       '/'*|file:*)
-         if fetch::operation::can_symlink_it "${url}"
+         if [ "${OPTION_SYMLINK}" = 'COPY' ] && fetch::operation::can_copy_it "${url}"
          then
-            sourcetype="symlink"
-         fi
-      ;;
-
-      clib:*)
-         found="`fetch::operation::get_local_item "$@"`"
-         if [ ! -z "${found}" ]
-         then
-            # MEMO: symlinking needs a flat copy of the files
-            #       we must not just symlink the directory
-            if fetch::operation::can_symlink_it "${found}"
+            sourcetype='copy'
+         else
+            if [ "${OPTION_SYMLINK}" != 'NO' ] && fetch::operation::can_symlink_it "${url}"
             then
-               sourcetype="symlink"
-               url="${found}"
-               r_comma_concat "clib=YES" "${sourceoptions}"
-               sourceoptions="${RVAL}"
+               sourcetype='symlink'
             fi
          fi
       ;;
@@ -289,15 +418,23 @@ fetch::operation::_operation()
          found="`fetch::operation::get_local_item "$@"`"
          if [ ! -z "${found}" ]
          then
+            log_debug "local item found: ${found}"
+
             fetch::operation::r_type_of_local_item "${found}"
             localtype="${RVAL}"
 
             case "${localtype}" in
                "")
-                  if fetch::operation::can_symlink_it "${found}"
+                  if [ "${OPTION_SYMLINK}" = 'COPY' ] && fetch::operation::can_copy_it "${found}"
                   then
                      url="${found}"
-                     sourcetype="symlink"
+                     sourcetype='copy'
+                  else
+                     if [ "${OPTION_SYMLINK}" != 'NO' ] && fetch::operation::can_symlink_it "${found}"
+                     then
+                        url="${found}"
+                        sourcetype='symlink'
+                     fi
                   fi
                ;;
 
@@ -305,12 +442,21 @@ fetch::operation::_operation()
                   log_fluff "Found local ${localtype} item \"${found}\""
                   url="${found}"
                   sourcetype="${localtype}"
-                  if fetch::operation::can_symlink_it "${url}"
+
+                  if [ "${OPTION_SYMLINK}" = 'COPY' ] && fetch::operation::can_copy_it "${found}"
                   then
-                     sourcetype="symlink"
-                     log_fluff "Using symlink to local item \"${found}\""
+                     sourcetype='copy'
+                     log_fluff "Using copy of local item \"${found}\""
                      r_symlink_relpath "${found}" "${ROOT_DIR}"
                      url="${RVAL}"
+                  else
+                     if [ "${OPTION_SYMLINK}" != 'NO' ] && fetch::operation::can_symlink_it "${found}"
+                     then
+                        sourcetype='symlink'
+                        log_fluff "Using symlink to local item \"${found}\""
+                        r_symlink_relpath "${found}" "${ROOT_DIR}"
+                        url="${RVAL}"
+                     fi
                   fi
                ;;
 
@@ -322,9 +468,16 @@ fetch::operation::_operation()
                   fi
                ;;
             esac
+         else
+            log_debug "no local item found"
          fi
       ;;
    esac
+
+   fetch::operation::r_modify_sourcetype "${sourcetype}" \
+                                         "${sourceoptions}" \
+                                         "${dstdir}"
+   sourcetype="${RVAL}"
 
    fetch::source::operation "fetch" \
                             "${unused}" \
@@ -351,7 +504,7 @@ fetch::operation::_operation()
       ;;
    esac
 
-   if [ "${sourcetype}" = "symlink" -a "${OPTION_SYMLINK_RETURNS_4}" = 'YES' ]
+   if [ "${sourcetype}" = 'symlink' -a "${OPTION_SYMLINK_RETURNS_4}" = 'YES' ]
    then
       return 4
    fi

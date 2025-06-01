@@ -116,6 +116,7 @@ Options:
 
    --absolute-symlinks    : create absolute symlinks instead of relative ones
    --cache-dir <dir>      : directory to cache archives
+   --copy                 : use copy for local projects instead of symlink
    --mirror-dir <dir>     : directory to mirror repositories (git)
    --recursive            : fetch git recursively (does nothing for other scms)
    --refresh              : refresh mirrored repositories and cached archives
@@ -303,20 +304,17 @@ fetch::commands::common()
             ${USAGE}
          ;;
 
-         --git|--tar|--file)
-            OPTION_SCM="${1:2}"
-         ;;
-
-         --recursive)
-            GIT_FETCH_FLAGS=--recursive
-         ;;
-
          --refresh)
             OPTION_REFRESH='YES'
          ;;
 
          --no-refresh)
             OPTION_REFRESH='NO'
+         ;;
+
+         # copy and symlink options
+         --copy|--symlink-copy)
+            OPTION_SYMLINK='COPY'
          ;;
 
          --symlink|--symlinks)
@@ -344,6 +342,16 @@ fetch::commands::common()
          -2|-4|--symlink-returns-4|--symlink-returns-2)
             OPTION_SYMLINK='YES'
             OPTION_SYMLINK_RETURNS_4='YES'
+         ;;
+
+         # other git and archive options
+
+         --git|--tar|--file)
+            OPTION_SCM="${1:2}"
+         ;;
+
+         --recursive)
+            GIT_FETCH_FLAGS=--recursive
          ;;
 
          --cache-dir)
@@ -381,7 +389,7 @@ fetch::commands::common()
             OPTION_BRANCH="$1"
          ;;
 
-         -l|--search-path|--locals-search-path)
+         -l|--search-path|--local-search-path)
             [ $# -eq 1 ] && fail "Missing argument to \"$1\""
             shift
 
@@ -457,7 +465,8 @@ fetch::commands::common()
    # shellcheck source=mulle-fetch-plugin.sh
    include "mulle-fetch::plugin"
 
-   fetch::plugin::load "symlink"        # brauchen wir immer
+   fetch::plugin::load 'symlink'        # brauchen wir immer
+   fetch::plugin::load 'copy'           # brauchen wir immer
    fetch::plugin::load "${OPTION_SCM}"
 
    [ -z "${DEFAULT_IFS}" ] && _internal_fail "IFS fail"
@@ -497,7 +506,7 @@ fetch::commands::common()
    fi
 
    #
-   # ugliness ensues, but having a uniform way of
+   # ugliness ensues
    #
    if [ -z "${OPTION_URL}" ]
    then

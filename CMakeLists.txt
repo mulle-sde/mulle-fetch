@@ -1,6 +1,6 @@
-cmake_minimum_required( VERSION 3.15)
+cmake_minimum_required( VERSION 3.13...99.99)
 
-project( mulle-fetch VERSION 4.1.3 LANGUAGES NONE)
+project( mulle-fetch VERSION 4.2.0 LANGUAGES NONE)
 
 #
 # Primarily used for packaging on Linux
@@ -27,6 +27,7 @@ set( PROJECT_VERSION "${MULLE_FETCH_VERSION}")
 
 set( SCRIPTS
 mulle-fetch
+mulle-copy-project
 )
 
 

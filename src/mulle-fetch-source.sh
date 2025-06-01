@@ -191,17 +191,16 @@ fetch::source::r_search_local()
 
    local directory="$1"
    local repo="$2"
-   shift 2
-
-   local name="$1"
-   local branch="$2"
-   local extension="$3"
-   local need_extension="$4"
+   local name="$3"
+   local branch="$4"
+   local extension="$5"
+   local need_extension="$6"
 
    RVAL=
 
    log_setting "directory      : ${directory}"
    log_setting "repo           : ${repo}"
+   log_setting "extension      : ${extension}"
 
    log_fluff "Looking for local repo \"${repo}\" in \"${directory#"${MULLE_USER_PWD}/"}\""
 
@@ -234,7 +233,7 @@ fetch::source::r_search_local()
       fi
    fi
 
-   if [ "${need_extension}" != 'YES' ]
+   if [ "${need_extension}" != 'YES' -o -z "${extension}" ]
    then
       if fetch::source::r_search_local_exists_directory "${directory}" "${repo}"
       then

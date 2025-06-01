@@ -381,7 +381,7 @@ fetch::plugin::git::fetch_project()
    local dstdir="$8"           # destination of file (absolute or relative to $PWD)
 
    _log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
-${C_RESET_BOLD}${url}"
+git ${C_RESET_BOLD}${url}"
 
    fetch::source::prepare_filesystem_for_fetch "${dstdir}"
 
@@ -508,7 +508,7 @@ fetch::plugin::git::update_project()
    fi
    remote="`fetch::plugin::git::fetch_remote "${url}"`" || _internal_fail "can't figure out remote"
 
-   log_info "Fetching ${C_MAGENTA}${C_BOLD}${dstdir#${PWD}/}${C_INFO} ..."
+   log_info "Git fetching ${C_MAGENTA}${C_BOLD}${dstdir#${PWD}/}${C_INFO} ..."
 
    (
       exekutor cd "${dstdir}" &&
@@ -698,7 +698,7 @@ fetch::plugin::git::initialize()
       . "${MULLE_FETCH_LIBEXEC_DIR}/mulle-fetch-plugin.sh" || exit 1
    fi
 
-   fetch::plugin::load_if_needed "symlink"
+   fetch::plugin::load_if_needed 'symlink'
 }
 
 

@@ -28,15 +28,75 @@
 #   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #
-MULLE_FETCH_PLUGIN_SYMLINK_SH='included'
+MULLE_FETCH_PLUGIN_COPY_SH='included'
 
 
 ###
 ### PLUGIN API
 ###
-fetch::plugin::symlink::fetch_project()
+fetch::plugin::copy::copy_project()
 {
-   log_entry "fetch::plugin::symlink::fetch_project" "$@"
+   log_entry "fetch::plugin::copy::copy_project" "$@"
+
+   local srcdir="$1"         # URL of the clone
+   local dstdir="$2"         # dstdir of this clone (absolute or relative to $PWD)
+
+   mkdir_if_missing "${dstdir}"
+
+   local escaped_dstdir
+   local relative_dstdir
+
+   r_simplified_absolutepath "${srcdir}"
+   srcdir="${RVAL}"
+
+   r_simplified_absolutepath "${dstdir}"
+   dstdir="${RVAL}"
+
+   r_relative_path_between "${dstdir}" "${srcdir}"
+   relative_dstdir="${RVAL}"
+
+   case "${relative_dstdir}" in
+      '.')
+         fail "Copy would clobber origin"
+      ;;
+   esac
+
+   r_escaped_grep_pattern "${relative_dstdir}"
+   escaped_dstdir="${RVAL}"
+
+   (
+      rexekutor cd "${srcdir}" &&
+      rexekutor mulle-match list --gitignore-only \
+      | rexekutor grep -v -E "^${escaped_dstdir}/" \
+      | rexekutor tar -chf - -T -
+   ) \
+   | \
+   (
+      rexekutor cd "${dstdir}" &&
+      exekutor tar -xf -
+   )
+
+#   # mingw could not copy, but we want the local repository and not
+#   # the remote so... copy it. Tricky though, if we are a subdirectory
+#   # of url (like test). with the -h option, we make sure that copys
+#   # are resolved.
+#   # Well windows can do copys..., mingw can also sort of but then
+#   # the tar can't ...
+#   (cd "${url}" ; exekutor tar -chf  - \
+#                                    --exclude='./stash' \
+#                                    --exclude='./node_modules' \
+#                                    --exclude='./kitchen' \
+#                                    --exclude='./[Bb]uild' \
+#                                    --exclude='./addiction' \
+#                                    --exclude='./test*' \
+#                                    --exclude='./mulle/var' \
+#                                    . ) | ( cd "${dstdir}" ; tar xf - )
+}
+
+
+fetch::plugin::copy::fetch_project()
+{
+   log_entry "fetch::plugin::copy::fetch_project" "$@"
 
 #   local unused="$1"
    local name="$2"           # name of the clone
@@ -51,24 +111,18 @@ fetch::plugin::symlink::fetch_project()
 
    url="${url#file://}"
 
-   local verb
+   case "${url}" in
+      *://*)
+         fail "Copy needs local filepath not \"${url}\""
+      ;;
+   esac
 
-   if [ "${OPTION_HARDLINK}" = 'YES' ]
-   then
-      verb="Symlinked"
-   else
-      verb="Hardlinked"
-   fi
-
-   if ! exekutor create_symlink "${url}" \
-                                "${dstdir}" \
-                                "${OPTION_ABSOLUTE_SYMLINK:-NO}" \
-                                "${OPTION_HARDLINK:-NO}"
+   if ! fetch::plugin::copy::copy_project "${url}" "${dstdir}"
    then
       return 1
    fi
 
-   log_info "${verb} ${C_MAGENTA}${C_BOLD}${name}${C_INFO} to ${C_RESET_BOLD}${url}${C_INFO}"
+   log_info "Copied ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from ${C_RESET_BOLD}${url}${C_INFO}"
 
    local branchlabel
 
@@ -82,7 +136,7 @@ fetch::plugin::symlink::fetch_project()
    if [ "${branch}" != "${GIT_DEFAULT_BRANCH:-master}" -a "${branch}" != "latest" -a ! -z "${branch}" ]
    then
       _log_warning "warning: The intended ${branchlabel} ${C_RESET_BOLD}${branch}${C_WARNING} \
-may have been ignored, because the repository is symlinked."
+may have been ignored, because the repository is copied."
       # this can be often more confusing so just issue onv erbosr
       _log_verbose "If you want to checkout this ${branchlabel} you may want to:
    ${C_RESET}(cd ${dstdir}; git checkout ${OPTION_TOOL_OPTIONS} \"${branch}\" )${C_WARNING}"
@@ -90,51 +144,19 @@ may have been ignored, because the repository is symlinked."
 }
 
 
-fetch::plugin::symlink::search_local_project()
+fetch::plugin::copy::search_local_project()
 {
-   log_entry "fetch::plugin::symlink::search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
+   log_entry "fetch::plugin::copy::search_local_project [${MULLE_FETCH_SEARCH_PATH}]" "$@"
 
-#   local unused="$1"
-   local name="$2"            # name of the clone
-   local url="$3"             # URL of the clone
-   local branch="$4"          # branch of the clone
-#   local tag="$5"             # tag to checkout of the clone
-#   local sourcetype="$6"      # source to use for this clone
-#   local sourceoptions="$7"   # options to use on source
-#   local dstdir="$8"     # dstdir of this clone (absolute or relative to $PWD)
+   fetch::plugin::load_if_needed "symlink"
 
-
-   local filename
-
-   #
-   # the URL can be used to find a local repository
-   #
-   case "${url}" in
-      file://*)
-         r_simplified_absolutepath "${url:7}"
-         r_dirname "${RVAL}"  # remove name from url
-         filename="${RVAL}"
-
-         if fetch::source::r_search_local "${filename}" "${name}" "${branch}" "" 'NO'
-         then
-            log_fluff "Found via URL \"${url}\""
-            printf "%s\n" "${RVAL}"
-            return
-         fi
-         log_warning "Not found via URL \"${url}\""
-      ;;
-   esac
-
-   if fetch::source::r_search_local_in_searchpath "${name}" "${branch}" "" 'YES' "${url}"
-   then
-      printf "%s\n" "${RVAL}"
-   fi
+   fetch::plugin::symlink::search_local_project "$@"
 }
 
 
-fetch::plugin::symlink::exists_project()
+fetch::plugin::copy::exists_project()
 {
-   log_entry "fetch::plugin::symlink::exists_project" "$@"
+   log_entry "fetch::plugin::copy::exists_project" "$@"
 
    local url="$3"             # URL of the clone
 
@@ -142,9 +164,9 @@ fetch::plugin::symlink::exists_project()
 }
 
 
-fetch::plugin::symlink::guess_project()
+fetch::plugin::copy::guess_project()
 {
-   log_entry "fetch::plugin::symlink::guess_project" "$@"
+   log_entry "fetch::plugin::copy::guess_project" "$@"
 
    fetch::source::guess_project "$@"
 }

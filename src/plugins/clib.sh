@@ -49,7 +49,7 @@ fetch::plugin::clib::fetch_project()
    local dstdir="$8"           # destination of file (absolute or relative to $PWD)
 
    _log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
-${C_RESET_BOLD}${url}"
+clib ${C_RESET_BOLD}${url}"
 
    fetch::plugin::clib::checkout_project "$@"
    return $?
@@ -529,7 +529,7 @@ fetch::plugin::clib::initialize()
 {
    log_entry "fetch::plugin::clib::initialize"
 
-   fetch::plugin::load_if_needed "symlink"
+   fetch::plugin::load_if_needed 'symlink'
 }
 
 
