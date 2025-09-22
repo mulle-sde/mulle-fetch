@@ -239,6 +239,25 @@ EOF
 }
 
 
+fetch::commands::checkout_usage()
+{
+   cat <<EOF >&2
+Usage:
+   ${MULLE_EXECUTABLE_NAME} checkout [options]
+
+   Do a git checkout with specified options
+
+Options:
+   -s <scm>         : repository or archive format (default git)
+   -o <options>     : specify options for the scm (see documentation)
+EOF
+
+   fetch::commands::show_plugins >&2
+
+   exit 1
+}
+
+
 fetch::commands::status_usage()
 {
    cat <<EOF >&2
@@ -277,7 +296,9 @@ fetch::commands::common()
    local OPTION_URL
    local OPTION_SYMLINK="DEFAULT"
    local OPTION_REFRESH="DEFAULT"
-   local OPTION_ABSOLUTE_SYMLINK='NO'
+   # AI has problems figuring out relative symlinks, an extension should set
+   # the default to 'YES'
+   local OPTION_ABSOLUTE_SYMLINK="${MULLE_FETCH_ABSOLUTE_SYMLINK='NO'}"
    local OPTION_HARDLINK='NO'
    local OPTION_SYMLINK_RETURNS_4='NO'
    local OPTION_WRITE_PROTECT='NO'
@@ -599,7 +620,7 @@ fetch::commands::checkout_main()
 {
    log_entry "fetch::commands::checkout_main" "$@"
 
-   USAGE="fetch_checkout_usage"
+   USAGE="fetch::commands::checkout_usage"
    COMMAND="checkout"
    fetch::commands::common "$@"
 }
@@ -638,7 +659,7 @@ fetch::commands::search_local_main()
 {
    log_entry "fetch::commands::search_local_main" "$@"
 
-   USAGE="fetch::commands::search_local_usage"
+   USAGE="fetch::commands::search_local_main_usage"
    COMMAND="search-local"
 
    log_fluff "MULLE_FETCH_SEARCH_PATH: ${MULLE_FETCH_SEARCH_PATH}"

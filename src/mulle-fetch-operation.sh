@@ -235,28 +235,48 @@ fetch::operation::r_type_of_local_item()
    log_entry "fetch::operation::r_type_of_local_item" "$@"
 
    local url="$1"
-
-   if [ -d "${url}/.git" ]
-   then
-      RVAL="git"
-      return
-   fi
-
-   if [ -d "${url}/.svn" ]
-   then
-      RVAL="svn"
-      return
-   fi
+   local sourcetype="$2"
 
    case "${url}" in
       *.tar|*.tgz|*.tar.gz)
+         log_debug "tar"
          RVAL="tar"
          return
       ;;
 
       *.zip)
+         log_debug "zip"
          RVAL="zip"
          return
+      ;;
+   esac
+
+   case "${sourcetype}" in
+      'clib')
+         if [ -f "${url}/clib.json" ]
+         then
+            log_debug "clib"
+            RVAL="clib"
+            return
+         fi
+      ;;
+
+      'svn')
+         if [ -d "${url}/.svn" ]
+         then
+            log_debug "svn"
+            RVAL="svn"
+            return
+         fi
+      ;;
+
+      *)
+         if [ -d "${url}/.git" ]
+         then
+            log_debug "git"
+            RVAL="git"
+            return
+         fi
       ;;
    esac
 
@@ -337,24 +357,6 @@ fetch::operation::r_modify_sourcetype()
       ;;
    esac
 
-   #
-   # MEMO: moved here from plugin code, because its shared between
-   #       not really sure why sourceoptions is so "mighty" here...
-   #
-   case "${sourcetype}" in
-      'symlink'|'copy')
-         if [ ! -z "${sourceoptions}" ]
-         then
-            include "array"
-
-            r_assoc_array_get "${sourceoptions}" 'clib'
-            if [ "${RVAL}" = 'YES' ]
-            then
-               sourcetype='clib'
-            fi
-         fi
-      ;;
-   esac
 
    RVAL="${sourcetype}"
 }
@@ -374,7 +376,8 @@ fetch::operation::_operation()
    local sourceoptions="$7"   # options to use on source
    local dstdir="$8"          # dstdir of this clone (absolute or relative to $PWD)
 
-   [ $# -eq 8 ] || _internal_fail "parameters imcomplete"
+   [ $# -eq 8 ]           || _internal_fail "parameters imcomplete"
+   [ ! -z "${ROOT_DIR}" ] || _internal_fail "ROOT_DIR should not be empty"
 
    case "${dstdir}" in
       file:*)
@@ -390,26 +393,33 @@ fetch::operation::_operation()
    local found
    local rval
    local localtype
+   local proposed_sourcetype
+
+   log_setting "sourcetype: ${sourcetype}"
 
    case "${url}" in
       #
       # don't move up using url
       #
       *'/../'*|'../'*|*'/..'|'..')
-         if [ "${sourcetype}" != 'symlink' -a "${sourcetype}" != 'copy' ]
-         then
-            _internal_fail "Faulty url \"${url}\" should have been caught before"
-         fi
+         case "${sourcetype}" in
+            'symlink'|'copy'|'clib')
+            ;;
+
+            *)
+               _internal_fail "Faulty url \"${url}\" should have been caught before"
+            ;;
+         esac
       ;;
 
       '/'*|file:*)
          if [ "${OPTION_SYMLINK}" = 'COPY' ] && fetch::operation::can_copy_it "${url}"
          then
-            sourcetype='copy'
+            proposed_sourcetype='copy'
          else
             if [ "${OPTION_SYMLINK}" != 'NO' ] && fetch::operation::can_symlink_it "${url}"
             then
-               sourcetype='symlink'
+               proposed_sourcetype='symlink'
             fi
          fi
       ;;
@@ -420,20 +430,26 @@ fetch::operation::_operation()
          then
             log_debug "local item found: ${found}"
 
-            fetch::operation::r_type_of_local_item "${found}"
+            # will tell us if this is a git repos, svn repo
+            # or an archive
+            fetch::operation::r_type_of_local_item "${found}" "${sourcetype}"
             localtype="${RVAL}"
 
+            log_setting "localtype : ${localtype}"
+
             case "${localtype}" in
-               "")
+               ''|'clib')
                   if [ "${OPTION_SYMLINK}" = 'COPY' ] && fetch::operation::can_copy_it "${found}"
                   then
-                     url="${found}"
-                     sourcetype='copy'
+                     r_symlink_relpath "${found}" "${ROOT_DIR}"
+                     url="${RVAL}"
+                     proposed_sourcetype='copy'
                   else
                      if [ "${OPTION_SYMLINK}" != 'NO' ] && fetch::operation::can_symlink_it "${found}"
                      then
-                        url="${found}"
-                        sourcetype='symlink'
+                        r_symlink_relpath "${found}" "${ROOT_DIR}"
+                        url="${RVAL}"
+                        proposed_sourcetype='symlink'
                      fi
                   fi
                ;;
@@ -446,16 +462,18 @@ fetch::operation::_operation()
                   if [ "${OPTION_SYMLINK}" = 'COPY' ] && fetch::operation::can_copy_it "${found}"
                   then
                      sourcetype='copy'
-                     log_fluff "Using copy of local item \"${found}\""
                      r_symlink_relpath "${found}" "${ROOT_DIR}"
                      url="${RVAL}"
+
+                     log_fluff "Using copy of local item \"${url}\""
                   else
                      if [ "${OPTION_SYMLINK}" != 'NO' ] && fetch::operation::can_symlink_it "${found}"
                      then
                         sourcetype='symlink'
-                        log_fluff "Using symlink to local item \"${found}\""
                         r_symlink_relpath "${found}" "${ROOT_DIR}"
                         url="${RVAL}"
+
+                        log_fluff "Using symlink to local item \"${url}\""
                      fi
                   fi
                ;;
@@ -464,7 +482,8 @@ fetch::operation::_operation()
                   log_fluff "Found local ${localtype} item \"${found}\""
                   if [ "${sourcetype}" = "${localtype}" ]
                   then
-                     url="${found}"
+                     r_symlink_relpath "${found}" "${ROOT_DIR}"
+                     url="${RVAL}"
                   fi
                ;;
             esac
@@ -474,10 +493,39 @@ fetch::operation::_operation()
       ;;
    esac
 
+   log_setting "sourcetype   : ${sourcetype}"
+   log_setting "proposed     : ${proposed_sourcetype}"
+
+   if [ ! -z "${proposed_sourcetype}" -a "${proposed_sourcetype}" != "${sourcetype}" ]
+   then
+      case "${sourcetype}" in
+         'git'|'svn'|'symlink'|'copy'|'tar'|'zip')
+            log_debug "Change ${sourcetype} to "${proposed_sourcetype}
+            sourcetype="${proposed_sourcetype}"
+         ;;
+
+         'clib')
+            include "array"
+
+            r_assoc_array_set "${sourceoptions}" "clibaction" "${proposed_sourcetype}"
+            sourceoptions="${RVAL}"
+         ;;
+      esac
+   fi
+
+   log_setting "sourcetype   : ${sourcetype}"
+   log_setting "sourceoptions: ${sourceoptions}"
+
+   #
+   # change 'symlink' to 'copy' depending on platform or other circumstances
+   #
    fetch::operation::r_modify_sourcetype "${sourcetype}" \
                                          "${sourceoptions}" \
                                          "${dstdir}"
    sourcetype="${RVAL}"
+
+   log_setting "sourcetype: ${sourcetype}"
+   log_setting "url:        ${url}"
 
    fetch::source::operation "fetch" \
                             "${unused}" \

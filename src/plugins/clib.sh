@@ -45,8 +45,71 @@ fetch::plugin::clib::fetch_project()
 #   local branch="$4"          # branch of the clone
    local tag="$5"              # tag to checkout of the clone
 #   local sourcetype="$6"      # source to use for this clone
-#   local sourceoptions="$7"   # options to use on source
+   local sourceoptions="$7"   # options to use on source
    local dstdir="$8"           # destination of file (absolute or relative to $PWD)
+
+   local absolute
+   local hardlink
+   local writeprotect
+   local mode
+   local action
+
+   include "array"
+
+   r_assoc_array_get "${sourceoptions}" "clibaction"
+   action="${RVAL}"
+
+   if [ ! -z "${action}" ]
+   then
+      absolute="${OPTION_ABSOLUTE_SYMLINK:-NO}"
+      hardlink='NO'
+      writeprotect='NO'
+      action="copy"
+
+      r_assoc_array_get "${sourceoptions}" "clibmode"
+      mode="${RVAL:-${MULLE_FETCH_CLIB_MODE}}"
+
+      case "${mode}" in
+         '')
+            # no change !
+         ;;
+
+         'symlink')
+            action="symlink"
+         ;;
+
+         'copy')
+            action="copy"
+            writeprotect='YES'
+         ;;
+
+         'hardlink')
+            action="symlink"
+            hardlink='YES'
+            writeprotect='YES'
+         ;;
+
+         *)
+            fail "Unknown clibmode \"${mode}\""
+         ;;
+      esac
+
+      # symlink_or_copy()
+      #    local action="$1"
+      #    local url="$2"
+      #    local dstdir="$3"
+      #    local absolute_symlink="${4:-}"
+      #    local hardlink="${5:-}"
+      #    local writeprotect="${6:-}"
+
+      fetch::plugin::clib::symlink_or_copy "${action}"           \
+                                           "${url}"              \
+                                           "${dstdir}"           \
+                                           "${absolute}"         \
+                                           "${hardlink}"         \
+                                           "${writeprotect}"
+      return $?
+   fi
 
    _log_info "Fetching ${C_MAGENTA}${C_BOLD}${name}${C_INFO} from \
 clib ${C_RESET_BOLD}${url}"

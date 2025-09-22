@@ -55,9 +55,9 @@ fetch::plugin::symlink::fetch_project()
 
    if [ "${OPTION_HARDLINK}" = 'YES' ]
    then
-      verb="Symlinked"
-   else
       verb="Hardlinked"
+   else
+      verb="Symlinked"
    fi
 
    if ! exekutor create_symlink "${url}" \

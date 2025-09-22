@@ -65,14 +65,15 @@ fetch::plugin::copy::copy_project()
    escaped_dstdir="${RVAL}"
 
    (
-      rexekutor cd "${srcdir}" &&
+      rexekutor cd "${srcdir}" || fail "\"${srcdir#${MULLE_USER_PWD}/}\" is missing or inaccessible"
+      log_info "PWD=$PWD"
       rexekutor mulle-match list --gitignore-only \
       | rexekutor grep -v -E "^${escaped_dstdir}/" \
-      | rexekutor tar -chf - -T -
+      | rexekutor tar -cf - -T -
    ) \
    | \
    (
-      rexekutor cd "${dstdir}" &&
+      rexekutor cd "${dstdir}"  || fail "\"${dstdir#${MULLE_USER_PWD}/}\" is missing or inaccessible"
       exekutor tar -xf -
    )
 
