@@ -294,8 +294,8 @@ fetch::commands::common()
    local OPTION_TAG
    local OPTION_SCM="git"
    local OPTION_URL
-   local OPTION_SYMLINK="DEFAULT"
-   local OPTION_REFRESH="DEFAULT"
+   local OPTION_SYMLINK='DEFAULT'
+   local OPTION_REFRESH='DEFAULT'
    # AI has problems figuring out relative symlinks, an extension should set
    # the default to 'YES'
    local OPTION_ABSOLUTE_SYMLINK="${MULLE_FETCH_ABSOLUTE_SYMLINK='NO'}"
