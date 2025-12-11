@@ -10,37 +10,33 @@ _mulle_fetch_complete()
    # Initialize COMPREPLY
    COMPREPLY=()
 
-   # Extract the command and subcommand positions
+   # Extract the command (skip program name at words[0])
    local i=1
    local cmd=""
-   local subcmd=""
 
-   # Find the main command
+   # Find the first non-option word after mulle-fetch (the command)
    while [[ $i -lt $cword ]]; do
-      if [[ "${words[i]}" != -* ]]; then
-         if [[ -z "$cmd" ]]; then
-            cmd="${words[i]}"
-         elif [[ -z "$subcmd" ]]; then
-            subcmd="${words[i]}"
-         fi
-         ((i++))
-      else
-         ((i++))
+      if [[ "${words[i]}" != -* && -z "$cmd" ]]; then
+         cmd="${words[i]}"
+         break
       fi
+      ((i++))
    done
 
    if [[ -z "$cmd" ]]; then
       # No command yet, suggest main commands
       local main_commands="\
-         domain cfetch fetch search-local update upgrade allow exists libexec-dir operation list prevent uname version plugin"
+         allow cfetch checkout convenient-fetch debug-clib-fetch exists fetch \
+         libexec-dir library-path list operation plugin prevent search-local \
+         set-url status uname update upgrade version"
       COMPREPLY=($(compgen -W "${main_commands}" -- "$cur"))
       return 0
    fi
 
    case "$cmd" in
       plugin)
-         if [[ $cword -eq $i ]]; then
-            # Subcommand for plugin
+         if [[ $cword -eq $((i+1)) ]]; then
+            # Subcommand for plugin (completing right after "plugin")
             COMPREPLY=($(compgen -W "list" -- "$cur"))
          else
             # Options for plugin command
@@ -48,53 +44,119 @@ _mulle_fetch_complete()
          fi
          ;;
 
-      fetch|cfetch|search-local|update|upgrade|exists|set-url|status|checkout)
-         # Options for fetch-related commands
-         local fetch_options="--help -h --absolute-symlinks --cache-dir --copy --mirror-dir --recursive --refresh --symlink --symlink-returns-4 --no-symlink --write-protect -b -l -o -s -t --branch --search-path --local-search-path --options --source --scm --tag"
+      fetch|cfetch|convenient-fetch)
+         # Options for fetch commands
+         local fetch_options="--help -h --absolute-symlinks --cache-dir --copy --curl-flags \
+            --file --git --github --github-user --hardlink --mirror-dir --no-absolute-symlinks \
+            --no-print --no-refresh --no-symlink --no-symlinks --prefix --print --recursive \
+            --refresh --symlink --symlink-copy --symlink-returns-4 --symlinks --tar \
+            --tool-flags --tool-options --write-protect -b -d -l -o -s -t --branch \
+            --search-path --local-search-path --options --source --scm --tag"
          if [[ "$cur" == -* ]]; then
             COMPREPLY=($(compgen -W "${fetch_options}" -- "$cur"))
          elif [[ "$prev" == "--cache-dir" || "$prev" == "--mirror-dir" || "$prev" == "-l" || "$prev" == "--search-path" || "$prev" == "--local-search-path" ]]; then
             COMPREPLY=($(compgen -d -- "$cur"))
          elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
-            # Get SCM types dynamically if possible
-            local scms
-            if command -v mulle-fetch >/dev/null 2>&1; then
-               scms=$(mulle-fetch plugin list 2>/dev/null)
-            else
-               scms="git tar zip clib svn symlink copy file"
-            fi
+            local scms="clib copy file git local svn symlink tar zip"
             COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
          elif [[ "$prev" == "--branch" || "$prev" == "-b" || "$prev" == "--tag" || "$prev" == "-t" ]]; then
-            COMPREPLY=()  # No specific completion
+            COMPREPLY=()
          else
-            COMPREPLY=($(compgen -f -- "$cur"))  # File completion for URLs or files
+            COMPREPLY=($(compgen -f -- "$cur"))
          fi
          ;;
 
-      domain|operation)
-         # For domain, assume basic help, and operation similar
+      search-local)
+         local options="--help -h -l -o -s -u --local-search-path --options --scm --source --url"
          if [[ "$cur" == -* ]]; then
-            COMPREPLY=($(compgen -W "--help -h --source --scm -s" -- "$cur"))
+            COMPREPLY=($(compgen -W "${options}" -- "$cur"))
+         elif [[ "$prev" == "-l" || "$prev" == "--local-search-path" ]]; then
+            COMPREPLY=($(compgen -d -- "$cur"))
          elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
-            local scms
-            if command -v mulle-fetch >/dev/null 2>&1; then
-               scms=$(mulle-fetch plugin list 2>/dev/null)
-            else
-               scms="git tar zip clib svn symlink copy file"
-            fi
+            local scms="clib copy file git local svn symlink tar zip"
             COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
          else
-            COMPREPLY=($(compgen -W "help" -- "$cur"))
+            COMPREPLY=()
          fi
          ;;
 
-      allow|prevent|uname|version|libexec-dir)
-         # Simple commands, no arguments usually
-         COMPREPLY=($(compgen -W "--help -h" -- "$cur"))
+      update|upgrade)
+         local options="--help -h -b -o -s -t --branch --options --scm --source --tag"
+         if [[ "$cur" == -* ]]; then
+            COMPREPLY=($(compgen -W "${options}" -- "$cur"))
+         elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
+            local scms="clib copy file git local svn symlink tar zip"
+            COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
+         elif [[ "$prev" == "--branch" || "$prev" == "-b" || "$prev" == "--tag" || "$prev" == "-t" ]]; then
+            COMPREPLY=()
+         else
+            COMPREPLY=($(compgen -d -- "$cur"))
+         fi
          ;;
 
-      list)
-         COMPREPLY=($(compgen -W "--help -h" -- "$cur"))
+      exists)
+         local options="--help -h -s --scm --source"
+         if [[ "$cur" == -* ]]; then
+            COMPREPLY=($(compgen -W "${options}" -- "$cur"))
+         elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
+            local scms="clib copy file git local svn symlink tar zip"
+            COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
+         else
+            COMPREPLY=()
+         fi
+         ;;
+
+      set-url)
+         local options="--help -h -o -s --options --scm --source"
+         if [[ "$cur" == -* ]]; then
+            COMPREPLY=($(compgen -W "${options}" -- "$cur"))
+         elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
+            local scms="clib copy file git local svn symlink tar zip"
+            COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
+         else
+            COMPREPLY=($(compgen -d -- "$cur"))
+         fi
+         ;;
+
+      status|checkout)
+         local options="--help -h -o -s --options --scm --source"
+         if [[ "$cur" == -* ]]; then
+            COMPREPLY=($(compgen -W "${options}" -- "$cur"))
+         elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
+            local scms="clib copy file git local svn symlink tar zip"
+            COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
+         else
+            COMPREPLY=($(compgen -d -- "$cur"))
+         fi
+         ;;
+
+      operation)
+         local options="--help -h -s --scm --source"
+         if [[ "$cur" == -* ]]; then
+            COMPREPLY=($(compgen -W "${options}" -- "$cur"))
+         elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
+            local scms="clib copy file git local svn symlink tar zip"
+            COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
+         else
+            COMPREPLY=()
+         fi
+         ;;
+
+      allow|prevent|uname|version|libexec-dir|library-path)
+         # Simple commands, no arguments
+         if [[ "$cur" == -* ]]; then
+            COMPREPLY=($(compgen -W "--help -h" -- "$cur"))
+         else
+            COMPREPLY=()
+         fi
+         ;;
+
+      list|debug-clib-fetch)
+         if [[ "$cur" == -* ]]; then
+            COMPREPLY=($(compgen -W "--help -h" -- "$cur"))
+         else
+            COMPREPLY=()
+         fi
          ;;
 
       *)

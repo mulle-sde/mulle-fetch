@@ -285,6 +285,7 @@ fetch::plugin::clib::search_local_project()
 
    # remove branch info
    url="${url%@*}"
+
    if fetch::source::r_search_local_in_searchpath "${name}" "" "" 'NO' "${url}"
    then
       if [ -f "${RVAL}/clib.json" ]
@@ -292,9 +293,9 @@ fetch::plugin::clib::search_local_project()
          printf "%s\n" "${RVAL}"
          return 0
       fi
+      log_verbose "No clib.json found in \"${RVAL}\""
    fi
 
-   log_verbose "No clib.json found in \"${RVAL}\""
    return 1
 }
 
