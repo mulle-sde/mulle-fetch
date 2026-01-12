@@ -1,3 +1,23 @@
+## 4.2.0
+
+
+
+
+
+
+* Change `OPTION_SYMLINK` and `OPTION_REFRESH` default values to use single quotes
+  - Improves consistency with shell scripting best practices
+  - Matches style used in `OPTION_ABSOLUTE_SYMLINK` assignment
+
+* improved symlink / clib code
+
+* added new scm 'copy' that uses mulle-match/tar combo to copy projects
+* the old copy code for mingw/windows now uses the new copy plugin too
+* new options --copy prefers copying to symlinking now, when a symlink would be possible, this is nice for AI, since we can now have app projects with a local stash, which the AI can then peruse
+
+* need to update `cmake_minimum_required` because cmake has a weird concept of min required
+
+
 ### 4.1.3
 
 Various small improvements
