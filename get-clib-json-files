@@ -1,0 +1,17 @@
+#! /usr/bin/env mulle-bash
+
+get_clib_json_files()
+{
+   jq .src clib.json \
+   | sed -e '1d; $d' \
+         -e 's/^[[:space:]]*"\(.*\)",*/\1/' \
+         -e 's/\\"/"/g' 
+}
+
+
+main()
+{
+	get_clib_json_files
+}
+
+main "$@"

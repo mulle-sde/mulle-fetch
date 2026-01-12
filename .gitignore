@@ -22,3 +22,6 @@ build-*/
 *-build-*/
 .idea
 frames/
+dox.unreleased
+result.json
+.graveyard/

@@ -12,7 +12,7 @@ Can search for and symlink local projects in favor over fetching "stuff".
 
 | Release Version                                       | Release Notes
 |-------------------------------------------------------|--------------
-| ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-sde/mulle-fetch.svg?branch=release)  | [RELEASENOTES](RELEASENOTES.md) |
+| ![Mulle kybernetiK tag](https://img.shields.io/github/tag/mulle-sde/mulle-fetch.svg)  | [RELEASENOTES](RELEASENOTES.md) |
 
 
 
