@@ -659,7 +659,7 @@ fetch::commands::search_local_main()
 {
    log_entry "fetch::commands::search_local_main" "$@"
 
-   USAGE="fetch::commands::search_local_main_usage"
+   USAGE="fetch::commands::search_local_usage"
    COMMAND="search-local"
 
    log_fluff "MULLE_FETCH_SEARCH_PATH: ${MULLE_FETCH_SEARCH_PATH}"

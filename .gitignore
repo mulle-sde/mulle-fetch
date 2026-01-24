@@ -25,3 +25,4 @@ frames/
 dox.unreleased
 result.json
 .graveyard/
+.mulle/etc/make
