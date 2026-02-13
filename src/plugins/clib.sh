@@ -150,7 +150,7 @@ ${C_MAGENTA}${C_BOLD}${name}${C_WARNING} ignored by clib"
    fi
 
    local user_repo
-   local rval
+   local rc
 
    user_repo="${url#clib:}"
    if [ ! -z "${branch}" ]
@@ -183,10 +183,10 @@ ${C_MAGENTA}${C_BOLD}${name}${C_WARNING} ignored by clib"
    esac
 
    exekutor ${CLIB} ${OPTION_TOOL_FLAGS} install --out "${outdir}" "${user_repo}" >&2
-   rval=$?
-   log_debug "clib returns with: $rval"
+   rc=$?
+   log_debug "clib returns with: $rc"
 
-   if [ $rval -ne 0 ]
+   if [ $rc -ne 0 ]
    then
       fail "${CLIB} could not checkout \"${user_repo}\""
    fi

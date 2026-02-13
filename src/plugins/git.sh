@@ -242,7 +242,7 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
    # because it fetches the tags, which in turn pull in most of the refs
    # regardless
    #
-   local rval
+   local rc
 
    local GIT_QUIET="-q"
 
@@ -269,14 +269,14 @@ ${C_MAGENTA}${C_BOLD}${url}${C_INFO} into \"${dstdir}\" ..."
          exekutor git ${OPTION_TOOL_FLAGS} fetch ${GIT_QUIET} --no-tags "origin" "${branch}" &&
          exekutor git ${OPTION_TOOL_FLAGS} checkout ${GIT_QUIET} -b "${branch}" "origin/${branch}"
       ) >&2
-      rval="$?"
+      rc="$?"
 #   else
 #      exekutor git ${OPTION_TOOL_FLAGS} "clone" ${options} ${OPTION_TOOL_OPTIONS} \
 #                                       -- "${url}" "${dstdir}"  >&2
-#      rval="$?"
+#      rc="$?"
 #   fi
 
-   if [ "$rval" -ne 0 ]
+   if [ "$rc" -ne 0 ]
    then
       rmdir_safer "${dstdir}"
       log_error "git clone of \"${url}\" into \"${dstdir}\" failed"

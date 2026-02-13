@@ -132,7 +132,7 @@ fetch::archive::unarchive_files()
       else
          exekutor "${TAR:-tar}" -x ${TARFLAGS} -k -f -
       fi
-      :  # ignore trashy tar rval
+      :  # ignore trashy tar rc
    )  2> /dev/null
 }
 

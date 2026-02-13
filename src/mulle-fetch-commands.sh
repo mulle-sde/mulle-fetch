@@ -371,7 +371,7 @@ fetch::commands::common()
             OPTION_SCM="${1:2}"
          ;;
 
-         --recursive)
+         --recursive|--recurse)
             GIT_FETCH_FLAGS=--recursive
          ;;
 
@@ -587,7 +587,7 @@ fetch::commands::common()
       ;;
    esac
 
-   local rval
+   local rc
 
    fetch::operation::do "${COMMAND}" "unused" \
                                      "${name}" \
@@ -597,9 +597,9 @@ fetch::commands::common()
                                      "${OPTION_SCM}" \
                                      "${OPTION_OPTIONS}" \
                                      "${directory}"
-   rval=$?
+   rc=$?
 
-   if [ $rval -eq 0 ]
+   if [ $rc -eq 0 ]
    then
       case "${COMMAND}" in
          fetch)
@@ -612,7 +612,7 @@ fetch::commands::common()
       esac
    fi
 
-   return $rval
+   return $rc
 }
 
 
@@ -713,7 +713,7 @@ fetch::commands::convenient_craftinfo_fetch()
 
    local name="$1"
 
-   local rval=1
+   local rc=1
 
    local urls
 
@@ -731,13 +731,13 @@ fetch::commands::convenient_craftinfo_fetch()
       # use mulle-domain to figure out how to get repo list
       if rexekutor "${CURL:-curl}" -fsSL "https://raw.githubusercontent.com/${user}/${name}-craftinfo/master/url"
       then
-         rval=0
+         rc=0
          break
       fi
    done
    IFS="${DEFAULT_IFS}"; shell_enable_glob
 
-   return $rval
+   return $rc
 }
 
 

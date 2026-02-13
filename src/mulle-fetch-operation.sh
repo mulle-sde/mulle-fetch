@@ -391,7 +391,7 @@ fetch::operation::_operation()
    esac
 
    local found
-   local rval
+   local rc
    local localtype
    local proposed_sourcetype
 
@@ -537,8 +537,8 @@ fetch::operation::_operation()
                             "${sourceoptions}" \
                             "${dstdir}"
 
-   rval="$?"
-   case $rval in
+   rc="$?"
+   case $rc in
       0)
       ;;
 
@@ -548,7 +548,7 @@ fetch::operation::_operation()
 
       *)
          rmdir_safer "${dstdir}"  # remove partial or wrong clone/unpack
-         return $rval
+         return $rc
       ;;
    esac
 
@@ -582,23 +582,23 @@ fetch::operation::do()
 
    [ -z "${sourcetype}" ] && _internal_fail "source is empty"
 
-   local rval
+   local rc
 
    case "${opname}" in
       'fetch')
          fetch::operation::_operation "$@"
-         rval=$?
+         rc=$?
 
-         log_debug "fetch::operation::do \"${opname}\": \"${sourcetype}\" returns with ${rval}"
+         log_debug "fetch::operation::do \"${opname}\": \"${sourcetype}\" returns with ${rc}"
 
-         return "${rval}"
+         return "${rc}"
       ;;
    esac
 
    fetch::source::operation "${opname}" "$@"
-   rval=$?
+   rc=$?
 
-   case $rval in
+   case $rc in
       0)
       ;;
 
@@ -619,8 +619,8 @@ fetch::operation::do()
       ;;
    esac
 
-   log_debug "fetch::operation::do \"${opname}\": \"${sourcetype}\" returns with ${rval}"
-   return "${rval}"
+   log_debug "fetch::operation::do \"${opname}\": \"${sourcetype}\" returns with ${rc}"
+   return "${rc}"
 }
 
 

@@ -73,7 +73,7 @@ main()
    local directory
    local dstdir
    local repo
-   local rval
+   local rc
 
    r_make_tmp_directory || exit 1
    directory="${RVAL:-/tmp/exekutor}"
@@ -84,8 +84,8 @@ main()
    setup_demo_repo "${repo}" || exit 1
 
    run_mulle_fetch fetch --symlink-returns-4 -l "${directory}" "${repo}" "${dstdir}"
-   rval=$?
-   case "${rval}" in
+   rc=$?
+   case "${rc}" in
       0)
          [ ! -e "${dstdir}" ] && fail "Failed to create dstdir"
          [ ! -L "${dstdir}" ] && fail "Failed to create a symlink"
@@ -97,7 +97,7 @@ main()
       ;;
 
       *)
-         fail "Failed with return code $rval"
+         fail "Failed with return code $rc"
          exit 1
       ;;
    esac

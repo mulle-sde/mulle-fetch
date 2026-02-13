@@ -176,7 +176,7 @@ fetch::source::r_search_local_exists_directory()
 
    if [ -d "${dirpath}" ]
    then
-      log_verbose "Found \"${name}\" in \"${directory}\""
+      log_fluff "Found \"${name}\" in \"${directory}\""
       RVAL="${dirpath}"
       return 0
    fi
