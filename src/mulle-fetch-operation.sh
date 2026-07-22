@@ -230,6 +230,7 @@ this platform"
 }
 
 
+
 fetch::operation::r_type_of_local_item()
 {
    log_entry "fetch::operation::r_type_of_local_item" "$@"
