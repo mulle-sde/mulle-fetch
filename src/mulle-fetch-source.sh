@@ -174,14 +174,40 @@ fetch::source::r_search_local_exists_directory()
    RVAL=""
    log_fluff "Looking for local \"${dirpath}\""
 
-   if [ -d "${dirpath}" ]
+   if [ ! -d "${dirpath}" ]
    then
-      log_fluff "Found \"${name}\" in \"${directory}\""
-      RVAL="${dirpath}"
-      return 0
+      return 1
    fi
 
-   return 1
+   #
+   # Check 1: marker file to explicitly ignore a directory
+   #
+   if [ -f "${dirpath}/.mulle/etc/fetch/ignore" ]
+   then
+      log_fluff "Ignoring \"${dirpath}\" due to .mulle/etc/fetch/ignore marker"
+      return 1
+   fi
+
+   #
+   # Check 2: uninitialized git submodule
+   # If the parent has a .gitmodules that lists this directory as a submodule
+   # and the directory has no .git (file or directory), it is uninitialized.
+   #
+   if [ -f "${directory}/.gitmodules" ]
+   then
+      if grep -q "path *= *${name} *$" "${directory}/.gitmodules" 2>/dev/null
+      then
+         if [ ! -e "${dirpath}/.git" ]
+         then
+            log_fluff "Ignoring \"${dirpath}\": uninitialized git submodule (no .git present)"
+            return 1
+         fi
+      fi
+   fi
+
+   log_fluff "Found \"${name}\" in \"${directory}\""
+   RVAL="${dirpath}"
+   return 0
 }
 
 

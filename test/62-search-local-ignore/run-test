@@ -1,0 +1,206 @@
+#! /bin/sh
+
+[ "${TRACE}" = 'YES' ] && set -x && : "$0" "$@"
+
+###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###
+MULLE_BASHFUNCTIONS_LIBEXEC_DIR="`mulle-bashfunctions libexec-dir`" || exit 1
+export MULLE_BASHFUNCTIONS_LIBEXEC_DIR
+. "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-boot.sh" || exit 1
+. "${MULLE_BASHFUNCTIONS_LIBEXEC_DIR}/mulle-bashfunctions.sh" || exit 1
+###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###   ###
+
+
+run_mulle_fetch()
+{
+   log_fluff "####################################"
+   log_fluff ${MULLE_FETCH} ${MULLE_FETCH_FLAGS} "$@"
+   log_fluff "####################################"
+
+   exekutor ${MULLE_FETCH} ${MULLE_FETCH_FLAGS} "$@"
+}
+
+
+_setup_demo_repo()
+{
+   git init --initial-branch=master
+
+   redirect_exekutor version echo "1.0.0"
+   exekutor git add version
+   exekutor git commit -m "initial version 1.0.0"
+}
+
+
+setup_demo_repo()
+{
+   (
+      set -e
+      mkdir_if_missing "$1" &&
+      exekutor cd "$1" && _setup_demo_repo
+      set +e
+   )
+}
+
+
+#
+# Test 1: .mulle/etc/fetch/ignore marker file causes directory to be skipped
+#
+test_ignore_marker()
+{
+   local directory="$1"
+
+   local repo="${directory}/searchdir/my-repo"
+
+   mkdir_if_missing "${repo}"
+   setup_demo_repo "${repo}"
+
+   # Without marker: should find it
+   local result
+
+   result="`run_mulle_fetch search-local -l "${directory}/searchdir" "https://fake.url/my-repo.git"`" || \
+      fail "search-local should have found my-repo without marker"
+   log_verbose "----- #1a PASSED (found without marker) -----"
+
+   # Add marker file
+   mkdir_if_missing "${repo}/.mulle/etc/fetch"
+   redirect_exekutor "${repo}/.mulle/etc/fetch/ignore" echo ""
+
+   # With marker: should NOT find it
+   if run_mulle_fetch search-local -l "${directory}/searchdir" "https://fake.url/my-repo.git"
+   then
+      fail "search-local should have skipped my-repo with .mulle/etc/fetch/ignore marker"
+   fi
+   log_verbose "----- #1b PASSED (skipped with marker) -----"
+}
+
+
+#
+# Test 2: uninitialized submodule (listed in .gitmodules, no .git) is skipped
+#
+test_uninitialized_submodule()
+{
+   local directory="$1"
+
+   local searchdir="${directory}/parentrepo"
+   local submod="${searchdir}/my-lib"
+
+   mkdir_if_missing "${searchdir}"
+   mkdir_if_missing "${submod}"
+
+   # Create .gitmodules listing my-lib as a submodule
+   cat > "${searchdir}/.gitmodules" <<EOF
+[submodule "my-lib"]
+	path = my-lib
+	url = https://github.com/example/my-lib.git
+EOF
+
+   # Submodule directory exists but has NO .git -> uninitialized
+   # Should NOT be found
+   if run_mulle_fetch search-local -l "${searchdir}" "https://fake.url/my-lib.git"
+   then
+      fail "search-local should have skipped uninitialized submodule my-lib"
+   fi
+   log_verbose "----- #2a PASSED (skipped uninitialized submodule) -----"
+
+   # Now "initialize" the submodule by creating a .git file (like real submodules have)
+   echo "gitdir: ../.git/modules/my-lib" > "${submod}/.git"
+
+   # Also set up enough for it to look like a repo (search-local checks -d only)
+   # The .git file existence is what matters for our check
+   if ! run_mulle_fetch search-local -l "${searchdir}" "https://fake.url/my-lib.git"
+   then
+      fail "search-local should have found initialized submodule my-lib"
+   fi
+   log_verbose "----- #2b PASSED (found initialized submodule) -----"
+}
+
+
+#
+# Test 3: .gitmodules with different submodule doesn't affect unrelated directories
+#
+test_submodule_no_false_positive()
+{
+   local directory="$1"
+
+   local searchdir="${directory}/project"
+   local unrelated="${searchdir}/other-lib"
+
+   mkdir_if_missing "${searchdir}"
+   setup_demo_repo "${unrelated}"
+
+   # .gitmodules lists "my-lib" but NOT "other-lib"
+   cat > "${searchdir}/.gitmodules" <<EOF
+[submodule "my-lib"]
+	path = my-lib
+	url = https://github.com/example/my-lib.git
+EOF
+
+   # other-lib is not in .gitmodules, should be found normally even without .git check
+   local result
+
+   result="`run_mulle_fetch search-local -l "${searchdir}" "https://fake.url/other-lib.git"`" || \
+      fail "search-local should have found other-lib (not listed in .gitmodules)"
+   log_verbose "----- #3 PASSED (unrelated dir not affected by .gitmodules) -----"
+}
+
+
+#
+# Test 4: partial name match doesn't trigger false skip
+# e.g., submodule "mulle-core" should not affect "mulle-core-all-load"
+#
+test_submodule_no_partial_match()
+{
+   local directory="$1"
+
+   local searchdir="${directory}/partial"
+   local longer="${searchdir}/mulle-core-all-load"
+
+   mkdir_if_missing "${searchdir}"
+   setup_demo_repo "${longer}"
+
+   # .gitmodules lists "mulle-core" (shorter name)
+   cat > "${searchdir}/.gitmodules" <<EOF
+[submodule "mulle-core"]
+	path = mulle-core
+	url = https://github.com/mulle-core/mulle-core.git
+EOF
+
+   # mulle-core-all-load should NOT be affected by the mulle-core submodule entry
+   local result
+
+   result="`run_mulle_fetch search-local -l "${searchdir}" "https://fake.url/mulle-core-all-load.git"`" || \
+      fail "search-local should have found mulle-core-all-load (partial name mismatch)"
+   log_verbose "----- #4 PASSED (partial name doesn't match) -----"
+}
+
+
+main()
+{
+   MULLE_FETCH_FLAGS="$@"
+
+   _options_mini_main "$@" && set -x
+
+   local directory
+
+   r_make_tmp_directory || exit 1
+   directory="${RVAL:-/tmp/exekutor}"
+
+   test_ignore_marker "${directory}"
+   test_uninitialized_submodule "${directory}"
+   test_submodule_no_false_positive "${directory}"
+   test_submodule_no_partial_match "${directory}"
+
+   log_info "----- ALL PASSED -----"
+   cd /
+   rmdir_safer "${directory}"
+}
+
+
+
+init()
+{
+   MULLE_FETCH="${MULLE_FETCH:-${PWD}/../../mulle-fetch}"
+}
+
+
+init "$@"
+main "$@"
