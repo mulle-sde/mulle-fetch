@@ -298,7 +298,7 @@ fetch::commands::common()
    local OPTION_REFRESH='DEFAULT'
    # AI has problems figuring out relative symlinks, an extension should set
    # the default to 'YES'
-   local OPTION_ABSOLUTE_SYMLINK="${MULLE_FETCH_ABSOLUTE_SYMLINK='NO'}"
+   local OPTION_ABSOLUTE_SYMLINK="${MULLE_FETCH_ABSOLUTE_SYMLINK:-NO}"
    local OPTION_HARDLINK='NO'
    local OPTION_SYMLINK_RETURNS_4='NO'
    local OPTION_WRITE_PROTECT='NO'
@@ -350,12 +350,12 @@ fetch::commands::common()
             OPTION_ABSOLUTE_SYMLINK='NO'
          ;;
 
-         --absolute-symlinks)
+         --absolute-symlink|--absolute-symlinks)
             OPTION_SYMLINK='YES'
             OPTION_ABSOLUTE_SYMLINK='YES'
          ;;
 
-         --no-absolute-symlinks)
+         --no-absolute-symlink|--no-absolute-symlinks)
             OPTION_ABSOLUTE_SYMLINK='NO'
          ;;
 

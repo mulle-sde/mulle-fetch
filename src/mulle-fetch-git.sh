@@ -169,8 +169,6 @@ fetch::git::set_default_remote()
    [ ! -d "${repository}" ] && _internal_fail "directory does not exist"
    [ -z "${GIT}" ] && "git is not in PATH"
 
-   local repository="$1"
-   local remote="$2"
    local branch="$3"
 
    (

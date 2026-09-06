@@ -13,6 +13,8 @@ _mulle_fetch_complete()
    # Extract the command (skip program name at words[0])
    local i=1
    local cmd=""
+   local options
+   local scms
 
    # Find the first non-option word after mulle-fetch (the command)
    while [[ $i -lt $cword ]]; do
@@ -57,7 +59,7 @@ _mulle_fetch_complete()
          elif [[ "$prev" == "--cache-dir" || "$prev" == "--mirror-dir" || "$prev" == "-l" || "$prev" == "--search-path" || "$prev" == "--local-search-path" ]]; then
             COMPREPLY=($(compgen -d -- "$cur"))
          elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
-            local scms="clib copy file git local svn symlink tar zip"
+            scms="clib copy file git local svn symlink tar zip"
             COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
          elif [[ "$prev" == "--branch" || "$prev" == "-b" || "$prev" == "--tag" || "$prev" == "-t" ]]; then
             COMPREPLY=()
@@ -67,13 +69,13 @@ _mulle_fetch_complete()
          ;;
 
       search-local)
-         local options="--help -h -l -o -s -u --local-search-path --options --scm --source --url"
+         options="--help -h -l -o -s -u --local-search-path --options --scm --source --url"
          if [[ "$cur" == -* ]]; then
             COMPREPLY=($(compgen -W "${options}" -- "$cur"))
          elif [[ "$prev" == "-l" || "$prev" == "--local-search-path" ]]; then
             COMPREPLY=($(compgen -d -- "$cur"))
          elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
-            local scms="clib copy file git local svn symlink tar zip"
+            scms="clib copy file git local svn symlink tar zip"
             COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
          else
             COMPREPLY=()
@@ -81,11 +83,11 @@ _mulle_fetch_complete()
          ;;
 
       update|upgrade)
-         local options="--help -h -b -o -s -t --branch --options --scm --source --tag"
+         options="--help -h -b -o -s -t --branch --options --scm --source --tag"
          if [[ "$cur" == -* ]]; then
             COMPREPLY=($(compgen -W "${options}" -- "$cur"))
          elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
-            local scms="clib copy file git local svn symlink tar zip"
+            scms="clib copy file git local svn symlink tar zip"
             COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
          elif [[ "$prev" == "--branch" || "$prev" == "-b" || "$prev" == "--tag" || "$prev" == "-t" ]]; then
             COMPREPLY=()
@@ -95,11 +97,11 @@ _mulle_fetch_complete()
          ;;
 
       exists)
-         local options="--help -h -s --scm --source"
+         options="--help -h -s --scm --source"
          if [[ "$cur" == -* ]]; then
             COMPREPLY=($(compgen -W "${options}" -- "$cur"))
          elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
-            local scms="clib copy file git local svn symlink tar zip"
+            scms="clib copy file git local svn symlink tar zip"
             COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
          else
             COMPREPLY=()
@@ -107,11 +109,11 @@ _mulle_fetch_complete()
          ;;
 
       set-url)
-         local options="--help -h -o -s --options --scm --source"
+         options="--help -h -o -s --options --scm --source"
          if [[ "$cur" == -* ]]; then
             COMPREPLY=($(compgen -W "${options}" -- "$cur"))
          elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
-            local scms="clib copy file git local svn symlink tar zip"
+            scms="clib copy file git local svn symlink tar zip"
             COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
          else
             COMPREPLY=($(compgen -d -- "$cur"))
@@ -119,11 +121,11 @@ _mulle_fetch_complete()
          ;;
 
       status|checkout)
-         local options="--help -h -o -s --options --scm --source"
+         options="--help -h -o -s --options --scm --source"
          if [[ "$cur" == -* ]]; then
             COMPREPLY=($(compgen -W "${options}" -- "$cur"))
          elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
-            local scms="clib copy file git local svn symlink tar zip"
+            scms="clib copy file git local svn symlink tar zip"
             COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
          else
             COMPREPLY=($(compgen -d -- "$cur"))
@@ -131,11 +133,11 @@ _mulle_fetch_complete()
          ;;
 
       operation)
-         local options="--help -h -s --scm --source"
+         options="--help -h -s --scm --source"
          if [[ "$cur" == -* ]]; then
             COMPREPLY=($(compgen -W "${options}" -- "$cur"))
          elif [[ "$prev" == "-s" || "$prev" == "--source" || "$prev" == "--scm" ]]; then
-            local scms="clib copy file git local svn symlink tar zip"
+            scms="clib copy file git local svn symlink tar zip"
             COMPREPLY=($(compgen -W "${scms}" -- "$cur"))
          else
             COMPREPLY=()
